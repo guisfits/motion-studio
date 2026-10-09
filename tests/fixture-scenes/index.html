@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture scenes</title>
+<!-- Used by tests/scenes.test.mjs: light rays in the theme's glow on the night ground (top half),
+     and a vox lockup built from project-supplied words (bottom half). -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { theme, setTheme } from "../../core/lib/theme.js";
+  import { drawRays, makeDust } from "../../styles/motion-graphics/lib/scenes.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  setTheme({ colors: { glow: "#ffcc00" } });
+  const stage = await createStage({ dur: 2 });
+  const { g, W, H } = stage;
+  const dust = makeDust({ count: 60 });
+  const lock = K.lockup(stage, { tIn: 0.2, mark: "Studio", note: "a closing card" });
+  window.LOCKUP_CUES = lock.cues();
+  try {
+    K.lockup(stage, { tIn: 0 });
+    window.LOCKUP_ERROR = null;
+  } catch (e) {
+    window.LOCKUP_ERROR = e.message;
+  }
+  stage.run((t) => {
+    g.fillStyle = theme().colors.night;
+    g.fillRect(0, 0, W, H / 2);
+    g.fillStyle = theme().colors.ground;
+    g.fillRect(0, H / 2, W, H / 2);
+    drawRays(g, W / 2, H / 4, { length: 900 });
+    dust(g, t, { x: 0, y: 0, w: W, h: H / 2 });
+    lock.draw(t);
+  });
+</script>
