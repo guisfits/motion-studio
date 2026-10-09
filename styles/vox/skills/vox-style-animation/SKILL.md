@@ -56,4 +56,4 @@ exist only to make the evidence legible and trusted. Each beat is a mini-proof:
 
 The "Vox moves" (match cut, page turn, gate weave, counters, map route, stepped 12 fps, …) are
 tools, not a quota: use the one the sentence needs. A clear film with six moves beats a busy one
-with twelve. Sources with URLs: `references/sources.md`.
+with twelve. Sources with URLs: `references/sources.md`. How the Vox team works (motif test, formats, source stack): `inspirations/vox-design-practice.md`.

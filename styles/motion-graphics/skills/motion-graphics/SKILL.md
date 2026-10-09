@@ -53,7 +53,7 @@ product explainers also follow `explainer-script`; editorial-collage passages fo
 
 1. Script (`explainer-script`) or a state list for a loop: the list of states is the spec.
 2. Capture real takes: `references/capture.md`.
-3. Style guide: every choice names its source (a theme token, a named inspiration's grammar).
+3. Style guide: every choice names its source (a theme token, a named inspiration's grammar; product-film and UI-motion references: `inspirations/motion-graphics-references.md`).
 4. Build on the engine (`motion-engine`): `core/lib/phone.js`, `clip.js`, `motion.js`,
    `styles/motion-graphics/lib/text.js` (`el`, `maskedLine`, `lineIn`, `makeCounter`) and
    `scenes.js` (`drawRays`, `makeDust`, `makeEngraving`): `references/building.md`.

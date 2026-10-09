@@ -26,6 +26,8 @@ never committed. To study a new piece: `node <E>/core/reference/inspiration.mjs 
 | `claude-pop-donald` | [claude-pop-donald.md](claude-pop-donald.md) | long films: fixed palette + recurring motifs, two type registers, bookend |
 | `mablesjoseph-watercolor` | [mablesjoseph-watercolor.md](mablesjoseph-watercolor.md) | colour script per act, light as meaning, painterly texture |
 | `oozn-steve-jobs` | [oozn-steve-jobs.md](oozn-steve-jobs.md) | chaptered history with a year counter and spotlight; ending through a door of light |
+| `motion-graphics-references` | [motion-graphics-references.md](motion-graphics-references.md) | UI/product motion and launch films (Linear, Raycast, Framer, Notion, Arc, Vercel, Apple, studios): grouped techniques, gallery status, patterns to steal |
+| `vox-design-practice` | [vox-design-practice.md](vox-design-practice.md) | how the Vox video team works: motif test, formats, source stack, review stages; one trailer studied |
 
 Source of the first entries: Movez, "How to build motion design studio with Opus 5.5
 (Full-course)", X article, 2026-09-27 — <https://x.com/0xMovez/article/2104216919033192746>.
