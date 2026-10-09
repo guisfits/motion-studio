@@ -1,0 +1,17 @@
+{
+  "name": "motion-studio",
+  "version": "0.1.0",
+  "description": "Code-rendered video engine: a film is a pure function of time, rendered frame by frame with Playwright and ffmpeg.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests",
+    "fetch-sfx": "node core/audio/fetch-sfx.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.55.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

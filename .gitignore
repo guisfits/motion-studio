@@ -1,0 +1,28 @@
+node_modules/
+.venv/
+__pycache__/
+.ruff_cache/
+.DS_Store
+
+# Rendered outputs and caches are rebuilt, never committed.
+out/
+*.mp4
+*.mov
+*.wav
+**/out/
+
+# Mixkit audio is fetched by core/audio/fetch-sfx.mjs; its licence forbids redistribution.
+core/audio/sfx/fetched/
+
+# Test scratch (template films, generated fixture images).
+tests/.tmp-films/
+tests/.assets/
+
+# Kit working folders and reference captures.
+kit/sources/
+kit/pieces/
+kit/out/
+
+# Copyrighted reel frames and videos stay local; only the study notes are committed.
+inspirations/frames/
+inspirations/media/
