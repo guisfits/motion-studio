@@ -1,0 +1,7 @@
+{
+  "bpm": 96,
+  "bars": 4,
+  "chords": ["Am", "F", "C", "G"],
+  "voices": { "piano": {}, "bass": { "from": 1 }, "kick": { "from": 2 } },
+  "tail": 2
+}

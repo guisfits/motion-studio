@@ -1,0 +1,127 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>hello-collage</title>
+<!--
+  A 9-second vox-style collage on an infinite table, built only from the engine: every picture is
+  drawn here on a canvas (no external asset), the theme is set in code, and the captions follow a
+  hand-written voice/words.json (word timings, the same format a TTS + aligner produces).
+
+  From the repository root:
+    node core/server.mjs examples/hello-collage                    live preview
+    node core/render.mjs examples/hello-collage --stills 1,4.5,8   stills + contact sheet
+    node core/render.mjs examples/hello-collage --draft            fast 540-wide MP4
+    node core/audio/score.mjs examples/hello-collage/score.json    music.wav (+ beats.json)
+    node core/audio/sfx.mjs examples/hello-collage/out/cues.auto.json examples/hello-collage/sfx.wav --dur 9
+    node core/audio/mix.mjs --video examples/hello-collage/out/draft-9x16.mp4 \
+      --music examples/hello-collage/music.wav --sfx examples/hello-collage/sfx.wav \
+      --out examples/hello-collage/out/final-9x16.mp4
+-->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { setTheme, theme } from "../../core/lib/theme.js";
+  import { makeTable } from "../../core/lib/table.js";
+  import { loadVoice, say } from "../../core/lib/voice.js";
+  import { rng } from "../../core/lib/motion.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  // The look: the engine's neutral theme with a blue accent. A project sets its own identity here.
+  setTheme({ colors: { accent: "#2f5bd3", accentInk: "#1f3f99", accentWash: "#cfdcff" } });
+  const C = theme().colors;
+
+  // Pictures drawn in code and handed to the stage as PNG data URLs.
+  const picture = (w, h, paint) => {
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    paint(c.getContext("2d"), w, h);
+    return c.toDataURL("image/png");
+  };
+  // A cut-out figure: head and shoulders in an engraved tone, transparent around it.
+  const figure = picture(600, 760, (g, w, h) => {
+    const tone = g.createLinearGradient(0, 0, w, h);
+    tone.addColorStop(0, "#3a332c");
+    tone.addColorStop(1, "#a59885");
+    g.fillStyle = tone;
+    g.beginPath();
+    g.ellipse(w / 2, 250, 150, 190, 0, 0, Math.PI * 2);
+    g.moveTo(40, h);
+    g.bezierCurveTo(40, 400, 560, 400, 560, h);
+    g.fill();
+    // Hatching, like an engraving.
+    g.strokeStyle = "rgba(20,16,12,.35)";
+    g.lineWidth = 2;
+    for (let i = -h; i < w; i += 9) {
+      g.beginPath();
+      g.moveTo(i, 0);
+      g.lineTo(i + h, h);
+      g.stroke();
+    }
+    g.globalCompositeOperation = "destination-in";
+    g.beginPath();
+    g.ellipse(w / 2, 250, 150, 190, 0, 0, Math.PI * 2);
+    g.moveTo(40, h);
+    g.bezierCurveTo(40, 400, 560, 400, 560, h);
+    g.fill();
+  });
+  // A printed page: paper, a title bar and lines of "text".
+  const page = picture(820, 1080, (g, w, h) => {
+    g.fillStyle = "#f4efe3";
+    g.fillRect(0, 0, w, h);
+    const r = rng(9);
+    g.fillStyle = "#2b2622";
+    g.fillRect(70, 90, 460, 34);
+    for (let y = 190; y < h - 80; y += 46) {
+      const len = y === 466 ? 560 : 520 + r() * 160;
+      g.fillStyle = "rgba(43,38,34,.78)";
+      g.fillRect(70, y, len, 14);
+    }
+  });
+
+  const stage = await createStage({ dur: 9, images: { figure, page } });
+  const { W, H, box } = stage;
+  const V = await loadVoice("voice/words.json");
+
+  const table = makeTable(stage);
+  table.surface({ x: -2000, y: -2000, w: 9000, h: 7000, src: theme().textures.paper });
+
+  // Station A: the figure, a huge word behind it, the hook said on screen.
+  const A = table.station({ x: 0, y: 0 });
+  const [person] = A.add(() => [K.piece(stage, { img: stage.img.figure, w: 620, x: 600, y: 1240, tIn: 0.35, from: "bl", edge: "deckle" })]);
+  A.add(() => [K.heroWord(stage, { text: "TIME", size: 460, y: 620, tIn: 0.2, behind: person })]);
+
+  // Station B, turned: a page pushed in on, one line highlighted, a rubric under it, a typed label.
+  const B = table.station({ x: 2600, y: 500, rot: -8 });
+  B.add(() => [
+    K.piece(stage, { img: stage.img.page, w: 820, x: 540, y: 960, rot: 2, tIn: 3.1, from: "tr", edge: "torn" }),
+    K.highlight(stage, { x: 200, y: 822, w: 560, h: 30, tIn: 4.0, rot: 1.4 }),
+    K.rubric(stage, { x: 200, y: 870, w: 560, tIn: 4.5 }),
+    K.typewriter(stage, { text: "t = 4.2 s", x: 150, y: 1540, size: 54, tIn: 4.6, cps: 12 }),
+  ]);
+
+  // Station C: the closing caption.
+  const Cst = table.station({ x: 5000, y: 200, rot: 6 });
+  Cst.add(() => [K.caption(stage, { lead: "rendered", key: "in code", x: 120, y: 820, size: 170, accent: true, tIn: 6.6 })]);
+
+  table.camera([
+    [0, { ...A.view(540, 960, { z: 1 }) }],
+    [2.9, { ...B.view(540, 960, { z: 0.95, ease: "whip" }) }],
+    [3.9, { ...B.view(480, 860, { z: 1.25, ease: "move" }) }],
+    [6.2, { ...Cst.view(540, 960, { z: 1, ease: "whip" }) }],
+  ]);
+
+  // Captions ride the screen, above the table; grain sits over everything.
+  const lines = [
+    say(stage, V, { line: "hook", screen: true, y: box.y + box.h - 230, size: 110 }),
+    say(stage, V, { line: "page", screen: true, y: box.y + 40, size: 104 }),
+  ];
+  const grain = K.grain(stage, { strength: 0.07 });
+
+  // render.mjs writes these to out/cues.auto.json for core/audio/sfx.mjs.
+  window.CUES = [...table.cues(), ...lines.flatMap((l) => l.cues?.() ?? [])];
+
+  stage.run((t) => {
+    table.draw(t);
+    for (const l of lines) l.draw(t);
+    grain.draw(t);
+  });
+</script>

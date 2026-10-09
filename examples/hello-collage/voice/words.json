@@ -1,0 +1,26 @@
+{
+ "engine": "hand-written",
+ "voice": "none",
+ "dur": 9,
+ "lines": [
+  { "id": "hook", "text": "Every frame is a function of time.", "start": 0.6, "end": 2.6 },
+  { "id": "page", "text": "Paper, ink and a camera that never stops.", "start": 3.4, "end": 5.8, "marks": { "ink": "underline" } }
+ ],
+ "words": [
+  { "w": "Every", "start": 0.6, "end": 0.85, "line": "hook", "key": false },
+  { "w": "frame", "start": 0.85, "end": 1.2, "line": "hook", "key": false },
+  { "w": "is", "start": 1.2, "end": 1.35, "line": "hook", "key": false },
+  { "w": "a", "start": 1.35, "end": 1.45, "line": "hook", "key": false },
+  { "w": "function", "start": 1.45, "end": 2.0, "line": "hook", "key": true },
+  { "w": "of", "start": 2.0, "end": 2.15, "line": "hook", "key": false },
+  { "w": "time.", "start": 2.15, "end": 2.6, "line": "hook", "key": true },
+  { "w": "Paper,", "start": 3.4, "end": 3.85, "line": "page", "key": true },
+  { "w": "ink", "start": 3.95, "end": 4.25, "line": "page", "key": true },
+  { "w": "and", "start": 4.3, "end": 4.45, "line": "page", "key": false },
+  { "w": "a", "start": 4.45, "end": 4.55, "line": "page", "key": false },
+  { "w": "camera", "start": 4.55, "end": 5.0, "line": "page", "key": false },
+  { "w": "that", "start": 5.0, "end": 5.15, "line": "page", "key": false },
+  { "w": "never", "start": 5.15, "end": 5.45, "line": "page", "key": false },
+  { "w": "stops.", "start": 5.45, "end": 5.8, "line": "page", "key": false }
+ ]
+}
