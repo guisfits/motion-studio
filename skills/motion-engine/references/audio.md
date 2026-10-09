@@ -88,6 +88,13 @@ node <E>/core/audio/mix.mjs --video <F>/out/silent-9x16.mp4 --out <F>/out/final-
   [--music-gain 1] [--sfx-gain 1] [--voice-gain 1] [--fade-out 0.8] [--report]
 ```
 
+**More than one voice take.** A film that speaks in two takes (its own narration and a reusable
+outro that carries its own recorded voice) declares the later ones in the page:
+`window.VOICE_TAKES = [{ src: "/path/voice.wav", at: tOutroVoice }]` (`at` from the film's own
+timing, never typed by hand). `render.mjs` writes them to `out/voices.auto.json`; pass
+`--voice-takes <F>/out/voices.auto.json` and they are summed with `--voice` into one stem before
+anything is measured, so balance, ducking and loudness follow one speech level.
+
 Built around the measured speech level (mean power of the 50 ms windows where the voice speaks);
 the voice itself is not touched.
 

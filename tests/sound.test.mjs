@@ -23,6 +23,7 @@ import {
   planLevels,
   measurePlan,
   mix,
+  sumVoices,
   SFX_BELOW_VOICE,
   MUSIC_BELOW_VOICE,
   SFX_BELOW_MUSIC,
@@ -287,6 +288,45 @@ test("mix(): a voice-only mix and a music + sfx mix (no voice) both render", { t
     const codec = execFileSync("ffprobe", ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0", out]).toString().trim();
     assert.equal(codec, "aac", `${label}: an audio track`);
   }
+});
+
+// A film's own narration plus a second take placed later (a house outro's voice): one stem, each
+// take at its start, nothing scaled.
+test("sumVoices: each take lands at its start, untouched, in one stem", { timeout: 60_000 }, () => {
+  const burst = (file, amp) => {
+    const ch = new Float32Array(Math.round(SR * 0.4)).map((_, i) => amp * Math.sin((2 * Math.PI * 220 * i) / SR));
+    writeWav(file, [ch]);
+  };
+  const a = join(dir, "take-a.wav");
+  const b = join(dir, "take-b.wav");
+  burst(a, 0.2);
+  burst(b, 0.4);
+  const out = join(dir, "takes.wav");
+  sumVoices([{ file: a, at: 0 }, { file: b, at: 1.5 }], out);
+  const rate = 16000; // decodeStereo's default rate
+  const peak = (x, t0, t1) => {
+    let m = 0;
+    for (let i = Math.floor(t0 * rate) * CHANNELS; i < Math.floor(t1 * rate) * CHANNELS; i++) m = Math.max(m, Math.abs(x[i] ?? 0));
+    return m;
+  };
+  // Compared with each take decoded the same way (the stereo upmix has its own gain).
+  const x = decodeStereo(out);
+  const pa = peak(decodeStereo(a), 0.05, 0.35);
+  const pb = peak(decodeStereo(b), 0.05, 0.35);
+  assert.ok(Math.abs(peak(x, 0.05, 0.35) - pa) < 0.01 * pa + 1e-3, `take a at 0 s, as loud as it was (${peak(x, 0.05, 0.35)} vs ${pa})`);
+  assert.ok(peak(x, 0.5, 1.45) < 1e-3, "silence between the takes");
+  assert.ok(Math.abs(peak(x, 1.55, 1.85) - pb) < 0.01 * pb + 1e-3, `take b at 1.5 s, as loud as it was (${peak(x, 1.55, 1.85)} vs ${pb})`);
+  assert.throws(() => sumVoices([], out), /at least one/);
+});
+
+test("mix(): voice takes are summed into the voice stem", { timeout: 120_000 }, () => {
+  const video = join(dir, "takes-v.mp4");
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=black:s=64x64:d=2:r=10", "-c:v", "libx264", "-pix_fmt", "yuv420p", video]);
+  const a = join(dir, "take-a.wav");
+  const out = join(dir, "takes.mp4");
+  mix({ video, out, voice: a, voiceTakes: [{ file: a, at: 1.0 }] });
+  const codec = execFileSync("ffprobe", ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0", out]).toString().trim();
+  assert.equal(codec, "aac");
 });
 
 // --- ducking depth, measured ---------------------------------------------------------------------

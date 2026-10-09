@@ -3,6 +3,7 @@
 //
 //   node core/audio/mix.mjs --video out/silent-9x16.mp4 --out out/final-9x16.mp4
 //        [--music music.wav] [--sfx sfx.wav] [--voice voice.wav]
+//        [--voice-takes out/voices.auto.json]                more voice takes, each at its start
 //        [--music-gain 1] [--sfx-gain 1] [--voice-gain 1]     trims (linear) on top of the balance below
 //        [--fade-out 0.8]                                    seconds of fade at the end (0 = hard cut)
 //        [--report]                                          print how the stems sit against the voice
@@ -16,8 +17,14 @@
 //          little under each SFX
 //   master a gentle limiter, then two-pass loudnorm to -14 LUFS, true peak -1 dB
 // Without a voice stem the old balance holds: the music at 0.8 and the SFX a few dB under it.
+//
+// Voice takes: a film may speak in more than one take, such as its own narration and a house
+// outro that carries its own recorded voice from its own start. render.mjs writes the takes the
+// film declares (window.VOICE_TAKES) to out/voices.auto.json as [{ file, at }]; they are summed
+// with --voice (at 0) into one voice stem before anything is measured, so the balance, the ducking
+// and the loudness all follow one speech level.
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -99,6 +106,35 @@ export function planLevels(levels, trims = {}) {
     plan.sfxHit = ref - SFX_BELOW_MUSIC + db(ts);
   }
   return plan;
+}
+
+// Sums voice takes into one stem: each take delayed to its start `at` (seconds), nothing scaled,
+// written to `out` as 48 kHz mono PCM. takes: [{ file, at = 0 }].
+export function sumVoices(takes, out) {
+  if (!takes?.length) throw new Error("sumVoices needs at least one take");
+  const graph = takes
+    .map(
+      ({ at = 0 }, i) =>
+        `[${i}:a]aformat=sample_rates=48000:channel_layouts=mono,adelay=${Math.round(at * 1000)}:all=1[v${i}]`,
+    )
+    .concat(
+      `${takes.map((_, i) => `[v${i}]`).join("")}amix=inputs=${takes.length}:normalize=0:duration=longest[v]`,
+    )
+    .join(";");
+  execFileSync("ffmpeg", [
+    "-y",
+    "-loglevel",
+    "error",
+    ...takes.flatMap(({ file }) => ["-i", file]),
+    "-filter_complex",
+    graph,
+    "-map",
+    "[v]",
+    "-c:a",
+    "pcm_s16le",
+    out,
+  ]);
+  return out;
 }
 
 const STEREO = "aformat=sample_rates=48000:channel_layouts=stereo";
@@ -196,10 +232,26 @@ export function mix({
   music,
   sfx,
   voice,
+  voiceTakes = [],
   gains = {},
   fadeOut = 0.8,
   report = false,
 }) {
+  // More than one take: summed into one voice stem first (see "Voice takes" above).
+  const tmp = voiceTakes.length ? mkdtempSync(join(tmpdir(), "mix-voice-")) : null;
+  try {
+    if (tmp)
+      voice = sumVoices(
+        [...(voice ? [{ file: voice, at: 0 }] : []), ...voiceTakes],
+        join(tmp, "voice.wav"),
+      );
+    return mixStems({ video, out, music, sfx, voice, gains, fadeOut, report });
+  } finally {
+    if (tmp) rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+function mixStems({ video, out, music, sfx, voice, gains, fadeOut, report }) {
   const stems = [
     ["music", music],
     ["sfx", sfx],
@@ -322,6 +374,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       music: arg("music"),
       sfx: arg("sfx"),
       voice: arg("voice"),
+      voiceTakes: arg("voice-takes")
+        ? JSON.parse(readFileSync(arg("voice-takes"), "utf8"))
+        : [],
       gains: Object.fromEntries(
         ["music", "sfx", "voice"]
           .filter((k) => arg(`${k}-gain`))

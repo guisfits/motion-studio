@@ -1,7 +1,8 @@
 <!doctype html>
 <meta charset="utf-8" />
 <title>fixture cues</title>
-<!-- Used by tests/cues.test.mjs: components gather their cues() in window.CUES, as a real film does. -->
+<!-- Used by tests/cues.test.mjs: components gather their cues() in window.CUES, as a real film does;
+     window.VOICE_TAKES names voice takes placed at an offset. -->
 <script type="module">
   import { createStage } from "../../core/lib/stage.js";
   import * as K from "../../styles/vox/lib/kit.js";
@@ -13,5 +14,7 @@
   ];
   // Deliberately out of order: render.mjs must sort by time.
   window.CUES = parts.flatMap((p) => p.cues()).reverse();
+  // A second voice take that starts at 1.5 s (a house outro's own narration), by its served path.
+  window.VOICE_TAKES = [{ src: "out/take.wav", at: 1.5 }];
   stage.run((t) => parts.forEach((p) => p.draw(t)));
 </script>

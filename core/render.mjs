@@ -216,7 +216,8 @@ async function renderVideo(film, opts, format) {
 const opts = parseArgs(process.argv);
 const formats = opts.format === "all" ? Object.keys(FORMATS) : [opts.format];
 mkdirSync(join(opts.film, "out"), { recursive: true });
-const server = await startServer(0, rootFor(opts.film, opts.root));
+const root = rootFor(opts.film, opts.root);
+const server = await startServer(0, root);
 const browser = await chromium.launch();
 try {
   for (const format of formats) {
@@ -231,6 +232,16 @@ try {
       mkdirSync(join(opts.film, "out"), { recursive: true });
       writeFileSync(join(opts.film, "out", "cues.auto.json"), `${JSON.stringify(cues.sort((a, b) => a.t - b.t), null, 1)}\n`);
     }
+    // A film that speaks in more than one take (its narration, and a house outro carrying its own
+    // recorded voice from its own start) names them in window.VOICE_TAKES as { src, at }: src as the
+    // page would fetch it (a "/" path from the served root, or relative to the film). They are written
+    // as files on disk to out/voices.auto.json for audio/mix.mjs --voice-takes.
+    const takes = await film.page.evaluate(() => window.VOICE_TAKES ?? null);
+    if (takes)
+      writeFileSync(
+        join(opts.film, "out", "voices.auto.json"),
+        `${JSON.stringify(takes.map(({ src, at = 0 }) => ({ file: src.startsWith("/") ? join(root, src) : resolve(opts.film, src), at })), null, 1)}\n`,
+      );
     if (opts.stills) await renderStills(film, opts, format);
     else await renderVideo(film, opts, format);
     await film.page.close();

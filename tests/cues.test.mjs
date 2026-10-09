@@ -37,3 +37,15 @@ test("render writes out/cues.auto.json from window.CUES, sorted by time", { time
   // the first step at or after 0.2 + 0.202 s, i.e. 0.2 + 3/12, and that is when it is heard.
   assert.equal(cues.find((c) => c.type === "paper-place").t, 0.45);
 });
+
+test("render writes out/voices.auto.json from window.VOICE_TAKES, each take as a file on disk with its start", { timeout: 120_000 }, () => {
+  // The previous test rendered the fixture; render again only if it did not run.
+  if (!existsSync(`${out}/voices.auto.json`)) {
+    mkdirSync(out, { recursive: true });
+    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=white:s=300x200",
+      "-frames:v", "1", `${out}/pic.png`]);
+    execFileSync("node", [`${studio}/core/render.mjs`, film, "--stills", "0.1"], { stdio: "pipe" });
+  }
+  const takes = JSON.parse(readFileSync(`${out}/voices.auto.json`, "utf8"));
+  assert.deepEqual(takes, [{ file: `${film}/out/take.wav`, at: 1.5 }]);
+});
