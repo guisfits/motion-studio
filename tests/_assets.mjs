@@ -29,7 +29,7 @@ export function ensureAssets() {
   portrait("portrait-3.png", "0x1e2226", "0xa9b0b8", 3);
   portrait("portrait-4.png", "0x30261c", "0xc9b28f", 4);
   // Continuous tone, mostly mid greys, opaque: what a print screen turns into dots.
-  ff(["-f", "lavfi", "-i", "gradients=s=600x800:c0=0x262626:c1=0xcfcfcf:x0=0:y0=0:x1=600:y1=800:speed=0",
+  ff(["-f", "lavfi", "-i", "gradients=s=600x800:c0=0x262626:c1=0xcfcfcf:x0=0:y0=0:x1=600:y1=800:speed=0:seed=1",
     "-vf", "format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='if(lt(hypot((X-300)/290,(Y-400)/390),1),255,0)'"], "engraving.png");
   page("page-a.jpg", 900, 1300, "0xe9dfc8");
   page("page-b.jpg", 900, 1200, "0xe4d6bb");
