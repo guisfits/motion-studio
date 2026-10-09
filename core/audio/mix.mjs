@@ -15,7 +15,8 @@
 //   music  the bed sits MUSIC_BELOW_VOICE dB under the speech in the gaps, ducks MUSIC_DUCK dB more
 //          under the voice (so MUSIC_BELOW_VOICE + MUSIC_DUCK = -20 dB under speech) and dips a
 //          little under each SFX
-//   master a gentle limiter, then two-pass loudnorm to -14 LUFS, true peak -1 dB
+//   master a gentle limiter, then two-pass loudnorm to -14 LUFS, true peak TP_TARGET (-1.5): the AAC
+//          encode adds a few tenths of inter-sample overshoot, and the delivered file must stay <= -1 dBTP
 // Without a voice stem the old balance holds: the music at 0.8 and the SFX a few dB under it.
 //
 // Voice takes: a film may speak in more than one take, such as its own narration and a house
@@ -51,6 +52,9 @@ export const SFX_BELOW_MUSIC = 6; // no voice stem: the SFX hit under the music'
 // asked: aim a little deeper.
 const MUSIC_DUCK_TRIM = 0.85;
 const RATIO = 10;
+// The loudnorm ceiling, under the -1 dBTP delivery limit by the AAC encoder's overshoot (measured
+// 2026-10-10: a -1.0 target came out at -0.98 dBTP after the encode).
+export const TP_TARGET = -1.5;
 // A compressor with ratio R takes (level - threshold) * (1 - 1/R) off: this is the distance from
 // the speech level down to the threshold that makes the reduction equal to the duck depth.
 const overThreshold = (depth) => depth / (1 - 1 / RATIO);
@@ -275,7 +279,7 @@ function mixStems({ video, out, music, sfx, voice, gains, fadeOut, report }) {
       "-nostats",
       ...inputs,
       "-filter_complex",
-      graph("I=-14:TP=-1:LRA=11:print_format=json"),
+      graph(`I=-14:TP=${TP_TARGET}:LRA=11:print_format=json`),
       "-map",
       "[a]",
       "-f",
@@ -290,7 +294,7 @@ function mixStems({ video, out, music, sfx, voice, gains, fadeOut, report }) {
       `mix: loudnorm measurement failed\n${probe.stderr.slice(-800)}`,
     );
   const m = JSON.parse(json[0]);
-  const norm = `I=-14:TP=-1:LRA=11:measured_I=${m.input_i}:measured_LRA=${m.input_lra}:measured_TP=${m.input_tp}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
+  const norm = `I=-14:TP=${TP_TARGET}:LRA=11:measured_I=${m.input_i}:measured_LRA=${m.input_lra}:measured_TP=${m.input_tp}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
   execFileSync(
     "ffmpeg",
     [
