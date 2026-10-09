@@ -120,6 +120,16 @@ list or the stem gain, never by raising the voice.
 - Level steady (speech mean ≈ -20 dBFS RMS before normalisation, no spikes above it); clean
   hum/noise, light compression, EQ for clarity.
 - Check on a phone speaker. Transcribe the final with ASR: zero wrong words.
+- **Emotion in the final voice:** give each line a tone from its text (curious on a question,
+  reverent on a sacred or historic claim, bright on the call to action), subtle. With ElevenLabs
+  use a model that reads audio tags (`eleven_v3`); the tags go only to the TTS text and are
+  stripped before forced alignment and captions. Tagged takes run slow (≈ 1.8 words/s): speed
+  the take ~1.1× with pitch kept, before alignment, rather than re-rolling.
+- **Every sound matches something visible.** A scratch with no pen on screen, a whoosh with no
+  move, reads as an error.
+- **A closing sound that must be heard** (a bell, a sting) goes in as a voice take at an offset
+  (`VOICE_TAKES`), not through the SFX bus, which sits under speech and ducks. Strike it a beat
+  (~1 s) after the last word; end the film when its decay ends, not on a fixed hold.
 
 ## Common defects
 

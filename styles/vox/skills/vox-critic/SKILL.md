@@ -1,6 +1,6 @@
 ---
 name: vox-critic
-description: Use when a code-rendered explainer, Reel or any MP4 must be judged before anyone else sees it — after building or changing scenes, before a final render, when asked "is it good?", "review the video", "critique it", or when a render looks mid and nobody can say why.
+description: Use when a code-rendered explainer, Reel or any MP4 must be judged — when its maker or client dislikes it and cannot say why ("it looks mid", "something is off"), when asked "is it good?", "review the video", "critique it", or as the final reviewer after the client approves a film, to fine-tune it before the final render.
 ---
 
 # Vox critic
@@ -12,6 +12,16 @@ the lower; a score rises only when a new sheet shows the fix.
 **Project overlay.** A project's critic skill may add hunt items (identity, audience, outro) on
 top of this rubric and may relax a norm where it names the departure. It never removes the
 intelligibility, evidence or safe-zone checks.
+
+## When to run
+
+- **Diagnosis:** the client dislikes a part and cannot say why. Run the rubric on that part, name
+  the problem (timestamp, the norm it breaks) and the fix.
+- **Final review:** after the client approves, fine-tune timing, spacing, sync and mix; never
+  change what was approved (layout, copy, beats, look). One or two rounds.
+- **Autonomous work** (no human reviewing drafts): the full gate below.
+
+With a human reviewing drafts part by part, the critic is not a gate on every draft.
 
 ## Verdict first
 

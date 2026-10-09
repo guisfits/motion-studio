@@ -115,3 +115,20 @@ Write a director's brief (logline, references, look, beat sheet with timestamps,
 rules, deliverables) and an `ANIMATION_GUIDE.md` (shared helpers, type scale, how a scene is
 written) before splitting chapters across workers, so every chapter is coded in one style. Gates:
 stills → animatic draft → full pass → polish → sound → final.
+
+## Designed frames (from a design tool)
+
+When the client draws a frame (e.g. a Claude Design canvas at half size, 540×960):
+
+- The drawing is the source of truth. Reproduce every element's position, size, rotation, stacking
+  order and styling ×2; no readability-driven offsets without asking — raise the concern, keep
+  the drawing.
+- Resolve nesting: an element inside a rotated sheet gets its frame position by carrying its
+  centre round the sheet's centre and summing rotations. Inherited styles count (e.g. a design
+  system's body line-height).
+- Verify by rendering the drawing itself at full size and comparing it side by side (and as a
+  diff) with the film's still at the same moment; fix every difference.
+- The client edits the drawing between your reads: re-read it right before porting and never
+  overwrite a newer save.
+- A storyboard of beats is best drawn as ONE final frame whose groups are gated by beat; each
+  beat board shows the same frame up to that beat, so moving a piece once updates every beat.

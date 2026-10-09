@@ -31,8 +31,19 @@ Never reorder it: each step is the input of the next.
 | 2 | Beat grid: score or track measured into beats | `beats.json`, `music.wav` | `references/audio.md` |
 | 3 | Shot list on the voice and the grid: words, evidence, largest element, camera, cause, SFX | `shotlist.md` | `references/pipeline.md` |
 | 4 | Build: stations, pieces, captions with `say`, cues | `index.html` | `references/engine-api.md`, `references/kit-and-cutouts.md` |
-| 5 | Critique loop: stills → draft → sheets → score → fix only those seconds | `review_log.md` | `references/render-and-review.md`, the style's critic |
+| 5 | Review with the client, part by part (below); the style's critic on demand | `review_log.md` | `references/render-and-review.md`, the style's critic |
 | 6 | Final: render → SFX → mix → sync check → sheets on the final MP4 | `out/final-9x16.mp4` | `references/audio.md` |
+
+## Iterating with a human client
+
+Build and show the film **one part at a time** (a beat or a scene): a fast `--draft` (540p,
+30 fps, free draft voice, rough mix) within minutes, the client's feedback, the next part in
+parallel. Tests, docs, critique rounds and `--sub 8` never stand between the client and the
+first look. The final (quality render, paid voice, final mix) runs only after the client says
+it is good. Run the style's critic (a) when the client dislikes a part and cannot say why, to
+name the problem and the fix, and (b) as the final reviewer after the client's OK, to fine-tune
+timing, spacing, sync and mix without changing anything approved. A frame the client drew in a
+design tool is reproduced exactly (`references/pipeline.md` → Designed frames).
 
 ## Quick reference
 

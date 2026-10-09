@@ -63,6 +63,21 @@ through the subject means re-cut (other mode, or crop the source tighter first w
 - Evidence must be the right one: the right century, language, person, edition. A picture that
   merely fits the mood under a factual line is decoration, and a critic fails it.
 
+## Finding pieces fast
+
+- Search Openverse first: `https://api.openverse.org/v1/images/?q=<terms>&license=cc0,pdm`
+  (add `&source=wikimedia|rawpixel|flickr` to narrow). It returns the file URL, licence and the
+  landing page to record. Museum open access (Walters, Met, Cleveland, British Library) is there.
+- Wikimedia and Flickr may rate-limit or block originals (HTTP 429): take the large preview the
+  API lists (`_b`, 1024 px) and note the original's URL in the catalog for later.
+- "Isolated"/"png sticker" results are often drawings with a fake checkerboard: reject them;
+  cut a real photo instead (`cutout.swift --mode subject`).
+- One good cut-out can make a set: tinted variants (colour matrix / hue / levels) read as
+  different objects of the same family (three books from one photo). Crop manuscripts and maps to
+  the fragment that reads at phone size.
+- Match the evidence to the word: "genealogies" → a genealogical chart (linked medallions),
+  "maps" → a period map of the right land, not any old map.
+
 ## Recordings (footage and app takes)
 
 `node <E>/core/reference/clip.mjs <rec.mov> <F>/assets/clip-<name> --fps 60 [--from s --to s]`
