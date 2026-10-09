@@ -229,7 +229,7 @@ export async function sheets(video, { out, strips = [], loop = false } = {}) {
   return made;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const video = process.argv[2];
   if (!video) {
     console.error(

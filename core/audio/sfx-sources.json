@@ -1,0 +1,292 @@
+{
+ "papel-deslizar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1530/1530-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.06
+ },
+ "papel-cair-chao": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/386/386-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.59
+ },
+ "pagina-virar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1104/1104-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.41
+ },
+ "pagina-virar-grande": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1105/1105-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.78
+ },
+ "livro-folhear": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1101/1101-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.5
+ },
+ "papel-amassar-2": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2996/2996-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.31
+ },
+ "papel-farfalhar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2380/2380-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.79
+ },
+ "papel-vento": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2653/2653-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 3.0
+ },
+ "caneta-riscar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2367/2367-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.45
+ },
+ "maquina-tecla": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1366/1366-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.44
+ },
+ "maquina-teclas-rajada": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1379/1379-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.5
+ },
+ "maquina-sino": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1368/1368-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.66
+ },
+ "maquina-retorno": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1381/1381-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.5
+ },
+ "liquido-despejar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2826/2826-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 3.0
+ },
+ "liquido-respingo": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1311/1311-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.35
+ },
+ "agua-gota": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/3179/3179-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.6
+ },
+ "fosforo-riscar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2590/2590-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 2.5
+ },
+ "fogo-crepitar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1329/1329-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 12.0
+ },
+ "whoosh-curto": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1461/1461-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.36
+ },
+ "whoosh-longo": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1474/1474-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 2.86
+ },
+ "swish-pan": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/3115/3115-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.51
+ },
+ "riser-curto": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/790/790-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 2.58
+ },
+ "swell-reverso": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/784/784-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 3.0
+ },
+ "sino-igreja-unico": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/619/619-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 4.0
+ },
+ "assoalho-ranger": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/337/337-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.97
+ },
+ "porta-ranger": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/195/195-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 2.5
+ },
+ "porta-igreja": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/193/193-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 3.0
+ },
+ "clique-suave": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1117/1117-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.2
+ },
+ "pop": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2356/2356-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.28
+ },
+ "carimbo-madeira": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2182/2182-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.56,
+  "note": "originally layered with a Freesound CC0 recording; rebuilt from the Mixkit layer only"
+ },
+ "carimbo-madeira-2": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2182/2182-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.54,
+  "note": "originally layered with a Freesound CC0 recording; rebuilt from the Mixkit layer only"
+ },
+ "maquina-tecla-2": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1365/1365-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.34
+ },
+ "maquina-tecla-3": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1384/1384-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.32
+ },
+ "maquina-tecla-4": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1380/1380-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 0.4,
+  "drive": true
+ },
+ "maquina-carro-sino-2": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1383/1383-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.25
+ },
+ "papel-folhear-rapido": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1100/1100-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 2.2
+ },
+ "papel-amassar-3": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2389/2389-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.02,
+  "drive": true
+ },
+ "papel-amassar-4": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2385/2385-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.78,
+  "drive": true
+ },
+ "fosforo-chama": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1345/1345-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.23,
+  "note": "originally layered with a Freesound CC0 recording; rebuilt from the Mixkit layer only"
+ },
+ "chama-whoosh": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1348/1348-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.56
+ },
+ "camera-whoosh-grave": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2615/2615-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 60,
+  "len": 2.2
+ },
+ "swish-ar": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1489/1489-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.18
+ },
+ "swish-giro": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1493/1493-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.55
+ },
+ "riser-suave": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1445/1445-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 3.0
+ },
+ "boom-grave": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/2900/2900-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 60,
+  "len": 3.0,
+  "note": "originally layered with a Freesound CC0 recording; rebuilt from the Mixkit layer only"
+ },
+ "papel-passar-transicao": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/1469/1469-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 100,
+  "len": 1.4,
+  "note": "originally layered with a Freesound CC0 recording; rebuilt from the Mixkit layer only"
+ },
+ "sino-grave-unico": {
+  "url": "https://assets.mixkit.co/active_storage/sfx/587/587-preview.mp3",
+  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
+  "highpass": 60,
+  "len": 4.5
+ }
+}
