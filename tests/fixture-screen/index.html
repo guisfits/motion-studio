@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture screen captions</title>
+<!-- Used by tests/screen-caption.test.mjs: the fixture-voice narration over a table whose camera
+     rolls 90° and zooms in from 1.0 s. Line "uno" is said twice: once pinned to the screen (with
+     an over-wide box and a y below the safe foot, so the fit has work to do), once in world space. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeTable } from "../../core/lib/table.js";
+  import { loadVoice, say } from "../../core/lib/voice.js";
+
+  const stage = await createStage({ dur: 4 });
+  const { W, H } = stage;
+  const V = await loadVoice("../fixture-voice/voice/words.json");
+  const table = makeTable(stage, { breathe: 0 });
+  table.surface({ x: -2000, y: -2000, w: 5000, h: 6000, color: "#efe6d2", shadow: false });
+  const [world] = table.add(() => [say(stage, V, { line: "uno", x: 60, y: 300, w: 960, size: 200 })]);
+  const pinned = say(stage, V, { line: "uno", screen: true, x: 0, y: 1700, w: 4000, size: 260, marks: { in: "underline" } });
+  table.camera([
+    [0, { x: W / 2, y: H / 2, z: 1, r: 0 }],
+    [1.0, { x: W / 2 + 300, y: H / 2 - 200, z: 1.6, r: 90 }],
+  ]);
+  window.PINNED = pinned;
+  window.WORLD = world;
+  window.CUES = pinned.cues();
+  stage.run((t) => {
+    table.draw(t);
+    world.draw(t);
+    pinned.draw(t);
+  });
+</script>

@@ -1,0 +1,19 @@
+{
+ "engine": "test",
+ "voice": "test",
+ "dur": 8,
+ "lines": [
+  { "id": "uno", "text": "In London, London", "start": 0.5, "end": 2.0 },
+  { "id": "dos", "text": "London Paris", "start": 2.5, "end": 3.5 },
+  { "id": "hl", "text": "Caété", "start": 4.5, "end": 5.0, "marks": { "caété": "highlight" } },
+  { "id": "st", "text": "Été", "start": 5.6, "end": 7.0, "marks": { "été": "underline" } }
+ ],
+ "words": [
+  { "w": "In", "start": 0.5, "end": 0.7, "line": "uno", "key": false },
+  { "w": "London,", "start": 1.0, "end": 1.4, "line": "uno", "key": true },
+  { "w": "London", "start": 1.6, "end": 2.0, "line": "uno", "key": false },
+  { "w": "Paris", "start": 3.0, "end": 3.5, "line": "dos", "key": true },
+  { "w": "Caété", "start": 4.5, "end": 5.0, "line": "hl", "key": true },
+  { "w": "Été", "start": 5.6, "end": 6.2, "line": "st", "key": true }
+ ]
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture table</title>
+<!-- Used by tests/table.test.mjs. A red sheet lies over a blue under-surface at the camera's first
+     position and is torn open at 0.5 s; a green island sits far away at world (2000,2000); the
+     camera travels to the island at 1.2 s and makes a second, shorter move at 3.0 s. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeTable, tear } from "../../core/lib/table.js";
+
+  const stage = await createStage({ dur: 4 });
+  const { W, H } = stage;
+  const table = makeTable(stage);
+  table.surface({ x: 0, y: 0, w: W, h: H, color: "#2255cc", shadow: false });
+  table.surface({ x: 1600, y: 1600, w: 800, h: 800, color: "#22aa44", shadow: false });
+  table.add(() => [tear(stage, { x: 0, y: 0, w: W, h: H, color: "#cc2222", tIn: 0.5 })]);
+  table.camera([
+    [0, { x: W / 2, y: H / 2 }],
+    [1.2, { x: 2000, y: 2000 }],
+    [3.0, { x: 2000, y: 2600 }],
+  ]);
+  window.CAMERA_AT = (t) => table.at(t);
+  window.TABLE = table;
+  window.TABLE_CUES = () => table.cues();
+  stage.run((t) => table.draw(t));
+</script>

@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture blur</title>
+<!-- Used by tests/blur.test.mjs: a white table striped with 8 px black bars every 160 px; the
+     camera whips 3000 px to the right at 1.0 s (ease "whip") and settles. ?blur=0 turns the blur off. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeTable } from "../../core/lib/table.js";
+
+  const blur = Number(new URLSearchParams(location.search).get("blur") ?? 1);
+  const stage = await createStage({ dur: 3, background: "#ffffff" });
+  const { W, H } = stage;
+  const table = makeTable(stage, { breathe: 0, blur });
+  table.surface({ x: -1000, y: 0, w: 6000, h: H, color: "#ffffff", shadow: false });
+  for (let x = -1000; x < 5000; x += 160)
+    table.surface({ x, y: 300, w: 8, h: H - 600, color: "#000000", shadow: false });
+  table.camera([
+    [0, { x: W / 2, y: H / 2, z: 1, r: 0 }],
+    [1.0, { x: W / 2 + 3000, ease: "whip" }],
+  ]);
+  window.TABLE = table;
+  stage.run((t) => table.draw(t));
+</script>

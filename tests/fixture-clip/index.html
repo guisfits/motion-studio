@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture clip</title>
+<!-- Used by tests/clip.test.mjs: a recording (out/clip-red-blue) played full-stage by makeClip. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeClip } from "../../core/lib/clip.js";
+
+  const stage = await createStage({ dur: 1 });
+  const clip = makeClip(stage, "out/clip-red-blue");
+  Object.assign(clip.el.style, { width: `${stage.W}px`, height: `${stage.H}px` });
+  stage.dom.append(clip.el);
+  stage.run((t) => clip.at(t));
+</script>

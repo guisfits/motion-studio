@@ -1,0 +1,32 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture film</title>
+<!-- Minimal film used by tests/render.test.mjs: canvas text + a spring + seeded noise + a DOM layer. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { spring, rng, SPRINGS } from "../../core/lib/motion.js";
+  import { theme } from "../../core/lib/theme.js";
+  const C = theme().colors;
+  const F = theme().families;
+
+  const stage = await createStage({ dur: 1, formats: ["9x16", "16x9"] });
+  const { g, W, H, box } = stage;
+  const card = document.createElement("div");
+  Object.assign(card.style, { position: "absolute", width: "200px", height: "120px", background: C.accent });
+  stage.dom.append(card);
+
+  stage.run((t) => {
+    g.fillStyle = C.ground;
+    g.fillRect(0, 0, W, H);
+    const r = rng(3);
+    for (let i = 0; i < 40; i++) {
+      g.fillStyle = C.ruleSoft;
+      g.fillRect(r() * W, r() * H, 6, 6);
+    }
+    const s = spring(t, SPRINGS.snappy.k, SPRINGS.snappy.d);
+    g.fillStyle = C.ink;
+    g.font = `120px ${F.serif}`;
+    g.fillText("λόγος", box.x, box.y + 200 + 300 * s);
+    card.style.transform = `translate(${box.x + 400 * s}px, ${box.y}px) rotateY(${30 * s}deg)`;
+  });
+</script>

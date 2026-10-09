@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture voice</title>
+<!-- Used by tests/voice.test.mjs: one narrated line whose big black key word "London" enters at 1.0 s. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { loadVoice, say } from "../../core/lib/voice.js";
+
+  const stage = await createStage({ dur: 8 });
+  const V = await loadVoice("voice/words.json");
+  const cap = say(stage, V, { line: "uno", x: 60, y: 600, w: 960, size: 200 });
+  // Marks (tests/voice.test.mjs): "hl" gets its highlight from the voice data, "st" has data
+  // "underline" overridden by the option to "strike".
+  const hl = say(stage, V, { line: "hl", x: 60, y: 900, w: 960, size: 200 });
+  const st = say(stage, V, { line: "st", x: 60, y: 1300, w: 960, size: 200, marks: { été: "strike" } });
+  window.CUES = [...hl.cues(), ...st.cues()];
+  stage.run((t) => {
+    cap.draw(t);
+    hl.draw(t);
+    st.draw(t);
+  });
+</script>

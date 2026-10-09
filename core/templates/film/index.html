@@ -1,0 +1,58 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>__SLUG__</title>
+<!--
+  A film is a pure function of time. draw(t) paints the whole frame from t alone:
+  no CSS transitions, no timers, no state between calls, no Math.random (use rng).
+  Preview: node __ENGINE_DIR__/core/server.mjs __FILM__   ·   Render: see brief.md
+-->
+<script type="module">
+  import { createStage } from "__ENGINE__/core/lib/stage.js";
+  import { spring, track, swapAlpha, clamp, lerp, progress, rng, SPRINGS } from "__ENGINE__/core/lib/motion.js";
+  import { theme, setTheme } from "__ENGINE__/core/lib/theme.js";
+  import { makePhone, makePanel } from "__ENGINE__/core/lib/phone.js";
+  import { el, maskedLine, lineIn, makeCounter } from "__ENGINE__/styles/motion-graphics/lib/text.js";
+
+  // The film's look: override colours, families and fonts here, before createStage loads them.
+  setTheme({ colors: {}, families: {} });
+  const C = theme().colors;
+  const F = theme().families;
+
+  const beats = await (await fetch("./beats.json")).json();
+  const B = (i) => beats.beats[i]; // time of beat i: anchor every state change to the grid
+
+  const stage = await createStage({
+    dur: __DUR__,
+    formats: ["9x16"],
+    images: {
+      // name: "assets/file.png"
+    },
+  });
+  const { g, W, H, box, dom } = stage;
+
+  const heavy = (t, t0) => spring(t - t0, SPRINGS.heavy.k, SPRINGS.heavy.d);
+  const snap = (t, t0) => spring(t - t0, SPRINGS.snappy.k, SPRINGS.snappy.d);
+
+  // DOM is built once here; draw(t) only sets styles. Words rise out of a mask ("|" breaks a line).
+  const hook = maskedLine(dom, ["Hook", "|", "statement"], {
+    fontFamily: F.serif, fontSize: `${Math.round(W * 0.09)}px`, color: C.ink, lineHeight: "1.1",
+  });
+
+  // One entry per shot: from/to in seconds (prefer B(i)); draw gets local time.
+  const SCENES = [
+    {
+      from: 0,
+      to: B(4),
+      draw(t) {
+        hook.line.style.transform = `translate(${box.x}px, ${box.y + box.h * 0.35}px)`;
+        lineIn(hook, t, { tIn: 0.1, tOut: B(4) - 0.2, enter: heavy, exit: snap });
+      },
+    },
+  ];
+
+  stage.run((t) => {
+    g.fillStyle = C.ground;
+    g.fillRect(0, 0, W, H);
+    for (const s of SCENES) if (t >= s.from && t < s.to) s.draw(t - s.from);
+  });
+</script>
