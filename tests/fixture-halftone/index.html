@@ -1,0 +1,17 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture halftone</title>
+<!-- Used by tests/moves.test.mjs: a continuous-tone picture (tests/_assets.mjs), plain (left) and halftoned (right). -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  const stage = await createStage({ dur: 1, images: { engraving: "../.assets/engraving.png" } });
+  const plain = K.piece(stage, { img: stage.img.engraving, w: 480, x: 290, y: 700, tIn: 0, height: 0 });
+  const ht = K.halftone(stage, { img: stage.img.engraving, x: 560, y: 400, w: 480, dot: 12 });
+  window.HT = ht;
+  stage.run((t) => {
+    plain.draw(t + 1);
+    ht.draw(t);
+  });
+</script>

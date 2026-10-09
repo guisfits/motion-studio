@@ -1,0 +1,16 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture collage</title>
+<!-- Used by tests/collage.test.mjs: three sources sliced into three bands that slide in. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeSlices } from "../../styles/vox/lib/collage.js";
+
+  const stage = await createStage({
+    dur: 2,
+    images: { r: "out/red.png", g: "out/green.png", b: "out/blue.png" },
+  });
+  const { img, W, H } = stage;
+  const s = makeSlices(stage, [img.r, img.g, img.b], { width: W, height: H });
+  stage.run((t) => s.set([t - 0.0, t - 0.2, t - 0.4], { from: W }));
+</script>

@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture sound</title>
+<!-- Used by tests/sound.test.mjs: one typewriter line, "AB C" at 10 cps from 0.5 s. The test reads
+     its cues and what is on screen at each key. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  const stage = await createStage({ dur: 2 });
+  const tw = K.typewriter(stage, { text: "AB C", x: 100, y: 300, tIn: 0.5, cps: 10 });
+  window.TW_CUES = () => tw.cues();
+  window.TW_TEXT = () => stage.dom.lastElementChild.textContent;
+  stage.run((t) => tw.draw(t));
+</script>

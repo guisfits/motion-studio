@@ -1,0 +1,76 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture moves</title>
+<!-- Used by tests/moves.test.mjs and as the visual check of the editorial moves (vox moves.js)
+     and the paper options (kit piece edge/height/stepped, halftone), one station each. Pictures
+     are generated stand-ins (tests/_assets.mjs):
+       0.0  A  heroWord "London" slammed behind a figure (frame-cropped, subject in front)
+       2.2  B  counter 1854 → 1892 (odometer) and "131 years" (typewriter)
+       4.4  C  docZoom: a page on a station turned 90°, the push and the highlight
+       7.4  D  route: four stops drawn point to point, the camera following the tip
+      10.4  E  split on a torn seam; pieces with border / deckle / torn / none; halftone -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeTable } from "../../core/lib/table.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  const P = "../.assets";
+  const stage = await createStage({
+    dur: 13.5,
+    images: {
+      subject: `${P}/portrait-1.png`,
+      a: `${P}/portrait-2.png`,
+      b: `${P}/portrait-3.png`,
+      c: `${P}/portrait-4.png`,
+      page: `${P}/page-a.jpg`,
+      page2: `${P}/page-b.jpg`,
+      scrap: `${P}/scrap.png`,
+    },
+  });
+  const { W, H, img } = stage;
+  const table = makeTable(stage);
+  table.surface({ x: -3000, y: -3000, w: 20000, h: 12000, color: "#efe8da", shadow: false });
+
+  // A — the hero word behind the subject, cropped by the frame's right edge.
+  const A = table.station({ x: 0, y: 0 });
+  const [subject] = A.add(() => [K.piece(stage, { img: img.subject, w: 860, x: 430, y: 1180, tIn: 0.35, from: "bl", edge: "none", height: 0.5 })]);
+  const [hero] = A.add(() => [K.heroWord(stage, { text: "London", size: 470, y: 560, tIn: 0.2, behind: subject })]);
+
+  // B — counters.
+  const B = table.station({ x: 3200, y: 0, rot: -8 });
+  const [odo] = B.add(() => [K.counter(stage, { from: 1854, to: 1892, tIn: 2.6, dur: 1.3, face: "odometer", x: 160, y: 620, size: 220 })]);
+  const [typed] = B.add(() => [K.counter(stage, { from: 0, to: 131, tIn: 3.0, dur: 1.0, face: "type", x: 170, y: 1000, size: 150, suffix: "years" })]);
+
+  // C — docZoom on a station turned 90°.
+  const C = table.station({ x: 6400, y: 1200, rot: 90 });
+  const dz = K.docZoom(stage, {
+    at: C, img: img.page, x: 540, y: 960, w: 900, rot: -3,
+    rect: { x: 0.505, y: 0.836, w: 0.48, h: 0.06 }, word: { x: 0.83, y: 0.852, w: 0.15, h: 0.016 }, tIn: 5.2,
+  });
+
+  // D — a route with the camera on its tip.
+  const D = table.station({ x: 9000, y: 0, rot: 20 });
+  const [rt] = D.add(() => [K.route(stage, { points: [[120, 500], [700, 760], [300, 1250], [900, 1500]], tIn: 7.6, dur: 1.8 })]);
+
+  // E — split, paper edges, halftone.
+  const E = table.station({ x: 12000, y: 600, rot: -4 });
+  const [sp] = E.add(() => [K.split(stage, { a: img.scrap, b: img.page2, x: 90, y: 260, w: 900, h: 640, tIn: 10.5 })]);
+  const edges = E.add(() => ["border", "deckle", "torn", "none"].map((edge, i) =>
+    K.piece(stage, { img: [img.a, img.b, img.c, img.subject][i], w: 230, x: 160 + i * 250, y: 1150, tIn: 11.0 + i * 0.12, from: "tr", edge, height: i / 3, stepped: i === 3 })));
+  const [ht] = E.add(() => [K.halftone(stage, { img: img.a, x: 300, y: 1340, w: 480, dot: 10, tIn: 11.6 })]);
+
+  table.camera([
+    [0, { x: W / 2, y: H / 2, z: 1.0, r: 0 }],
+    [2.2, { ...B.view(540, 960, { z: 1, ease: "whip" }) }],
+    ...dz.keys,
+    [7.3, { ...D.view(540, 960, { z: 0.85, ease: "move" }) }],
+    ...rt.follow((x, y) => D.view(x, y, { z: 1.25 })).slice(1),
+    [10.3, { ...E.view(540, 960, { z: 1, ease: "whip" }) }],
+  ]);
+  window.TABLE = table;
+  window.MOVES = { hero, subject, odo, typed, dz, rt, sp, edges, ht };
+  window.CUES = table.cues();
+  stage.run((t) => {
+    table.draw(t);
+  });
+</script>

@@ -1,0 +1,17 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture cues</title>
+<!-- Used by tests/cues.test.mjs: components gather their cues() in window.CUES, as a real film does. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  const stage = await createStage({ dur: 2, images: { pic: "out/pic.png" } });
+  const parts = [
+    K.piece(stage, { img: stage.img.pic, w: 300, x: 540, y: 1200, tIn: 0.2 }),
+    K.typewriter(stage, { text: "AB C", x: 100, y: 300, tIn: 0.5, cps: 10 }),
+  ];
+  // Deliberately out of order: render.mjs must sort by time.
+  window.CUES = parts.flatMap((p) => p.cues()).reverse();
+  stage.run((t) => parts.forEach((p) => p.draw(t)));
+</script>
