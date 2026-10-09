@@ -66,7 +66,7 @@ export async function loadVoice(path = "voice/words.json") {
 // and a struck word dims. say(...).cues() lists their sounds ("marker" / "pen") for the film's
 // window.CUES.
 //
-// screen: true (critique P5: rolls and zooms cropped world-space captions) puts the line in a
+// screen: true (rolls and zooms crop world-space captions) puts the line in a
 // fixed overlay above the table and everything else (screenOverlay), inside the format's safe
 // box: x/y/w default to stage.box and are clamped into it, the type shrinks until the line fits
 // the box's width, and the block is lifted if it would run past the box's foot. The line is

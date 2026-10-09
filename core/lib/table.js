@@ -21,14 +21,14 @@ export const GLIDE = { k: 48, d: 13 };
 // carry `ease`. move = a confident travel (~0.7 s), whip = a whip pan that lands hard (~0.35 s,
 // render with --sub 8 so it blurs), glide = slow drift.
 export const EASE = { glide: GLIDE, move: { k: 95, d: 17 }, whip: { k: 260, d: 30 } };
-// Sound of the camera (sound.md): moves under WHOOSH_MIN px of travel (world px at zoom 1, plus
+// Sound of the camera: moves under WHOOSH_MIN px of travel (world px at zoom 1, plus
 // 900 per unit of zoom and 14 per degree of roll) are silent; over SWISH_MIN is a whip; keys closer
 // than WHOOSH_TRAVEL seconds are one travel and share one whoosh.
 export const WHOOSH_MIN = 500;
 export const SWISH_MIN = 1400;
 export const WHOOSH_TRAVEL = 1.2;
 
-// Motion blur (critique P6: whips ghosted as stacked copies). The camera's screen-space velocity
+// Motion blur (without it, whips ghost as stacked copies). The camera's screen-space velocity
 // is measured over one 60 fps frame; above BLUR_FLOOR px/frame the world is smeared along the
 // travel by an SVG Gaussian whose long axis is turned to the direction of motion. Zero when slow.
 export const BLUR_FLOOR = 4; // px per frame below which nothing blurs (the handheld drift is ~1)
