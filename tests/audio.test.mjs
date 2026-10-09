@@ -186,3 +186,31 @@ test(
     assert.ok(Math.abs(lufs + 14) < 1.5, `integrated ${lufs} LUFS`);
   },
 );
+
+test(
+  "mix.mjs keeps the music and SFX after the voice ends (a voice shorter than the picture)",
+  { timeout: 60_000 },
+  () => {
+    // 9 s picture, a 3 s voice, an SFX hit at 7 s (an outro's logo, say): the sidechains keyed by
+    // the voice must not end the other stems when the voice ends.
+    const silent = join(dir, "silent-short-voice.mp4");
+    run("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=c=black:s=320x240:d=9:r=30",
+      "-c:v", "libx264", "-pix_fmt", "yuv420p", silent]);
+    const voice = join(dir, "voice-3s.wav");
+    run("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i",
+      "aevalsrc='0.3*sin(2*PI*220*t)*(0.6+0.4*sin(2*PI*3*t))':s=48000:d=3", voice]);
+    const sfx = join(dir, "sfx-late-hit.wav");
+    run("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i",
+      "aevalsrc='if(between(t,7,7.6),0.5*sin(2*PI*880*t),0)':s=48000:d=9", sfx]);
+    const out = join(dir, "final-short-voice.mp4");
+    run("node", [join(studio, "core/audio/mix.mjs"), "--video", silent, "--sfx", sfx, "--voice", voice,
+      "--fade-out", "0", "--out", out]);
+    const audioDur = Number(run("ffprobe", ["-v", "error", "-select_streams", "a", "-show_entries",
+      "stream=duration", "-of", "csv=p=0", out]));
+    assert.ok(Math.abs(audioDur - 9) < 0.1, `audio lasts ${audioDur} s, the picture 9 s`);
+    const late = execFileSync("sh", ["-c",
+      `ffmpeg -nostats -ss 7 -t 0.6 -i "${out}" -vn -af volumedetect -f null - 2>&1 | grep max_volume`]).toString();
+    const peak = Number(late.match(/max_volume:\s*(-?[\d.]+)/)[1]);
+    assert.ok(peak > -40, `the hit at 7 s is heard (${peak} dB)`);
+  },
+);

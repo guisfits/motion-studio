@@ -110,9 +110,12 @@ const STEREO = "aformat=sample_rates=48000:channel_layouts=stereo";
 //          null for taps (the report: the stems after gain and ducking, and the sum, unnormalised)
 export function buildGraph({ stems, plan, dur, fadeOut = 0.8, norm }) {
   const has = (n) => stems.some(([name]) => name === n);
+  // Every stem is padded with silence to the picture's length: a sidechain ends with its key, so
+  // a voice shorter than the picture (the outro after the last line) would otherwise end the music
+  // and the SFX with it.
   const parts = stems.map(
     ([name], i) =>
-      `[${i + 1}:a]${STEREO},volume=${plan[name].toFixed(5)}[${name}]`,
+      `[${i + 1}:a]${STEREO},apad=whole_dur=${dur},volume=${plan[name].toFixed(5)}[${name}]`,
   );
   const duck = (target, key, d) =>
     `[${target}][${key}]sidechaincompress=threshold=${d.threshold.toFixed(5)}:ratio=${RATIO}:attack=${d.attack}:release=${d.release}:makeup=1[${target}]`;
