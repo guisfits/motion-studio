@@ -68,8 +68,8 @@ node <E>/core/audio/mix.mjs --video <F>/out/silent-9x16.mp4 --voice <F>/voice/vo
 - Time from the voice (`V.at(word)`) or the grid (`B(i)`), never hard-coded seconds the voice decides.
 - Components emit their own sound cues at the frame a thing is **seen to land**; the thinner and
   the mix decide what is heard. The voice leads; -14 LUFS integrated, true peak -1 dBTP.
-- Nothing readable in the 9:16 platform UI zones: top 220 px, bottom 400 px, right rail 140 px
-  from y 1100 (1080×1920). `stage.box` is the safe rectangle; the phone sheet shades the zones.
+- Nothing readable in the 9:16 platform UI zones: top 220 px, bottom 400 px, the sides 70 px each
+  (the phone crops ~51), right rail x ≥ 915 from y 1000 (1080×1920). `stage.box` is the safe rectangle; the phone sheet shades the zones.
 - Judge sheets, not code. No final render inside the critique loop; re-render only the seconds a
   fix touched.
 

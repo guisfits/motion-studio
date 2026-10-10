@@ -31,7 +31,7 @@ exist only to make the evidence legible and trusted. Each beat is a mini-proof:
 | Ground | never flat, never a gradient, never pure black: graded scan, lifted blacks, one tint, scaled grain |
 | Camera | slow push into evidence; travel or cut when the noun changes; whips ≤ 3 per film |
 | Sound | voice wall to wall; bed ~20 dB under speech or none; SFX ≤ 1 per 4–6 s, 12 dB under speech + sidechain duck; -14 LUFS, LRA ≤ 3 |
-| Safe zones | 1080×1920: top 220, bottom 400, right rail 140 from y 1100 |
+| Safe zones | 1080×1920: top 220, bottom 400, sides 70 each, right rail x ≥ 915 from y 1000 |
 | Presenter | optional: 2–4 talking-head cutaways of 3–4 s as a pace reset, never the backbone |
 
 ## Workflow

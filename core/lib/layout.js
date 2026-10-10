@@ -3,11 +3,13 @@
 
 export const FORMATS = {
   // Reels/Shorts/TikTok: the bottom ~20% (caption + buttons) and the right rail
-  // (like/comment/share) are covered by the platform UI; the top carries the account row.
+  // (like/comment/share) are covered by the platform UI; the top carries the account row. The
+  // phone also crops ~51 px off each side of the video (measured on an iPhone, 10-10): left 70 and
+  // right 165 keep text out of the crop and under the rail's icons (x >= 915 from y 1000).
   "9x16": {
     W: 1080,
     H: 1920,
-    safe: { top: 220, bottom: 400, left: 64, right: 150 },
+    safe: { top: 220, bottom: 400, left: 70, right: 165 },
   },
   "1x1": {
     W: 1080,

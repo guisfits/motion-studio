@@ -17,6 +17,7 @@ test("9x16 keeps the Reels UI band and right rail clear", () => {
   const { safe, H, W } = layout("9x16");
   assert.ok(safe.bottom >= H * 0.2);
   assert.ok(safe.right >= 120);
+  assert.ok(safe.left >= 70, "the phone crops ~51 px off each side");
   const box = layout("9x16").box;
   assert.equal(box.x, safe.left);
   assert.equal(box.y + box.h, H - safe.bottom);

@@ -7,7 +7,8 @@
 //   contact.png   2 frames per second           variety, dead beats, composition
 //   phone.png     1 frame per second at 360 px  readability at phone size; on a 9:16 video the
 //                                               Reels UI zones are shaded (top 220, bottom 400,
-//                                               right rail 140 from y 1100, of 1080x1920)
+//                                               sides 70 each, right rail x >= 915 from y 1000,
+//                                               of 1080x1920)
 //   strip-<t>.png 12 consecutive frames at t    pops, overlaps and slides during a fast action
 //   wave.png      audio waveform                sound sync, silence, clipping (if there is audio)
 //   loop_check.mp4  the film twice back to back (--loop)
@@ -47,7 +48,9 @@ export const SAFE_GUIDES = [
   // [x, y, w, h] in 1080x1920 pixels
   [0, 0, 1080, 220],
   [0, 1520, 1080, 400],
-  [940, 1100, 140, 420],
+  [0, 220, 70, 1300], // the side crop (~51 px on a phone) plus a margin
+  [1010, 220, 70, 780],
+  [915, 1000, 165, 520], // the right rail: like, comment, share
 ];
 // ffmpeg drawbox filters, in fractions of the frame so they hold at any scale: a translucent
 // fill and a thin edge on the side facing the safe area.
@@ -58,8 +61,10 @@ export const guideFilter = () => [
   ),
   `drawbox=x=0:y=ih*220/1920:w=iw:h=1:color=${GUIDE}@0.8:t=fill`,
   `drawbox=x=0:y=ih*1520/1920:w=iw:h=1:color=${GUIDE}@0.8:t=fill`,
-  `drawbox=x=iw*940/1080:y=ih*1100/1920:w=1:h=ih*420/1920:color=${GUIDE}@0.8:t=fill`,
-  `drawbox=x=iw*940/1080:y=ih*1100/1920:w=iw*140/1080:h=1:color=${GUIDE}@0.8:t=fill`,
+  `drawbox=x=iw*70/1080:y=ih*220/1920:w=1:h=ih*1300/1920:color=${GUIDE}@0.8:t=fill`,
+  `drawbox=x=iw*1010/1080:y=ih*220/1920:w=1:h=ih*780/1920:color=${GUIDE}@0.8:t=fill`,
+  `drawbox=x=iw*915/1080:y=ih*1000/1920:w=1:h=ih*520/1920:color=${GUIDE}@0.8:t=fill`,
+  `drawbox=x=iw*915/1080:y=ih*1000/1920:w=iw*165/1080:h=1:color=${GUIDE}@0.8:t=fill`,
 ];
 const isReel = (video) => {
   const [w, h] = probe(video, "stream=width,height", ["-select_streams", "v"])

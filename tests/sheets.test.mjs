@@ -56,10 +56,12 @@ test("the phone sheet shades the Reels UI zones and leaves the safe box clear", 
     const tinted = ([r, , b]) => r > b + 10;
     assert.ok(tinted(at(540, 100)), "top 220 px shaded");
     assert.ok(tinted(at(540, 1700)), "bottom 400 px shaded");
-    assert.ok(tinted(at(1010, 1300)), "right rail shaded from y 1100");
-    assert.ok(!tinted(at(1010, 900)), "the rail starts at y 1100");
+    assert.ok(tinted(at(1050, 600)), "right side crop shaded");
+    assert.ok(tinted(at(30, 600)), "left side crop shaded");
+    assert.ok(tinted(at(1000, 1300)), "right rail shaded from y 1000");
+    assert.ok(!tinted(at(950, 900)), "the rail starts at y 1000");
     assert.ok(!tinted(at(540, 900)), "the safe box is untouched");
-    assert.ok(!tinted(at(900, 1300)), "the rail is only 140 px wide");
+    assert.ok(!tinted(at(880, 1300)), "the rail starts at x 915");
   } finally {
     rmSync(f.dir, { recursive: true, force: true });
   }

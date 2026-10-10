@@ -38,7 +38,8 @@ reference reel being studied.
 |---|---|---|
 | Top | 0–220 | platform header: nothing readable |
 | Bottom | 1520–1920 (400 px) | caption/handle/audio bar: nothing readable |
-| Right rail | x ≥ 940 from y ≥ 1100 | like/comment/share buttons: nothing readable |
+| Sides | x < 70 and x > 1010 | the phone crops ~51 px off each side (measured, iPhone Reels): nothing readable |
+| Right rail | x ≥ 915 from y ≥ 1000 | like/comment/share buttons: nothing readable |
 
 Grounds, bleeding hero words and textures may run into the zones; captions, proof, numbers and
 faces never. `stage.box` is the safe rectangle; compose essentials inside it. A centred 4:5 block
