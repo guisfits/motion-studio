@@ -112,3 +112,68 @@ test("a torn sheet reveals what lies beneath once it opens", { timeout: 120_000 
   const lower = pixel(still(1, 1.0), 540, 1500);
   assert.ok(near(lower, BLUE), `the lower half opened too, got ${lower}`);
 });
+
+test("station.surface lays a torn paper sheet: ragged clip inside, a drop shadow that follows it outside, returned to the caller", { timeout: 120_000 }, async () => {
+  const r = await pageValue(() => {
+    const st = window.TABLE.station({ x: 100, y: 200, rot: 5 });
+    const geo = { x: 10, y: 20, w: 300, h: 500, color: "#eee" };
+    const [a] = st.surface({ ...geo, torn: { seed: 3 } });
+    const [b] = st.surface({ ...geo, torn: { seed: 4, depth: 5, jag: 10 } });
+    const [bare] = st.surface({ ...geo, torn: { seed: 3 }, shadow: false });
+    const [plain] = st.surface({ ...geo });
+    const dup = st.surface({ ...geo, torn: { seed: 3 } })[0];
+    let err = "";
+    try {
+      st.surface({ ...geo, torn: {} });
+    } catch (e) {
+      err = e.message;
+    }
+    const pts = (el) => el.firstChild.style.clipPath.split(",").length;
+    return {
+      parent: a.parentNode === st.el,
+      shadow: a.style.filter,
+      clip: a.firstChild.style.clipPath,
+      outerClip: a.style.clipPath,
+      other: b.firstChild.style.clipPath,
+      sameSeed: dup.firstChild.style.clipPath === a.firstChild.style.clipPath,
+      ptsA: pts(a),
+      ptsB: pts(b),
+      bareFilter: bare.style.filter,
+      plainBox: plain.style.boxShadow,
+      plainClip: plain.style.clipPath,
+      geometry: [a.style.left, a.style.top, a.style.width, a.style.height],
+      err,
+    };
+  });
+  assert.ok(r.parent, "lies in the station's frame");
+  assert.match(r.shadow, /drop-shadow/, "soft shadow on the outer box");
+  assert.match(r.clip, /^polygon\(/, "ragged edge on the sheet inside");
+  assert.equal(r.outerClip, "", "the shadow is not clipped by the tear");
+  assert.notEqual(r.other, r.clip, "another seed tears differently");
+  assert.ok(r.sameSeed, "a seed always tears the same way");
+  assert.ok(r.ptsB < r.ptsA, "fewer jag points, fewer polygon points");
+  assert.equal(r.bareFilter, "", "shadow: false leaves the sheet flat");
+  assert.match(r.plainBox, /rgba/, "a plain surface keeps its box shadow");
+  assert.equal(r.plainClip, "");
+  assert.deepEqual(r.geometry, ["10px", "20px", "300px", "500px"]);
+  assert.match(r.err, /torn needs a numeric seed/);
+});
+
+test("table.surface takes torn too, and station.surface returns the element it laid", { timeout: 120_000 }, async () => {
+  const r = await pageValue(() => {
+    const el = window.TABLE.surface({ x: 0, y: 0, w: 100, h: 100, color: "#fff", torn: { seed: 1 } });
+    const made = window.TABLE.station({ x: 0, y: 0 }).surface({ x: 0, y: 0, w: 50, h: 50 });
+    return { clip: el.firstChild.style.clipPath.slice(0, 8), made: made.length, tag: made[0]?.tagName };
+  });
+  assert.equal(r.clip, "polygon(");
+  assert.equal(r.made, 1);
+  assert.equal(r.tag, "DIV");
+});
+
+test("tornClip lives in the engine and the vox kit still exports it", async () => {
+  const { tornClip: engine } = await import("../core/lib/torn.js");
+  const { tornClip: kit } = await import("../styles/vox/lib/kit.js");
+  assert.equal(kit, engine);
+  assert.equal(engine(5, 8, 2), engine(5, 8, 2));
+  assert.match(engine(5, 8, 2), /^polygon\(/);
+});

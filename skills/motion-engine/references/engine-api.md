@@ -97,6 +97,10 @@ table.camera([
 
 - `station({ x, y, rot })` → `add`, `surface`, `view(lx, ly, { z, roll, ease })`; a view reads the
   station upright, so travel turns the camera by the stations' `rot` difference plus `roll`.
+  `surface({ x, y, w, h, src|color, rot, filter, shadow, torn })` (on the table and on a station;
+  the station's returns `[element]`): `torn: { seed, depth?, jag? }` tears the edge (depth = % of the
+  side, default 2; jag = points along the long sides, default 24) with a soft drop shadow that
+  follows the tear: paper lying on wood.
 - Eases `EASE = { glide, move, whip }`: `glide` slow drift (~1.2 s), `move` confident travel
   (~0.7 s), `whip` lands hard (~0.35 s). A key's time is when its spring **starts**.
 - While a key holds, handheld breathing keeps the camera alive (`breathe: 0` turns it off).
