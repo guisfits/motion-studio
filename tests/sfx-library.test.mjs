@@ -210,3 +210,17 @@ test("credits list every committed file as CC0 and every fetched one with its so
   for (const id of committed) assert.match(credits, new RegExp(`\\| ${id} \\| https://freesound\\.org/s/\\d+/ \\| CC0 1\\.0 \\|`), `${id} has no CC0 row`);
   for (const id of Object.keys(sources)) assert.ok(credits.includes(`| ${id} | ${sources[id].url} |`), `${id} has no source row`);
 });
+
+const onDisk = (id) => committed.includes(id) || existsSync(join(audio, "sfx/fetched", `${id}.mp3`));
+
+test("every choreo contact type has a sound with its files on disk", async () => {
+  const { contacts, MOVES } = await import("../styles/vox/lib/choreo.js");
+  const types = new Set(
+    Object.keys(MOVES).flatMap((k) => contacts([{ kind: k, at: 0, by: [0, 0] }]).map((c) => c.type)),
+  );
+  for (const t of [...types, "scissors", "glue", "pin", "tape"]) {
+    assert.ok(declared[t], `library has "${t}"`);
+    for (const f of resolved(t).files) assert.ok(onDisk(f), `${t}: ${f} is on disk`);
+  }
+  assert.ok(declared.crumple.files.filter((f) => committed.includes(f)).length >= 3, "crumple has 3+ committed files");
+});
