@@ -19,6 +19,7 @@
 // Takes (screen recordings) are frame-extracted only with --takes (they are large).
 // Downloads send a neutral User-Agent; set $MOTION_USER_AGENT to add your contact, as Wikimedia asks.
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -148,9 +149,21 @@ function build() {
     if (p.cut === "regions") {
       // One source, N pieces: each region becomes <id>-<region>.png with its own manifest row.
       const dest = dirname(out);
-      const outs = p.regions.map((r) => join(dest, `${p.id}-${r.id}.png`));
+      let outs, spec;
       try {
-        if (!outs.every((o) => fresh(p.abs, o))) {
+        if (!Array.isArray(p.regions) || !p.regions.length)
+          throw new Error(`${p.id}: cut "regions" needs a non-empty regions list`);
+        outs = p.regions.map((r) => join(dest, `${p.id}-${r.id}.png`));
+        // mtime only says the source is unchanged; the recipe (regions, oven) is in the catalog,
+        // so a hash of it rides in each manifest row and a changed entry re-cuts.
+        spec = createHash("sha1")
+          .update(JSON.stringify([p.regions, p.oven ?? null]))
+          .digest("hex")
+          .slice(0, 12);
+        const upToDate = p.regions.every(
+          (r, i) => fresh(p.abs, outs[i]) && manifest[`${p.kind}/${p.id}-${r.id}`]?.spec === spec,
+        );
+        if (!upToDate) {
           cutRegions(p.abs, p, dest);
           built += outs.length;
         }
@@ -167,6 +180,7 @@ function build() {
           h,
           tags: p.tags ?? [],
           material: p.material,
+          spec,
           source: p.source,
           license: p.license,
         };
