@@ -199,3 +199,29 @@ test("clipping: the shadow falls the same way on screen however the piece is tur
   });
   assert.ok(Math.abs(r.up[0] - r.turned[0]) < 0.01 && Math.abs(r.up[1] - r.turned[1]) < 0.01, JSON.stringify(r));
 });
+
+test("clipping: a flip with no back shows blank paper, cut and shaded like the face", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const c = window.clipping(S, {
+      img: S.img.a, w: 200, x: 300, y: 300, seed: 9,
+      moves: [{ kind: "flip", at: 0 }, { kind: "fold", at: 0, to: 1 }],
+    });
+    c.draw(4);
+    const [face, rear] = c.el.children;
+    return {
+      face: face.style.visibility,
+      rearVis: rear.style.visibility,
+      rearTag: rear.tagName,
+      rearBg: rear.style.backgroundColor,
+      rearClip: rear.style.clipPath === face.style.clipPath && face.style.clipPath.startsWith("polygon"),
+      rearFilter: rear.style.filter,
+    };
+  });
+  assert.equal(r.face, "hidden");
+  assert.equal(r.rearVis, "visible");
+  assert.equal(r.rearTag, "DIV", "blank paper, not the mirrored face");
+  assert.equal(r.rearBg, "rgb(239, 231, 214)");
+  assert.ok(r.rearClip, "same torn edge as the face");
+  assert.match(r.rearFilter, /brightness\(0\.75\)/);
+});
