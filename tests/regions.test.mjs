@@ -156,3 +156,9 @@ test("EXIF orientation is honoured: no squashing, pixels match the upright image
   assert.ok(top[2] > top[0], "left half (blue) lands on top after a clockwise turn");
   assert.ok(bottom[0] > bottom[2], "right half (red) lands at the bottom");
 });
+
+test("a malformed poly fails naming its region", () => {
+  const bad = (poly) => ({ id: "scan", cut: "regions", regions: [{ id: "oops", poly }] });
+  for (const poly of [undefined, [[0.1, 0.1], [0.5, 0.5]], [[0.1, 0.1], [0.5, "x"], [0.2, 0.9]], [[0.1, 0.1], [NaN, 0.5], [0.2, 0.9]]])
+    assert.throws(() => cutRegions(jpg, bad(poly), dir), /scan-oops.*bad poly/);
+});

@@ -80,6 +80,9 @@ export function cutRegions(srcPath, entry, outDir) {
   const pad = o.rim + o.depth + 2;
   return entry.regions.map((r, i) => {
     const name = `${entry.id}-${r.id}`;
+    const ok = (pt) => Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite);
+    if (!Array.isArray(r.poly) || r.poly.length < 3 || !r.poly.every(ok))
+      throw new Error(`regions: ${name} has a bad poly (need 3+ [u, v] points)`);
     const poly = r.poly.map(([u, v]) => [u * w, v * h]);
     const mask = polyMask(w, h, poly);
     // A source with its own transparency (a cut-out PNG) keeps it: the polygon only narrows it.
