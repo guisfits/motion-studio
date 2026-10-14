@@ -10,8 +10,10 @@
 import { pose, contacts, boilStep } from "./choreo.js";
 import { tornClip, halftoneFilter } from "./kit.js";
 import { rng } from "../../../core/lib/motion.js";
+import { theme } from "../../../core/lib/theme.js";
 
-const EDGES = ["torn", "baked", "straight"];
+const EDGES = ["torn", "baked", "straight", "disc"];
+const RIM = "#f4efe4"; // white fibre: the paper's core where a printed face was torn away
 const SHADOW = "rgba(30,20,10,";
 const PAPER = "#efe7d6"; // the paper's own tone: the curl flap, and a reverse nobody drew
 // The folded-over triangle sits in the corner's box with its right angle at the box's inner corner.
@@ -28,6 +30,11 @@ export function clipping(
     img,
     back,
     w,
+    h: hGiven,
+    crop,
+    color,
+    rim = false,
+    band,
     x,
     y,
     rot = 0,
@@ -44,7 +51,13 @@ export function clipping(
     throw new Error(
       `clipping: edge "${edge}" is not one of ${EDGES.join(", ")}`,
     );
-  const h = (img.naturalHeight / img.naturalWidth) * w;
+  if (!img && !color) throw new Error("clipping: give it an img or a color (flat paper)");
+  // A crop [x0, y0, x1, y1] (fractions of the image) shows that part of a big scan: the piece's
+  // height follows the crop's aspect unless h is given.
+  const [cx0, cy0, cx1, cy1] = crop ?? [0, 0, 1, 1];
+  const h =
+    hGiven ??
+    (img ? ((img.naturalHeight * (cy1 - cy0)) / (img.naturalWidth * (cx1 - cx0))) * w : w);
   const sd = seed ?? Math.round(Math.abs(x * 7 + y * 13 + w));
   const wrap = document.createElement("div");
   Object.assign(wrap.style, {
@@ -55,8 +68,21 @@ export function clipping(
     height: `${h}px`,
     transformOrigin: "50% 50%",
   });
-  const face = img.cloneNode();
-  // Past the half turn the reverse shows: the given `back`, else blank paper.
+  // The face: the image itself, a window on a crop of it, or flat coloured paper.
+  let face;
+  if (img && !crop) face = img.cloneNode();
+  else {
+    face = document.createElement("div");
+    if (img) {
+      const inner = img.cloneNode();
+      const iw = w / (cx1 - cx0);
+      const ih = (iw * img.naturalHeight) / img.naturalWidth;
+      Object.assign(inner.style, { position: "absolute", width: `${iw}px`, height: `${ih}px`, left: `${-cx0 * iw}px`, top: `${-cy0 * ih}px`, maxWidth: "none" });
+      face.style.overflow = "hidden";
+      face.append(inner);
+      stage.pending.push(inner.decode().catch(() => {}));
+    } else face.style.background = color;
+  }
   const rear = back ? back.cloneNode() : document.createElement("div");
   if (!back) rear.style.background = PAPER;
   for (const e of [face, rear])
@@ -82,13 +108,28 @@ export function clipping(
   Object.assign(flapShape.style, { width: "100%", height: "100%", background: PAPER });
   flap.append(flapShape);
   wrap.append(face, rear, flap);
+  // The rim: a band of white fibre where the paper was torn, under a face torn deeper. The wrapper's
+  // filter makes it a stacking context, so z -1 stays inside the piece, under its face.
+  const rimEl = rim ? document.createElement("div") : null;
+  if (rimEl) {
+    rimEl.dataset.part = "rim";
+    Object.assign(rimEl.style, { position: "absolute", inset: "0", zIndex: "-1", background: rim === true ? RIM : rim.color ?? RIM });
+    wrap.append(rimEl);
+  }
   parent.append(wrap);
-  stage.pending.push(face.decode().catch(() => {}));
+  if (face.decode) stage.pending.push(face.decode().catch(() => {}));
   if (back) stage.pending.push(rear.decode().catch(() => {}));
   const screen = halftone
     ? halftoneFilter(stage, halftone === true ? {} : halftone)
     : "";
-  const edges = [0, 1, 2].map((i) => tornClip(sd + i * 101, 18, 4.5));
+  const edges = [0, 1, 2].map((i) =>
+    band
+      ? bandClip(band, sd, i)
+      : edge === "disc"
+        ? discClip(sd, i)
+        : tornClip(sd + i * 101, 18, rim ? 6 : 4.5),
+  );
+  const rimEdges = [0, 1, 2].map((i) => tornClip(sd + i * 101 + 7, 18, 2));
   const jit = rng(sd);
   const jitter = [0, 1, 2].map(() => [
     (jit() - 0.5) * 1.2,
@@ -117,8 +158,9 @@ export function clipping(
       }
       flap.style.visibility = "";
       const step = boil ? boilStep(t) : 0;
-      if (edge === "torn")
+      if (edge === "torn" || edge === "disc" || band)
         for (const e of [face, rear]) e.style.clipPath = edges[step];
+      if (rimEl) rimEl.style.clipPath = rimEdges[step];
       const [jx, jy] = edge === "baked" && boil ? jitter[step] : [0, 0];
       const lift = Math.max(0, p.lift);
       const squash = Math.min(0, p.lift); // overshoot: pressed into the table, a hair flatter
@@ -154,6 +196,72 @@ export function clipping(
         `${((sx < 0 ? -y : y) * Math.sin(a)).toFixed(2)}px ${(y * Math.cos(a)).toFixed(2)}px`;
       const s = 2 + 22 * hgt;
       wrap.style.filter = `drop-shadow(${down(1 + 2 * hgt)} ${1 + hgt}px ${SHADOW}.35)) drop-shadow(${down(s)} ${s * 1.4}px ${SHADOW}${(0.18 + 0.12 * hgt).toFixed(3)}))`;
+    },
+  };
+}
+
+// A horizontal band [a, b] (fractions of the height) with torn top and bottom. The line at a cut
+// depends only on the cut, the seed and the boil step, so the band above and the band below share
+// it exactly: the pieces fit until a move pushes one off line. 0 and 1 are the image's own edges.
+function cutLine(f, seed, step) {
+  const n = 28;
+  if (f <= 0) return Array.from({ length: n + 1 }, (_, i) => [(i / n) * 100, -1]);
+  if (f >= 1) return Array.from({ length: n + 1 }, (_, i) => [(i / n) * 100, 101]);
+  const r = rng(Math.round(f * 1e4) * 31 + seed * 7 + step * 101);
+  return Array.from({ length: n + 1 }, (_, i) => [(i / n) * 100, f * 100 + (r() - 0.5) * 1.6 + (i % 2 ? 0.25 : -0.25)]);
+}
+function bandClip([a, b], seed, step) {
+  const pt = ([px, py]) => `${px.toFixed(2)}% ${py.toFixed(2)}%`;
+  const top = cutLine(a, seed, step).map(pt);
+  const bottom = cutLine(b, seed, step).reverse().map(pt);
+  return `polygon(${[...top, ...bottom].join(", ")})`;
+}
+// A disc of cut card: a circle, a hair off round, redrawn on each boil step.
+function discClip(seed, step) {
+  const r = rng(seed + step * 101);
+  return `ellipse(${(49 + r()).toFixed(2)}% ${(49 + r()).toFixed(2)}% at 50% 50%)`;
+}
+
+// A silhouette (a cutout with alpha) sliced into horizontal bands at `cuts` (fractions of its
+// height). Each band is a full-size clipping on the same spot, so they assemble into the whole;
+// moves(i) gives band i its own moves (a slide off line, a late slap).
+//   K.sliced(stage, { img, w, x, y, cuts: [0.24, 0.34], moves: (i) => [{ kind: "slap", at: 1 + 0.2 * i }] })
+export function sliced(stage, { cuts, moves = () => [], seed = 1, z = 0, ...o }) {
+  const edges = [0, ...cuts, 1];
+  return edges.slice(0, -1).map((a, i) =>
+    clipping(stage, { ...o, seed, z: z + i * 0.1, band: [a, edges[i + 1]], moves: moves(i) }),
+  );
+}
+
+// A ransom label: a strip of black paper, light typewriter caps typed on it from tIn (one key
+// cue per letter), slapped on the table at `moves` (default: a slap 0.25 s before tIn).
+//   K.ransom(stage, { text: "Uma palavra", size: 56, x, y, rot: -2, tIn: V.at("palavra") })
+export function ransom(stage, { text, size = 48, tIn, cps = 16, ink = "#f4efe4", paper = "#141210", face: font, moves, ...o }) {
+  const caps = text.toUpperCase();
+  const family = font ?? theme().families.typewriter;
+  const meter = document.createElement("canvas").getContext("2d");
+  meter.font = `400 ${size}px ${family}`;
+  const padX = size * 0.38, padY = size * 0.26;
+  const w = Math.ceil(meter.measureText(caps).width * 1.04 + size * 0.04 * caps.length + 2 * padX);
+  const h = Math.ceil(size * 1.05 + 2 * padY);
+  const c = clipping(stage, { color: paper, w, h, edge: "straight", boil: false, moves: moves ?? [{ kind: "slap", at: tIn - 0.25 }], ...o });
+  const txt = document.createElement("div");
+  txt.dataset.part = "text";
+  Object.assign(txt.style, {
+    position: "absolute", left: `${padX}px`, top: `${padY + size * 0.08}px`, font: `400 ${size}px/1 ${family}`,
+    letterSpacing: "0.04em", color: ink, whiteSpace: "pre",
+  });
+  c.el.firstChild.append(txt);
+  const chars = [...caps];
+  const keys = chars.flatMap((ch, i) => (ch.trim() ? [{ t: tIn + (i + 1) / cps, type: "key", gain: 0.35 }] : []));
+  return {
+    ...c,
+    end: tIn + chars.length / cps,
+    cues: () => [...c.cues(), ...keys],
+    draw(t) {
+      c.draw(t);
+      const k = Math.max(0, Math.min(chars.length, Math.floor((t - tIn) * cps + 1e-6)));
+      txt.textContent = chars.slice(0, k).join("");
     },
   };
 }

@@ -299,3 +299,76 @@ test("handText: written left to right, and the last glyph is fully shown (no cli
   assert.equal(r.endAt, 1.8);
   assert.deepEqual(r.cues.map((c) => c.type), ["pen"]);
 });
+
+// ── Collage language (LOOK-17): crops, rims, flat paper, discs, sliced silhouettes, ransom labels ──
+
+test("clipping: a crop shows part of a big image, its height follows the crop, a rim lies under a deeper-torn face", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE, img = S.img.a;
+    const c = window.clipping(S, { img, w: 300, x: 500, y: 500, crop: [0.5, 0.25, 1, 0.75], rim: true, moves: [{ kind: "slap", at: 0 }] });
+    c.draw(1);
+    const face = c.el.firstChild, inner = face.firstChild;
+    const rim = [...c.el.children].find((e) => e.dataset.part === "rim");
+    return {
+      h: c.h, expectH: (0.5 * img.naturalHeight * 300) / (0.5 * img.naturalWidth),
+      innerW: parseFloat(inner.style.width), innerL: parseFloat(inner.style.left), innerT: parseFloat(inner.style.top),
+      innerH: parseFloat(inner.style.height),
+      rimClip: rim?.style.clipPath, faceClip: face.style.clipPath, rimZ: rim?.style.zIndex, rimBg: rim?.style.background,
+    };
+  });
+  assert.ok(Math.abs(r.h - r.expectH) < 0.01, `h ${r.h} vs ${r.expectH}`);
+  assert.equal(r.innerW, 600, "the image is scaled so the crop's width fills the piece");
+  assert.equal(r.innerL, -300);
+  assert.ok(Math.abs(r.innerT + 0.25 * r.innerH) < 0.01, "the crop's top sits on the piece's top");
+  assert.match(r.rimClip, /^polygon\(/);
+  assert.match(r.faceClip, /^polygon\(/);
+  assert.notEqual(r.rimClip, r.faceClip, "rim and face have their own tears");
+  assert.equal(r.rimZ, "-1", "the rim lies under the face");
+  assert.ok(r.rimBg, "the rim is paper-coloured");
+});
+
+test("clipping: flat coloured paper needs no image; a disc is cut round", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const band = window.clipping(S, { color: "rgb(200, 160, 60)", w: 400, h: 120, x: 300, y: 300, moves: [{ kind: "slap", at: 0 }] });
+    const disc = window.clipping(S, { color: "rgb(120, 30, 20)", w: 200, x: 300, y: 600, edge: "disc", moves: [{ kind: "slap", at: 0 }] });
+    band.draw(1); disc.draw(1);
+    return { bh: band.h, bg: band.el.firstChild.style.background, dh: disc.h, dclip: disc.el.firstChild.style.clipPath };
+  });
+  assert.equal(r.bh, 120);
+  assert.match(r.bg, /rgb\(200, 160, 60\)/);
+  assert.equal(r.dh, 200, "a flat piece without h is square");
+  assert.match(r.dclip, /^ellipse\(/);
+  await assert.rejects(probe(() => window.clipping(window.STAGE, { w: 100, x: 0, y: 0 })), /img or a color/);
+});
+
+test("sliced: a silhouette cut in horizontal bands whose neighbouring tears match exactly", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const parts = window.K.sliced(S, { img: S.img.a, w: 400, x: 540, y: 900, cuts: [0.3, 0.45], seed: 4, moves: (i) => [{ kind: "slap", at: 0.1 * i }] });
+    parts.forEach((p) => p.draw(2));
+    const pts = (p) => p.el.firstChild.style.clipPath.replace(/^polygon\(|\)$/g, "").split(",").map((s) => s.trim());
+    const [a, b, c] = parts.map(pts);
+    return { n: parts.length, hs: parts.map((p) => p.h), aEnd: a.slice(-12), bStart: b.slice(0, 12), cues: parts.map((p) => p.cues().length) };
+  });
+  assert.equal(r.n, 3);
+  assert.ok(r.hs.every((h) => h === r.hs[0]), "every band is a full-size box (one shared frame)");
+  assert.deepEqual(r.aEnd.slice().reverse(), r.bStart, "the cut under band 1 is the cut over band 2");
+  assert.deepEqual(r.cues, [1, 1, 1]);
+});
+
+test("ransom: a black strip whose caps are typed on, sized to its text, with key cues after its landing", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const l = window.K.ransom(S, { text: "Uma palavra", size: 50, x: 400, y: 400, tIn: 1, cps: 10 });
+    const txt = (t) => (l.draw(t), l.el.querySelector("[data-part=text]").textContent);
+    return { w: l.w, h: l.h, t0: txt(0.5), t1: txt(1.35), t2: txt(3), types: l.cues().map((c) => c.type), first: l.cues()[0].t };
+  });
+  assert.ok(r.w > 200 && r.w < 600, `width ${r.w}`);
+  assert.ok(r.h > 50 && r.h < 110, `height ${r.h}`);
+  assert.equal(r.t0, "");
+  assert.equal(r.t1, "UMA");
+  assert.equal(r.t2, "UMA PALAVRA");
+  assert.equal(r.types[0], "paper-place");
+  assert.equal(r.types.filter((t) => t === "key").length, 10);
+});
