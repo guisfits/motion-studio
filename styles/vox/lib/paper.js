@@ -238,30 +238,33 @@ export function sliced(stage, { cuts, moves = () => [], place = () => ({}), seed
 // A ransom label: a strip of black paper, light typewriter caps typed on it from tIn (one key
 // cue per letter), slapped on the table at `moves` (default: a slap 0.25 s before tIn).
 //   K.ransom(stage, { text: "Uma palavra", size: 56, x, y, rot: -2, tIn: V.at("palavra") })
-export function ransom(stage, { text, size = 48, weight = 400, tIn, cps = 16, ink = "#f4efe4", paper = "#141210", face: font, moves, ...o }) {
-  const caps = text.toUpperCase();
+export function ransom(stage, { text, size = 48, weight = 400, tracking = 0.04, upper = true, tIn, cps = 16, ink = "#f4efe4", paper = "#141210", face: font, moves, ...o }) {
+  // `tracking` in em (a label's wide eyebrow spacing, ~0.2); `upper: false` keeps the text's case
+  // (a blackletter headline). Any clipping option passes through (edge: "torn", rim, ...).
+  const caps = upper ? text.toUpperCase() : text;
   const family = font ?? theme().families.typewriter;
   const meter = document.createElement("canvas").getContext("2d");
   meter.font = `${weight} ${size}px ${family}`;
   const padX = size * 0.38, padY = size * 0.26;
-  const w = Math.ceil(meter.measureText(caps).width * 1.04 + size * 0.04 * caps.length + 2 * padX);
+  const w = Math.ceil(meter.measureText(caps).width * 1.04 + size * tracking * caps.length + 2 * padX);
   const h = Math.ceil(size * 1.05 + 2 * padY);
   const c = clipping(stage, { color: paper, w, h, edge: "straight", boil: false, moves: moves ?? [{ kind: "slap", at: tIn - 0.25 }], ...o });
   const txt = document.createElement("div");
   txt.dataset.part = "text";
   Object.assign(txt.style, {
     position: "absolute", left: `${padX}px`, top: `${padY + size * 0.08}px`, font: `${weight} ${size}px/1 ${family}`,
-    letterSpacing: "0.04em", color: ink, whiteSpace: "pre",
+    letterSpacing: `${tracking}em`, color: ink, whiteSpace: "pre",
   });
   c.el.firstChild.append(txt);
   const chars = [...caps];
   const keys = chars.flatMap((ch, i) => (ch.trim() ? [{ t: tIn + (i + 1) / cps, type: "key", gain: 0.35 }] : []));
   // Like a label maker, the strip feeds out with the letters: its face is cut just past the last
   // typed letter (a stub of blank tape before the first one), never an empty black bar.
-  const scale = (w - 2 * padX) / meter.measureText(caps).width;
-  const shown = chars.map((_, i) => Math.min(w, 2 * padX + meter.measureText(caps.slice(0, i)).width * scale));
+  const scale = (w - 2 * padX - size * tracking * caps.length) / meter.measureText(caps).width;
+  const shown = chars.map((_, i) => Math.min(w, 2 * padX + meter.measureText(caps.slice(0, i)).width * scale + size * tracking * i));
   shown.push(w);
   const face = c.el.firstChild;
+  const straight = (o.edge ?? "straight") === "straight" || o.edge === "baked";
   return {
     ...c,
     end: tIn + chars.length / cps,
@@ -270,7 +273,9 @@ export function ransom(stage, { text, size = 48, weight = 400, tIn, cps = 16, in
       c.draw(t);
       const k = Math.max(0, Math.min(chars.length, Math.floor((t - tIn) * cps + 1e-6)));
       txt.textContent = chars.slice(0, k).join("");
-      face.style.clipPath = k >= chars.length ? "" : `inset(0 ${(w - shown[k]).toFixed(1)}px 0 0)`;
+      // Once typed, the edge is the clipping's own (a torn banner keeps its tear).
+      if (k < chars.length) face.style.clipPath = `inset(0 ${(w - shown[k]).toFixed(1)}px 0 0)`;
+      else if (straight) face.style.clipPath = "";
     },
   };
 }

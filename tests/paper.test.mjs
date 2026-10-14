@@ -398,3 +398,17 @@ test("outline: a scribble path round a cut-out's silhouette, outside the opaque 
   assert.ok(r.xs[0] > -60 && r.xs[1] < r.w + 60, `hugs the figure: ${r.xs}`);
   assert.deepEqual(r.mid, r.again, "the same seed draws the same scribble");
 });
+
+test("ransom: wide tracking widens the strip, upper: false keeps the case, a torn banner keeps its tear once typed", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const tight = window.K.ransom(S, { text: "Leipzig", size: 40, x: 300, y: 300, tIn: 0 });
+    const wide = window.K.ransom(S, { text: "Leipzig", size: 40, x: 300, y: 400, tIn: 0, tracking: 0.25 });
+    const head = window.K.ransom(S, { text: "Alemanha", size: 80, x: 300, y: 600, tIn: 0, upper: false, edge: "torn", cps: 40 });
+    head.draw(3);
+    return { tw: tight.w, ww: wide.w, txt: head.el.querySelector("[data-part=text]").textContent, clip: head.el.firstChild.style.clipPath };
+  });
+  assert.ok(r.ww - r.tw > 40, `${r.tw} → ${r.ww}`);
+  assert.equal(r.txt, "Alemanha");
+  assert.match(r.clip, /^polygon\(/);
+});
