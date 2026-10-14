@@ -256,6 +256,12 @@ export function ransom(stage, { text, size = 48, weight = 400, tIn, cps = 16, in
   c.el.firstChild.append(txt);
   const chars = [...caps];
   const keys = chars.flatMap((ch, i) => (ch.trim() ? [{ t: tIn + (i + 1) / cps, type: "key", gain: 0.35 }] : []));
+  // Like a label maker, the strip feeds out with the letters: its face is cut just past the last
+  // typed letter (a stub of blank tape before the first one), never an empty black bar.
+  const scale = (w - 2 * padX) / meter.measureText(caps).width;
+  const shown = chars.map((_, i) => Math.min(w, 2 * padX + meter.measureText(caps.slice(0, i)).width * scale));
+  shown.push(w);
+  const face = c.el.firstChild;
   return {
     ...c,
     end: tIn + chars.length / cps,
@@ -264,6 +270,7 @@ export function ransom(stage, { text, size = 48, weight = 400, tIn, cps = 16, in
       c.draw(t);
       const k = Math.max(0, Math.min(chars.length, Math.floor((t - tIn) * cps + 1e-6)));
       txt.textContent = chars.slice(0, k).join("");
+      face.style.clipPath = k >= chars.length ? "" : `inset(0 ${(w - shown[k]).toFixed(1)}px 0 0)`;
     },
   };
 }
