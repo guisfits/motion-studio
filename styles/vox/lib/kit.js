@@ -12,6 +12,7 @@
 
 import { spring, springReach, SPRINGS, stepped, progress, rng, clamp } from "../../../core/lib/motion.js";
 import { theme } from "../../../core/lib/theme.js";
+import { tornClip } from "../../../core/lib/torn.js";
 const C = () => theme().colors;
 const F = () => theme().families;
 
@@ -298,17 +299,8 @@ export function rubric(
 
 // ── Paper ─────────────────────────────────────────────────────────────────────────────────
 
-// A torn paper edge on all four sides (seeded, fixed): a clip-path polygon. depth: % of the side.
-export function tornClip(seed, n = 16, depth = 3.5) {
-  const r = rng(seed);
-  const j = () => r() * depth;
-  const pts = [];
-  for (let i = 0; i <= n; i++) pts.push(`${(i / n) * 100}% ${j()}%`);
-  for (let i = 1; i <= n / 2; i++) pts.push(`${100 - j() * 0.6}% ${(i / (n / 2)) * 100}%`);
-  for (let i = n - 1; i >= 0; i--) pts.push(`${(i / n) * 100}% ${100 - j()}%`);
-  for (let i = n / 2 - 1; i >= 1; i--) pts.push(`${j() * 0.6}% ${(i / (n / 2)) * 100}%`);
-  return `polygon(${pts.join(",")})`;
-}
+// A torn paper edge on all four sides lives in the engine (core/lib/torn.js); kept importable from here.
+export { tornClip };
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 // One hidden <svg> per stage holding the shared filters (referenced by url(#id) from CSS).
