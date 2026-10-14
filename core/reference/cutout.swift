@@ -2,11 +2,14 @@
 // paper border (the white edge left by scissors). Runs locally on macOS (Vision + Core Image),
 // nothing is downloaded.
 //
-//   swift core/reference/cutout.swift <in> <out.png> [--mode subject|paper] [--border px]
+//   swift core/reference/cutout.swift <in> <out.png> [--mode subject|paper|instances] [--border px]
 //
 //   --mode subject  (default) lifts the foreground subject: a person, a statue, a building, an object.
 //   --mode paper    keys out the paper of an engraving, woodcut or printed page: ink stays, paper
 //                   goes transparent (the piece then sits on any ground, like a cut print).
+//   --mode instances  writes no PNG: <out> is a .json with each foreground instance's outline as a
+//                   clipping region ({ regions: [{ id, poly }] }, u,v in 0..1, top-left origin),
+//                   to paste into a catalog entry and hand-edit.
 //   --border px     adds a paper-coloured border of px around the cut shape (0 = none).
 import CoreImage
 import CoreImage.CIFilterBuiltins
@@ -30,7 +33,7 @@ func option(_ name: String, _ fallback: String) -> String {
 let mode = option("mode", "subject")
 let border = Double(option("border", "0")) ?? 0
 guard args.count == 2 else {
-  fail("usage: swift cutout.swift <in> <out.png> [--mode subject|paper] [--border px]")
+  fail("usage: swift cutout.swift <in> <out.png|out.json> [--mode subject|paper|instances] [--border px]")
 }
 let (input, output) = (URL(fileURLWithPath: args[0]), URL(fileURLWithPath: args[1]))
 guard let source = CIImage(contentsOf: input, options: [.applyOrientationProperty: true]) else {
@@ -63,6 +66,60 @@ func paper(_ image: CIImage) -> CIImage {
     "CIBlendWithAlphaMask",
     parameters: [kCIInputBackgroundImageKey: CIImage.empty(), kCIInputMaskImageKey: alpha])
 }
+
+// Outline of one instance mask: the largest contour, simplified until it fits `maxPoints`.
+func outline(of mask: CVPixelBuffer, maxPoints: Int = 40) -> [[Double]]? {
+  let request = VNDetectContoursRequest()
+  request.detectsDarkOnLight = false  // the mask is white on black
+  request.contrastAdjustment = 1
+  do { try VNImageRequestHandler(cvPixelBuffer: mask).perform([request]) } catch { fail("contours: \(error)") }
+  func area(_ c: VNContour) -> Double {
+    let p = c.normalizedPoints
+    var a = 0.0
+    for i in 0..<p.count {
+      let (q, r) = (p[i], p[(i + 1) % p.count])
+      a += Double(q.x * r.y - r.x * q.y)
+    }
+    return abs(a) / 2
+  }
+  guard let largest = request.results?.first?.topLevelContours.max(by: { area($0) < area($1) })
+  else { return nil }
+  var epsilon: Float = 0.004
+  var simplified = try? largest.polygonApproximation(epsilon: epsilon)
+  while let s = simplified, s.pointCount > maxPoints, epsilon < 0.5 {
+    epsilon *= 1.3
+    simplified = try? largest.polygonApproximation(epsilon: epsilon)
+  }
+  guard let points = simplified?.normalizedPoints, points.count >= 3 else { return nil }
+  // Vision is bottom-left; the catalog is top-left.
+  return points.map { [Double($0.x), 1 - Double($0.y)] }
+}
+
+func instances(_ image: CIImage) {
+  let request = VNGenerateForegroundInstanceMaskRequest()
+  let handler = VNImageRequestHandler(ciImage: image)
+  do { try handler.perform([request]) } catch { fail("vision: \(error)") }
+  guard let result = request.results?.first, !result.allInstances.isEmpty else {
+    fail("no subject found in \(input.lastPathComponent)")
+  }
+  var regions: [[String: Any]] = []
+  for index in result.allInstances.sorted() {
+    do {
+      let mask = try result.generateScaledMaskForImage(forInstances: IndexSet(integer: index), from: handler)
+      guard let poly = outline(of: mask) else { continue }
+      regions.append(["id": "i\(regions.count + 1)", "poly": poly])
+    } catch { fail("mask: \(error)") }
+  }
+  guard !regions.isEmpty else { fail("no outline found in \(input.lastPathComponent)") }
+  do {
+    let data = try JSONSerialization.data(withJSONObject: ["regions": regions], options: [.sortedKeys])
+    try data.write(to: output)
+  } catch { fail("cannot write \(output.path)") }
+  print("cutout: instances → \(output.path) (\(regions.count) region\(regions.count == 1 ? "" : "s"))")
+  exit(0)
+}
+
+if mode == "instances" { instances(source) }
 
 var piece = mode == "paper" ? paper(source) : subject(source)
 
