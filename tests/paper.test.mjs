@@ -167,3 +167,19 @@ test("clipping: a piece slid under another ends below it whatever its own z", as
   });
   assert.ok(r.mover < r.target, `mover ${r.mover} is under target ${r.target}`);
 });
+
+test("clipping: the reverse has the same torn edge and darkens with the fold", async () => {
+  const r = await probe(async () => {
+    const S = window.STAGE;
+    const c = window.clipping(S, {
+      img: S.img.a, back: S.img.b, w: 200, x: 300, y: 300, seed: 9,
+      moves: [{ kind: "flip", at: 0 }, { kind: "fold", at: 0, to: 1 }],
+    });
+    c.draw(4);
+    const [face, rear] = c.el.children;
+    return { face: face.style.clipPath, rear: rear.style.clipPath, faceF: face.style.filter, rearF: rear.style.filter };
+  });
+  assert.ok(r.face.startsWith("polygon"));
+  assert.equal(r.rear, r.face, "reverse is cut like the face");
+  assert.match(r.rearF, /brightness\(0\.75\)/, "reverse darkens in the fold");
+});

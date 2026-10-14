@@ -106,7 +106,8 @@ export function clipping(
       wrap.style.visibility = p.visible ? "visible" : "hidden";
       if (!p.visible) return;
       const step = boil ? boilStep(t) : 0;
-      if (edge === "torn") face.style.clipPath = edges[step];
+      if (edge === "torn")
+        for (const e of [face, rear]) if (e) e.style.clipPath = edges[step];
       const [jx, jy] = edge === "baked" && boil ? jitter[step] : [0, 0];
       const lift = Math.max(0, p.lift);
       const squash = Math.min(0, p.lift); // overshoot: pressed into the table, a hair flatter
@@ -126,7 +127,9 @@ export function clipping(
         rear.style.visibility = p.flip >= 0.5 ? "visible" : "hidden";
       }
       // Folded half darkens (it faces away from the light); a crumpled ball is mottled grey.
-      face.style.filter = `${screen} brightness(${1 - 0.25 * fold - 0.3 * crum}) contrast(${1 + 0.4 * crum})`;
+      const shade = `brightness(${1 - 0.25 * fold - 0.3 * crum}) contrast(${1 + 0.4 * crum})`;
+      face.style.filter = `${screen} ${shade}`;
+      if (rear) rear.style.filter = shade;
       const c = p.curl * Math.min(w, h) * 0.45;
       Object.assign(flap.style, {
         width: `${c}px`,
