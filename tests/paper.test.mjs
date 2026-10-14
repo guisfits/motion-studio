@@ -135,3 +135,35 @@ test("clipping: flip shows the rear, edges, halftone, invalid edge", async () =>
     server.close();
   }
 });
+
+// Builds extra clippings on the fixture's stage and reads back what draw(t) set on them.
+async function probe(fn) {
+  const { chromium } = await import("playwright");
+  const { startServer, filmUrl } = await import("../core/server.mjs");
+  const server = await startServer();
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+    await page.goto(filmUrl(server, fixture, "?format=9x16&render=1"));
+    await page.waitForFunction(() => window.ready === true, null, { timeout: 60_000 });
+    return await page.evaluate(fn);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+}
+
+test("clipping: a piece slid under another ends below it whatever its own z", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const target = window.clipping(S, { img: S.img.a, w: 200, x: 300, y: 300, z: 2 });
+    const mover = window.clipping(S, {
+      img: S.img.b, w: 200, x: 300, y: 300, z: 6,
+      moves: [{ kind: "slideUnder", at: 0, from: [600, 0], under: 2 }],
+    });
+    target.draw(5);
+    mover.draw(5);
+    return { target: +target.el.style.zIndex, mover: +mover.el.style.zIndex };
+  });
+  assert.ok(r.mover < r.target, `mover ${r.mover} is under target ${r.target}`);
+});

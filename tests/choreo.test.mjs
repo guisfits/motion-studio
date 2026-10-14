@@ -78,10 +78,10 @@ test("slide comes from a side and rests at the spot", () => {
   near(pose(m, 4).dx, 0);
 });
 
-test("slideUnder passes below another piece: dz is negative once it is under", () => {
+test("slideUnder passes below another piece: it must sit under z once it is under", () => {
   const m = [{ kind: "slideUnder", at: 0, from: [600, 0], under: 3 }];
-  assert.ok(pose(m, 0.01).dz >= 0, "starts on top of the table order");
-  assert.ok(pose(m, 3).dz <= -3, "ends under the piece at z=3");
+  assert.equal(pose(m, 0.01).under, null, "starts on top of the table order");
+  assert.equal(pose(m, 3).under, 3, "ends under the piece at z=3");
   near(pose(m, 3).dx, 0);
 });
 

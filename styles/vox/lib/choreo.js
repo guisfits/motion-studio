@@ -5,7 +5,7 @@
 //
 // Pose fields: visible · dx, dy (px from the rest spot) · rot (deg) · scale · lift (height off
 // the table: 1 = in the hand, 0 = flat, < 0 = pressed in by an overshoot) · dz (stacking order
-// change) · curl (corner peel 0..1) · fold (0..1 along the fold axis) · flip (0..1, turned over at
+// change) · under (null, or the z the piece must sit below: a slide under another piece) · curl (corner peel 0..1) · fold (0..1 along the fold axis) · flip (0..1, turned over at
 // 1) · crumple (0..1, a ball at 1).
 
 import {
@@ -59,7 +59,8 @@ export const MOVES = {
     },
     land: (m) => ({ t: reach(m.at, SLIDE), type: "paper-slide" }),
   },
-  // Out to the side on top, then back in under the piece at z = under.
+  // Out to the side on top, then back in under the piece at z = under (pose.under: the piece
+  // sits below that z whatever its own z is).
   slideUnder: {
     pose: (t, m) => {
       if (t < m.at) return { visible: false };
@@ -68,7 +69,7 @@ export const MOVES = {
       return {
         dx: fx * (1 - e),
         dy: fy * (1 - e),
-        dz: e > 0.5 ? -(m.under + 1) : 0,
+        under: e > 0.5 ? m.under : null,
       };
     },
     land: (m) => ({ t: reach(m.at, SLIDE), type: "paper-slide", gain: 0.7 }),
@@ -172,6 +173,7 @@ export function pose(moves, t) {
     scale: 1,
     lift: 0,
     dz: 0,
+    under: null,
     curl: 0,
     fold: 0,
     flip: 0,
@@ -189,6 +191,7 @@ export function pose(moves, t) {
     p.scale += q.scale ?? 0;
     p.lift += q.lift ?? 0;
     p.dz += q.dz ?? 0;
+    if (q.under != null) p.under = Math.min(p.under ?? Infinity, q.under);
     p.curl = Math.max(p.curl, q.curl ?? 0);
     p.flip = Math.max(p.flip, q.flip ?? 0);
     p.crumple = Math.max(p.crumple, q.crumple ?? 0);

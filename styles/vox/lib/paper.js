@@ -114,7 +114,9 @@ export function clipping(
         crum = p.crumple;
       const sx = (1 - 0.55 * crum) * Math.cos(Math.PI * p.flip);
       const sy = (1 - fold * 0.5) * (1 - 0.55 * crum) * (1 + squash * 0.3);
-      wrap.style.zIndex = String(Math.round((z + p.dz) * 10));
+      // Half a level below the piece it slid under, so it never ties with it.
+      const level = z + p.dz;
+      wrap.style.zIndex = String(Math.round((p.under == null ? level : Math.min(level, p.under - 0.5)) * 10));
       wrap.dataset.fold = fold.toFixed(3);
       wrap.style.transform =
         `translate(${x - w / 2 + p.dx + jx}px, ${y - h / 2 + p.dy + jy}px) rotate(${rot + p.rot}deg) ` +
