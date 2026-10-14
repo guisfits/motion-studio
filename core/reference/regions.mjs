@@ -78,8 +78,12 @@ export function cutRegions(srcPath, entry, outDir) {
   const { w, h, rgba } = readRGBA(srcPath);
   const o = { seed: 1, rim: 7, depth: 9, ...(entry.oven ?? {}) };
   const pad = o.rim + o.depth + 2;
+  const seen = new Set();
   return entry.regions.map((r, i) => {
     const name = `${entry.id}-${r.id}`;
+    // Two regions with one id would write the same PNG and manifest row; the second silently wins.
+    if (seen.has(r.id)) throw new Error(`regions: ${name} is a duplicate region id`);
+    seen.add(r.id);
     const ok = (pt) => Array.isArray(pt) && pt.length === 2 && pt.every(Number.isFinite);
     if (!Array.isArray(r.poly) || r.poly.length < 3 || !r.poly.every(ok))
       throw new Error(`regions: ${name} has a bad poly (need 3+ [u, v] points)`);

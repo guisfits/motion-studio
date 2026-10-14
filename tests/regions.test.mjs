@@ -162,3 +162,9 @@ test("a malformed poly fails naming its region", () => {
   for (const poly of [undefined, [[0.1, 0.1], [0.5, 0.5]], [[0.1, 0.1], [0.5, "x"], [0.2, 0.9]], [[0.1, 0.1], [NaN, 0.5], [0.2, 0.9]]])
     assert.throws(() => cutRegions(jpg, bad(poly), dir), /scan-oops.*bad poly/);
 });
+
+test("duplicate region ids in one entry fail instead of overwriting each other", () => {
+  const sq = [[0.1, 0.1], [0.4, 0.1], [0.4, 0.4], [0.1, 0.4]];
+  const entry = { id: "scan", cut: "regions", regions: [{ id: "a", poly: sq }, { id: "a", poly: sq }] };
+  assert.throws(() => cutRegions(jpg, entry, dir), /scan-a.*duplicate/);
+});
