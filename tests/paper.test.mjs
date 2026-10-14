@@ -379,3 +379,22 @@ test("ransom: a black strip whose caps are typed on, sized to its text, with key
   assert.equal(r.types[0], "paper-place");
   assert.equal(r.types.filter((t) => t === "key").length, 10);
 });
+
+test("outline: a scribble path round a cut-out's silhouette, outside the opaque pixels, seeded", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE, img = S.img.a, w = 300, h = (w * img.naturalHeight) / img.naturalWidth;
+    const cv = document.createElement("canvas");
+    cv.width = w; cv.height = h;
+    const g = cv.getContext("2d");
+    g.drawImage(img, 0, 0, w, h);
+    const a = g.getImageData(0, 0, w, h).data;
+    const pt = window.K.outline(img, { w, offset: 15, seed: 3 });
+    const pts = Array.from({ length: 200 }, (_, i) => pt(i / 199));
+    const inside = pts.filter(([x, y]) => x >= 0 && y >= 0 && x < w && y < h && a[(Math.floor(y) * w + Math.floor(x)) * 4 + 3] > 40).length;
+    const again = window.K.outline(img, { w, offset: 15, seed: 3 })(0.5);
+    return { inside, w, h, xs: [Math.min(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[0]))], mid: pt(0.5), again };
+  });
+  assert.ok(r.inside <= 4, `${r.inside} of 200 points fall on the figure`);
+  assert.ok(r.xs[0] > -60 && r.xs[1] < r.w + 60, `hugs the figure: ${r.xs}`);
+  assert.deepEqual(r.mid, r.again, "the same seed draws the same scribble");
+});

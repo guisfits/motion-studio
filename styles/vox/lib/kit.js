@@ -887,3 +887,4 @@ export * from "./moves.js";
 
 export * from "./choreo.js";
 export * from "./paper.js";
+export * from "./outline.js";
