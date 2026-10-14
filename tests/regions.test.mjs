@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { cutRegions, readRGBA } from "../core/reference/regions.mjs";
+import { cutRegions, readRGBA, writePNG } from "../core/reference/regions.mjs";
 
 const dir = mkdtempSync(join(tmpdir(), "regions-"));
 const jpg = join(dir, "scan.jpg");
@@ -75,4 +75,30 @@ test("an empty region fails loudly with its id", () => {
     ],
   };
   assert.throws(() => cutRegions(jpg, entry, dir), /scan-nothing.*empty/);
+});
+
+test("a PNG with its own transparency keeps it inside the polygon", () => {
+  const w = 200,
+    h = 100;
+  const src = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    src.set([30, 60, 90, i % w < w / 2 ? 0 : 255], i * 4); // left half already clear
+  }
+  const png = join(dir, "cutout-with-alpha.png");
+  writePNG(png, w, h, src);
+  const whole = [
+    [0, 0],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+  ];
+  const [out] = cutRegions(
+    png,
+    { id: "keep", cut: "regions", regions: [{ id: "all", poly: whole }] },
+    dir,
+  );
+  const clip = readRGBA(out);
+  const px = (x, y) => clip.rgba[(y * clip.w + x) * 4 + 3];
+  assert.equal(px(40, 50), 0, "the source's transparent half stays transparent");
+  assert.equal(px(150, 50), 255, "the source's opaque half stays opaque");
 });

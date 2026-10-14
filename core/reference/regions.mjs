@@ -75,6 +75,10 @@ export function cutRegions(srcPath, entry, outDir) {
     const name = `${entry.id}-${r.id}`;
     const poly = r.poly.map(([u, v]) => [u * w, v * h]);
     const mask = polyMask(w, h, poly);
+    // A source with its own transparency (a cut-out PNG) keeps it: the polygon only narrows it.
+    // An opaque scan (JPEG) is all 255 here, so the polygon alone is its alpha.
+    for (let k = 0; k < mask.length; k++)
+      if (rgba[k * 4 + 3] <= 127) mask[k] = 0;
     let x0 = w,
       y0 = h,
       x1 = -1,
