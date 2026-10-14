@@ -124,6 +124,9 @@ export function cutRegions(srcPath, entry, outDir) {
       seed: o.seed + i,
       rim: o.rim,
       depth: o.depth,
+      // Optional: bake() keeps its cream paper and default grain when these are absent.
+      ...(o.paper && { paper: o.paper }),
+      ...(o.grain !== undefined && { grain: o.grain }),
     });
     const path = join(outDir, `${name}.png`);
     writePNG(path, cw, ch, out);

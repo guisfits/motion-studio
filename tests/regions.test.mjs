@@ -168,3 +168,22 @@ test("duplicate region ids in one entry fail instead of overwriting each other",
   const entry = { id: "scan", cut: "regions", regions: [{ id: "a", poly: sq }, { id: "a", poly: sq }] };
   assert.throws(() => cutRegions(jpg, entry, dir), /scan-a.*duplicate/);
 });
+
+test("oven paper and grain reach the bake: a red paper gives a red rim", () => {
+  const poly = [
+    [0.1, 0.1],
+    [0.9, 0.1],
+    [0.9, 0.9],
+    [0.1, 0.9],
+  ];
+  const red = (oven, id) => {
+    const out = cutRegions(jpg, { id, cut: "regions", oven, regions: [{ id: "r", poly }] }, dir);
+    const { rgba } = readRGBA(out[0]);
+    let n = 0;
+    for (let i = 0; i < rgba.length; i += 4)
+      if (rgba[i + 3] > 0 && rgba[i] > rgba[i + 1] + 80) n++;
+    return n;
+  };
+  assert.equal(red({ seed: 2 }, "cream"), 0, "default rim is cream");
+  assert.ok(red({ seed: 2, paper: [220, 40, 40], grain: 0 }, "redrim") > 0, "paper colour used");
+});
