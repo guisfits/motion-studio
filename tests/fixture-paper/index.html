@@ -3,6 +3,7 @@
   <script type="module">
     import { createStage } from "../../core/lib/stage.js";
     import { clipping } from "../../styles/vox/lib/paper.js";
+    import * as K from "../../styles/vox/lib/kit.js";
     const stage = await createStage({
       dur: 6,
       images: {
@@ -47,6 +48,7 @@
     const H = clipping(stage, { img: stage.img.a, w: 200, x: 900, y: 300, halftone: true, moves: [{ kind: "slap", at: 0.1 }] });
     window.STAGE = stage;
     window.clipping = clipping;
+    window.K = K;
     window.PAPER = { A, B, C, D, H };
     window.CUES = [...A.cues(), ...B.cues()];
     stage.run((t) => {

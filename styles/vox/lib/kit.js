@@ -10,7 +10,7 @@
 // being placed (lift → land, stepped like paper moved by hand) and leave by being lifted
 // away; type rises out of a mask and sinks back. Nothing fades in from nothing.
 
-import { spring, springReach, SPRINGS, stepped, progress, rng, clamp } from "../../../core/lib/motion.js";
+import { spring, springReach, revealProgress, SPRINGS, stepped, progress, rng, clamp } from "../../../core/lib/motion.js";
 import { theme } from "../../../core/lib/theme.js";
 import { tornClip } from "../../../core/lib/torn.js";
 const C = () => theme().colors;
@@ -740,6 +740,30 @@ export function handwrite(stage, { text, x, y, size = 72, tIn, dur = 1.6, tOut, 
       const p = progress(t, tIn, tIn + dur);
       el.style.clipPath = `inset(-20% ${100 - p * 100}% -20% 0)`;
       el.style.opacity = String(1 - leave(t, tOut));
+      show(el, t >= tIn);
+    },
+  };
+}
+
+// A line written by hand: revealed left to right at the pen's pace (a spring, finished on time:
+// revealProgress), the last glyph fully shown at tIn + dur. `parent` puts it on a piece
+// (a clipping's .el) instead of the stage. dur defaults to when the spring has visibly arrived.
+export function handText(
+  stage,
+  { text, x = 0, y = 0, size = 56, face = F().script ?? F().serif, color = C().ink, tIn, k = 40, d = 12.6, dur, gain = 0.55, parent = stage.dom },
+) {
+  const span = dur ?? springReach(k, d, 0.97) ?? 1;
+  const el = div(stage, {
+    font: `400 ${size}px/1.2 ${css(face)}`, color, whiteSpace: "nowrap", transform: `translate(${x}px, ${y}px)`,
+  }, text, parent);
+  return {
+    el,
+    end: tIn + span,
+    cues: () => [{ t: tIn, type: "pen", gain, len: Math.min(span, 1.5) }],
+    draw(t) {
+      const p = revealProgress(t, tIn, { k, d, dur: span });
+      // Once written there is no clip at all: it would crop the last glyph's overhang.
+      el.style.clipPath = p >= 1 ? "none" : `inset(-30% ${100 - p * 100}% -30% -5%)`;
       show(el, t >= tIn);
     },
   };

@@ -279,3 +279,23 @@ test("clipping: a tucked piece lifts from its own stacking, not from the piece i
   assert.ok(r.peeling[1] > r.peeling[0], "it lifts off the top of the pile");
   assert.deepEqual(r.again, r.tucked, "seeking back tucks it again");
 });
+
+test("handText: written left to right, and the last glyph is fully shown (no clip) at tIn + dur", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const h = window.K.handText(S, { text: "Quem?", x: 100, y: 100, size: 80, tIn: 1, dur: 0.8 });
+    const at = (t) => (h.draw(t), { v: h.el.style.visibility, c: h.el.style.clipPath });
+    const out = { before: at(0.9), mid: at(1.3), end: at(1.8), late: at(4), back: at(1.3) };
+    out.cues = h.cues();
+    out.endAt = h.end;
+    return out;
+  });
+  assert.equal(r.before.v, "hidden");
+  assert.match(r.mid.c, /^inset\(/, "clipped while it is being written");
+  assert.equal(r.end.v, "visible");
+  assert.equal(r.end.c, "none", "nothing crops the last glyph (or an overhang) once written");
+  assert.equal(r.late.c, "none");
+  assert.deepEqual(r.back, r.mid, "seeking back re-crops it");
+  assert.equal(r.endAt, 1.8);
+  assert.deepEqual(r.cues.map((c) => c.type), ["pen"]);
+});
