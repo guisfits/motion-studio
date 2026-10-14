@@ -97,3 +97,19 @@ test("bake: opaque body, paper-white rim, transparent outside, deterministic", (
   assert.ok(rim[3] > 0 && rim[0] > 200, "rim is light paper");
   assert.deepEqual(out, bake(rgba, W, H, { alpha: square, seed: 2, depth: 0 }));
 });
+
+test("bake with tearing on: ragged edge, solid body, deterministic, seed-sensitive", () => {
+  const rgba = new Uint8ClampedArray(W * H * 4).fill(40);
+  const torn = bake(rgba, W, H, { alpha: square, seed: 2, depth: 9 });
+  const flat = bake(rgba, W, H, { alpha: square, seed: 2, depth: 0 });
+  const a = (o, x, y) => o[(y * W + x) * 4 + 3];
+  assert.equal(a(torn, 60, 40), 255, "centre stays opaque");
+  assert.equal(a(torn, 2, 2), 0, "far outside stays clear");
+  assert.notDeepEqual(torn, flat, "the edge moved");
+  let opaqueOutside = 0;
+  for (let i = 0; i < W * H; i++)
+    if (torn[i * 4 + 3] === 255 && square[i] === 0) opaqueOutside++;
+  assert.ok(opaqueOutside > 0, "paper bulges past the straight cut somewhere");
+  assert.deepEqual(torn, bake(rgba, W, H, { alpha: square, seed: 2, depth: 9 }));
+  assert.notDeepEqual(torn, bake(rgba, W, H, { alpha: square, seed: 3, depth: 9 }));
+});

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cutRegions, readRGBA, writePNG } from "../core/reference/regions.mjs";
@@ -102,4 +102,37 @@ test("a PNG with its own transparency keeps it inside the polygon", () => {
   const px = (x, y) => clip.rgba[(y * clip.w + x) * 4 + 3];
   assert.equal(px(1, 50), 0, "the source's transparent half stays transparent");
   assert.equal(px(clip.w - 20, 50), 255, "the source's opaque half stays opaque");
+});
+
+test("a huge source is capped to 1600px on the long side before baking", () => {
+  const big = join(dir, "big.jpg");
+  execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=0x6a5a40:s=3200x1600", "-frames:v", "1", big]);
+  const { w, h } = readRGBA(big);
+  assert.deepEqual([w, h], [1600, 800]);
+  const entry = {
+    id: "big",
+    cut: "regions",
+    regions: [{ id: "all", poly: [[0, 0], [1, 0], [1, 1], [0, 1]] }],
+  };
+  const [out] = cutRegions(big, entry, dir);
+  const clip = readRGBA(out);
+  assert.ok(clip.w <= 1600 && clip.h <= 800, `clipping is ${clip.w}x${clip.h}`);
+});
+
+test("a polygon partly off the image clamps to it; fully off fails with its id", () => {
+  const part = {
+    id: "scan",
+    cut: "regions",
+    regions: [{ id: "edge", poly: [[-0.3, -0.3], [0.4, -0.3], [0.4, 0.5], [-0.3, 0.5]] }],
+  };
+  const [out] = cutRegions(jpg, part, dir);
+  const clip = readRGBA(out);
+  assert.ok(clip.w <= 400 * 0.4 + 30 && clip.h <= 300 * 0.5 + 30, `clipping is ${clip.w}x${clip.h}`);
+  assert.equal(clip.rgba[((clip.h >> 1) * clip.w + (clip.w >> 1)) * 4 + 3], 255);
+  const off = {
+    id: "scan",
+    cut: "regions",
+    regions: [{ id: "gone", poly: [[1.2, 1.2], [1.6, 1.2], [1.6, 1.6], [1.2, 1.6]] }],
+  };
+  assert.throws(() => cutRegions(jpg, off, dir), /scan-gone.*empty/);
 });
