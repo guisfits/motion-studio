@@ -183,3 +183,19 @@ test("clipping: the reverse has the same torn edge and darkens with the fold", a
   assert.equal(r.rear, r.face, "reverse is cut like the face");
   assert.match(r.rearF, /brightness\(0\.75\)/, "reverse darkens in the fold");
 });
+
+test("clipping: the shadow falls the same way on screen however the piece is turned", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const off = (rot) => {
+      const c = window.clipping(S, { img: S.img.a, w: 200, x: 300, y: 300, rot, moves: [] });
+      c.draw(1);
+      const m = /drop-shadow\(rgba\([^)]*\) (-?[\d.]+)px (-?[\d.]+)px/.exec(c.el.style.filter);
+      const a = (rot * Math.PI) / 180;
+      const [lx, ly] = [+m[1], +m[2]];
+      return [lx * Math.cos(a) - ly * Math.sin(a), lx * Math.sin(a) + ly * Math.cos(a)];
+    };
+    return { up: off(0), turned: off(90) };
+  });
+  assert.ok(Math.abs(r.up[0] - r.turned[0]) < 0.01 && Math.abs(r.up[1] - r.turned[1]) < 0.01, JSON.stringify(r));
+});

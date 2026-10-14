@@ -137,9 +137,14 @@ export function clipping(
         left: curlCorner.endsWith("r") ? `${w - c}px` : "0",
         top: curlCorner.startsWith("t") ? "0" : `${h - c}px`,
       });
+      // The light is fixed on the table: the filter runs in the piece's own (turned, mirrored)
+      // frame, so the offset is turned back to point straight down on screen.
       const hgt = Math.min(1, lift + 0.08);
+      const a = ((rot + p.rot) * Math.PI) / 180;
+      const down = (y) =>
+        `${((sx < 0 ? -y : y) * Math.sin(a)).toFixed(2)}px ${(y * Math.cos(a)).toFixed(2)}px`;
       const s = 2 + 22 * hgt;
-      wrap.style.filter = `drop-shadow(0 ${1 + 2 * hgt}px ${1 + hgt}px ${SHADOW}.35)) drop-shadow(0 ${s}px ${s * 1.4}px ${SHADOW}${(0.18 + 0.12 * hgt).toFixed(3)}))`;
+      wrap.style.filter = `drop-shadow(${down(1 + 2 * hgt)} ${1 + hgt}px ${SHADOW}.35)) drop-shadow(${down(s)} ${s * 1.4}px ${SHADOW}${(0.18 + 0.12 * hgt).toFixed(3)}))`;
     },
   };
 }
