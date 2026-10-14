@@ -5,7 +5,7 @@
 //
 // Pose fields: visible · dx, dy (px from the rest spot) · rot (deg) · scale · lift (height off
 // the table: 1 = in the hand, 0 = flat, < 0 = pressed in by an overshoot) · dz (stacking order
-// change) · under (null, or the z the piece must sit below: a slide under another piece) · curl (corner peel 0..1) · fold (0..1 along the fold axis) · flip (0..1, turned over at
+// change) · under (null, or the z the piece must sit below: a slide under another piece, only while it is tucked: null again once an exit move (peel, crumple, lift) begins) · curl (corner peel 0..1) · fold (0..1 along the fold axis) · flip (0..1, turned over at
 // 1) · crumple (0..1, a ball at 1).
 
 import {
@@ -85,6 +85,7 @@ export const MOVES = {
   },
   // A corner curls up (curl 0 → 1 over ~0.4 s), then the piece is lifted off.
   peel: {
+    exit: true,
     pose: (t, m) => {
       if (t < m.at) return {};
       const c = smooth(t, m.at, FAST);
@@ -113,6 +114,7 @@ export const MOVES = {
     land: (m) => ({ t: m.at, type: "fold" }),
   },
   crumple: {
+    exit: true,
     pose: (t, m) => {
       if (t < m.at) return {};
       const c = hand(t, m.at, FAST);
@@ -129,6 +131,7 @@ export const MOVES = {
     land: (m) => ({ t: m.at, type: "crumple" }),
   },
   lift: {
+    exit: true,
     pose: (t, m) => {
       if (t < m.at) return {};
       const e = smooth(t, m.at, FAST);
@@ -201,6 +204,9 @@ export function pose(moves, t) {
     p.crumple = Math.max(p.crumple, q.crumple ?? 0);
     if (q.fold && (!fold || q.fold.at >= fold.at)) fold = q.fold;
   }
+  // A tuck is not permanent: once a move that takes the piece away has begun, it lifts from its
+  // own stacking position above the table, not from beneath the piece it slid under.
+  if (moves.some((m) => MOVES[m.kind].exit && t >= m.at)) p.under = null;
   if (fold) p.fold = clamp(fold.from + (fold.to - fold.from) * fold.e, 0, 1);
   return p;
 }

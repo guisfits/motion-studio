@@ -256,3 +256,26 @@ test("clipping: once its exit move is over, nothing of the piece stays on screen
     assert.ok(o.again, `${kind}: seeking back shows the piece and its part again`);
   }
 });
+
+test("clipping: a tucked piece lifts from its own stacking, not from the piece it slid under", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const target = window.clipping(S, { img: S.img.a, w: 200, x: 300, y: 300, z: 2 });
+    const mover = window.clipping(S, {
+      img: S.img.b, w: 200, x: 300, y: 300, z: 6,
+      moves: [
+        { kind: "slideUnder", at: 0, from: [600, 0], under: 2 },
+        { kind: "peel", at: 3 },
+      ],
+    });
+    const z = (t) => (target.draw(t), mover.draw(t), [+target.el.style.zIndex, +mover.el.style.zIndex]);
+    const tucked = z(2.9);
+    const peeling = z(3.2);
+    const again = z(2.9);
+    return { tucked, peeling, again };
+  });
+  assert.ok(r.tucked[1] < r.tucked[0], "tucked: below the target");
+  assert.equal(r.peeling[1], 60, "peeling: at its own z (6) above the table, not under the target");
+  assert.ok(r.peeling[1] > r.peeling[0], "it lifts off the top of the pile");
+  assert.deepEqual(r.again, r.tucked, "seeking back tucks it again");
+});

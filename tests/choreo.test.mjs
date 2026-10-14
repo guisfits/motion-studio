@@ -85,6 +85,25 @@ test("slideUnder passes below another piece: it must sit under z once it is unde
   near(pose(m, 3).dx, 0);
 });
 
+test("under holds only while the piece is tucked: an exit move frees it, seeking back tucks it again", () => {
+  for (const kind of ["peel", "crumple", "lift"]) {
+    const m = [
+      { kind: "slideUnder", at: 0, from: [600, 0], under: 3 },
+      { kind, at: 3 },
+    ];
+    assert.equal(pose(m, 2.99).under, 3, `${kind}: tucked until it starts`);
+    assert.equal(pose(m, 3).under, null, `${kind}: free once it starts`);
+    assert.equal(pose(m, 3.5).under, null);
+    assert.equal(pose(m, 2.99).under, 3, `${kind}: seeking back tucks it again`);
+  }
+  // Other moves (a drag, a flip) do not free it.
+  const m = [
+    { kind: "slideUnder", at: 0, from: [600, 0], under: 3 },
+    { kind: "drag", at: 3, by: [50, 0] },
+  ];
+  assert.equal(pose(m, 4).under, 3);
+});
+
 test("peel curls a corner and then the piece leaves", () => {
   const m = [
     { kind: "slap", at: 0 },
