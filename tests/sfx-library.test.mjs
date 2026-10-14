@@ -213,14 +213,21 @@ test("credits list every committed file as CC0 and every fetched one with its so
 
 const onDisk = (id) => committed.includes(id) || existsSync(join(audio, "sfx/fetched", `${id}.mp3`));
 
-test("every choreo contact type has a sound with its files on disk", async () => {
+test("paper foley (fold, scissors, glue, pin, crumple) is committed, so a clean checkout has it", () => {
+  for (const t of ["fold", "scissors", "glue", "pin"]) {
+    assert.ok(declared[t], `library has "${t}"`);
+    for (const f of declared[t].files) assert.ok(committed.includes(f), `${t}: ${f} is committed in sfx/`);
+  }
+  assert.ok(declared.crumple.files.filter((f) => committed.includes(f)).length >= 3, "crumple has 3+ committed files");
+});
+
+test("every choreo contact type has a sound with its files on disk", { skip: NOT_FETCHED }, async () => {
   const { contacts, MOVES } = await import("../styles/vox/lib/choreo.js");
   const types = new Set(
     Object.keys(MOVES).flatMap((k) => contacts([{ kind: k, at: 0, by: [0, 0] }]).map((c) => c.type)),
   );
-  for (const t of [...types, "scissors", "glue", "pin", "tape"]) {
+  for (const t of [...types, "tape"]) {
     assert.ok(declared[t], `library has "${t}"`);
     for (const f of resolved(t).files) assert.ok(onDisk(f), `${t}: ${f} is on disk`);
   }
-  assert.ok(declared.crumple.files.filter((f) => committed.includes(f)).length >= 3, "crumple has 3+ committed files");
 });

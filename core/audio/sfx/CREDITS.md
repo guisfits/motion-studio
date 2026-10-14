@@ -2,7 +2,7 @@
 
 Action names live in `../sfx-library.json`. File ids are short descriptive English names; the action names are what films use.
 
-Freesound licences re-verified online on 2026-10-10 (46 recordings, all CC0 1.0); the 9 files cut on 2026-10-14 (paper-fold, scissors-cut, glue-stick, push-pin, paper-crumple-5..7) were checked on their Freesound pages the same day.
+Freesound licences re-verified online on 2026-10-10 (51 files, all CC0 1.0); the 9 files cut on 2026-10-14 (paper-fold, scissors-cut, glue-stick, push-pin, paper-crumple-5..7) were checked on their Freesound pages the same day.
 
 ## Committed files: Freesound, CC0 1.0
 
