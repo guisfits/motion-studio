@@ -46,6 +46,18 @@ export function springReach(k, d, frac = 0.95, max = 8) {
   return null;
 }
 
+// A reveal (a pen writing a line, a wipe) paced by a spring but finished on time: 0 before tIn,
+// exactly 1 from tIn + dur on. The plain spring only approaches 1, so a revealed line would keep
+// its last glyph cropped through the tail; here the spring is scaled so it reaches 1 at `dur`
+// (default: when the spring has visibly arrived, 97%). Pure in t, monotone, no jump at the end.
+export function revealProgress(t, tIn, { k = 40, d = 12.6, dur } = {}) {
+  const span = dur ?? springReach(k, d, 0.97) ?? 1;
+  const u = t - tIn;
+  if (u <= 0) return 0;
+  if (u >= span) return 1;
+  return clamp(spring(u, k, d) / spring(span, k, d));
+}
+
 // A value that changes target several times: keys = [[time, value], ...] sorted by time.
 // Each change adds its own spring from its own start time instead of restarting one spring,
 // so motion stays continuous through retargets and is still a pure function of t.

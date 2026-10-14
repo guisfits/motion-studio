@@ -10,6 +10,8 @@ import {
   lerp,
   rng,
   SPRINGS,
+  springReach,
+  revealProgress,
 } from "../core/lib/motion.js";
 
 const close = (a, b, eps = 1e-3) =>
@@ -112,4 +114,25 @@ test("stepped holds time on a stop-motion grid (12 fps = on twos)", async () => 
   close(stepped(0.08, 12), 0);
   close(stepped(0.09, 12), 1 / 12);
   close(stepped(1.0, 12), 1);
+});
+
+test("revealProgress: a spring-paced reveal that ends exactly at tIn + dur, never in a long tail", () => {
+  const sp = { k: 40, d: 12.6 }; // the hand's pace: the plain spring is still short of 1 after a second
+  assert.ok(springReach(sp.k, sp.d, 0.999) > 1.3, "the raw spring has a long tail");
+  assert.equal(revealProgress(0.99, 1, { ...sp, dur: 0.8 }), 0, "nothing before tIn");
+  assert.equal(revealProgress(1, 1, { ...sp, dur: 0.8 }), 0);
+  assert.equal(revealProgress(1.8, 1, { ...sp, dur: 0.8 }), 1, "the last glyph is fully shown at tIn + dur");
+  assert.equal(revealProgress(5, 1, { ...sp, dur: 0.8 }), 1);
+  assert.ok(revealProgress(1.4, 1, { ...sp, dur: 0.8 }) < 1, "still writing half way");
+  let prev = 0;
+  for (let i = 0; i <= 120; i++) {
+    const p = revealProgress(1 + (i / 120) * 0.8, 1, { ...sp, dur: 0.8 });
+    assert.ok(p >= prev - 1e-9 && p <= 1, `monotone and within 0..1 at step ${i}`);
+    assert.ok(p - prev < 0.08, `no jump at step ${i}: ${prev} -> ${p}`);
+    prev = p;
+  }
+  // The default dur is where the spring has visibly arrived (97%).
+  const dur = springReach(sp.k, sp.d, 0.97);
+  assert.equal(revealProgress(1 + dur, 1, sp), 1);
+  assert.ok(revealProgress(1 + dur - 0.05, 1, sp) < 1);
 });
