@@ -106,8 +106,16 @@ export function clipping(
     cues: () => contacts(moves),
     draw(t) {
       const p = pose(moves, t);
+      // Gone (not yet slapped, or its exit move is over): the faces, the flap and whatever a film
+      // added on the piece go with it. A child with its own `visibility: visible` shows through a
+      // hidden parent, so the wrapper is taken out of the layout too.
       wrap.style.visibility = p.visible ? "visible" : "hidden";
-      if (!p.visible) return;
+      wrap.style.display = p.visible ? "" : "none";
+      if (!p.visible) {
+        for (const e of [face, rear, flap]) e.style.visibility = "hidden";
+        return;
+      }
+      flap.style.visibility = "";
       const step = boil ? boilStep(t) : 0;
       if (edge === "torn")
         for (const e of [face, rear]) e.style.clipPath = edges[step];

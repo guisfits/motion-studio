@@ -225,3 +225,34 @@ test("clipping: a flip with no back shows blank paper, cut and shaded like the f
   assert.ok(r.rearClip, "same torn edge as the face");
   assert.match(r.rearFilter, /brightness\(0\.75\)/);
 });
+
+test("clipping: once its exit move is over, nothing of the piece stays on screen, and seeking back shows it again", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const shown = (el) => el.checkVisibility({ visibilityProperty: true });
+    const everyNode = (c) => [c.el, ...c.el.querySelectorAll("*")];
+    const out = {};
+    for (const kind of ["peel", "crumple", "lift"]) {
+      const c = window.clipping(S, {
+        img: S.img.a, back: S.img.b, w: 200, x: 300, y: 300,
+        moves: [{ kind: "slap", at: 0 }, { kind, at: 1 }],
+      });
+      // A part a film adds on the piece (typed text) keeps its own explicit visibility.
+      const part = document.createElement("div");
+      part.style.cssText = "position:absolute;width:20px;height:20px;visibility:visible";
+      c.el.append(part);
+      c.draw(0.8);
+      c.draw(6);
+      const gone = everyNode(c).map(shown);
+      c.draw(0.8);
+      out[kind] = { visibleBefore: shown(c.el) && shown(c.el.firstChild), gone, again: shown(c.el) && shown(c.el.firstChild) && shown(part), n: gone.length };
+    }
+    return out;
+  });
+  for (const [kind, o] of Object.entries(r)) {
+    assert.ok(o.visibleBefore, `${kind}: shown while it is on the table`);
+    assert.ok(o.n >= 5, `${kind}: wrapper, faces, flap and the added part were all checked`);
+    assert.deepEqual(o.gone.filter(Boolean), [], `${kind}: everything is hidden after the exit`);
+    assert.ok(o.again, `${kind}: seeking back shows the piece and its part again`);
+  }
+});
