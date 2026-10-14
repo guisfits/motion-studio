@@ -60,7 +60,12 @@ export function polyMask(w, h, poly) {
 const at = (a, w, h, x, y) =>
   x < 0 || y < 0 || x >= w || y >= h ? 0 : a[(y | 0) * w + (x | 0)];
 
-export function tornAlpha(alpha, w, h, { seed, depth = 9, freq = 0.035 }) {
+export function tornAlpha(
+  alpha,
+  w,
+  h,
+  { seed, depth = 9, freq = 0.035 },
+) {
   const out = new Uint8Array(w * h);
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {
@@ -93,7 +98,7 @@ export function fibreRim(alpha, w, h, { width = 7, seed }) {
 
 export function fitSize(w, h, max = 1600) {
   const s = Math.min(1, max / Math.max(w, h));
-  return [Math.round(w * s), Math.round(h * s)];
+  return [Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s))];
 }
 
 export function bake(
