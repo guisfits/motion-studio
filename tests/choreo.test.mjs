@@ -212,3 +212,9 @@ test("boilStep stays in 0..drawings-1 before t = 0", () => {
     assert.ok(b >= 0 && b <= 2, `boilStep(${i}/12) = ${b}`);
   }
 });
+
+test("an unknown move kind is named by both pose() and contacts()", () => {
+  const m = [{ kind: "teleport", at: 0 }];
+  assert.throws(() => pose(m, 0), /unknown move "teleport"/);
+  assert.throws(() => contacts(m), /unknown move "teleport"/);
+});

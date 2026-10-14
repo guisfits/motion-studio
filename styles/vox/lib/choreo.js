@@ -161,6 +161,12 @@ function resolveFolds(moves) {
   return starts;
 }
 
+const moveOf = (m) => {
+  const mv = MOVES[m.kind];
+  if (!mv) throw new Error(`choreo: unknown move "${m.kind}"`);
+  return mv;
+};
+
 // Sums every move's partial pose at t. Moves may come in any order: the effects add up, and the
 // fold is the one started latest (by `at`), so the result is a pure function of (moves, t).
 export function pose(moves, t) {
@@ -181,9 +187,7 @@ export function pose(moves, t) {
   };
   let fold = null;
   for (const m of moves) {
-    const mv = MOVES[m.kind];
-    if (!mv) throw new Error(`choreo: unknown move "${m.kind}"`);
-    const q = mv.pose(t, m.kind === "fold" ? { ...m, fromFold: starts.get(m) } : m);
+    const q = moveOf(m).pose(t, m.kind === "fold" ? { ...m, fromFold: starts.get(m) } : m);
     if (q.visible === false) p.visible = false;
     p.dx += q.dx ?? 0;
     p.dy += q.dy ?? 0;
@@ -204,7 +208,7 @@ export function pose(moves, t) {
 // Contact cues, time-sorted; hits within 80 ms merge into one, louder (a pile landing at once).
 export function contacts(moves) {
   const raw = moves
-    .map((m) => ({ gain: 1, ...MOVES[m.kind].land(m) }))
+    .map((m) => ({ gain: 1, ...moveOf(m).land(m) }))
     .sort((a, b) => a.t - b.t);
   const out = [];
   for (const c of raw) {
