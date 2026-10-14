@@ -30,6 +30,7 @@ import {
 } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cutRegions } from "./reference/regions.mjs";
 import { makeSheet } from "./critique/sheet.mjs";
 import { rootFor } from "./server.mjs";
 
@@ -144,6 +145,34 @@ function build() {
     }
     const out = outPath(p);
     mkdirSync(dirname(out), { recursive: true });
+    if (p.cut === "regions") {
+      // One source, N pieces: each region becomes <id>-<region>.png with its own manifest row.
+      const dest = dirname(out);
+      const outs = p.regions.map((r) => join(dest, `${p.id}-${r.id}.png`));
+      try {
+        if (!outs.every((o) => fresh(p.abs, o))) {
+          cutRegions(p.abs, p, dest);
+          built += outs.length;
+        }
+      } catch (e) {
+        failedCuts.push(`${p.kind}/${p.id} (regions): ${String(e.stderr ?? e.message).trim().split("\n").pop()}`);
+        continue;
+      }
+      for (const [i, r] of p.regions.entries()) {
+        const [w, h] = size(outs[i]);
+        manifest[`${p.kind}/${p.id}-${r.id}`] = {
+          path: `/${relative(ROOT, outs[i]).split(sep).join("/")}`,
+          kind: p.kind,
+          w,
+          h,
+          tags: p.tags ?? [],
+          material: p.material,
+          source: p.source,
+          license: p.license,
+        };
+      }
+      continue;
+    }
     if (p.kind === "take") {
       if (flag("takes") && !fresh(p.abs, join(out, "clip.json")))
         execFileSync(
@@ -182,6 +211,8 @@ function build() {
   console.log(
     `kit: ${built} built, ${Object.keys(manifest).length} in manifest → ${manifestPath}`,
   );
+  if (failedCuts.length)
+    console.log(`failed cuts (${failedCuts.length}):\n  ${failedCuts.join("\n  ")}`);
   if (missing.length)
     console.log(
       `missing sources (${missing.length}):\n  ${missing.join("\n  ")}`,
