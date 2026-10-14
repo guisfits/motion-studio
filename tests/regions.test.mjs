@@ -187,3 +187,19 @@ test("oven paper and grain reach the bake: a red paper gives a red rim", () => {
   assert.equal(red({ seed: 2 }, "cream"), 0, "default rim is cream");
   assert.ok(red({ seed: 2, paper: [220, 40, 40], grain: 0 }, "redrim") > 0, "paper colour used");
 });
+
+test("oven paper must be [r, g, b] and grain a number: a hex string fails instead of baking a black rim", () => {
+  const poly = [
+    [0.1, 0.1],
+    [0.9, 0.1],
+    [0.9, 0.9],
+    [0.1, 0.9],
+  ];
+  const cut = (oven) =>
+    cutRegions(jpg, { id: "badoven", cut: "regions", oven, regions: [{ id: "r", poly }] }, dir);
+  assert.throws(() => cut({ paper: "#cc0000" }), /badoven.*oven\.paper/);
+  assert.throws(() => cut({ paper: [220, 40] }), /oven\.paper/);
+  assert.throws(() => cut({ paper: [220, 40, "x"] }), /oven\.paper/);
+  assert.throws(() => cut({ grain: "0.1" }), /badoven.*oven\.grain/);
+  assert.doesNotThrow(() => cut({ paper: [220, 40, 40], grain: 0 }));
+});

@@ -77,6 +77,11 @@ export function writePNG(path, w, h, rgba) {
 export function cutRegions(srcPath, entry, outDir) {
   const { w, h, rgba } = readRGBA(srcPath);
   const o = { seed: 1, rim: 7, depth: 9, ...(entry.oven ?? {}) };
+  // bake() multiplies these: a hex string or a short array would turn the rim black, silently.
+  if (o.paper !== undefined && !(Array.isArray(o.paper) && o.paper.length === 3 && o.paper.every(Number.isFinite)))
+    throw new Error(`regions: ${entry.id} oven.paper must be [r, g, b] numbers`);
+  if (o.grain !== undefined && !Number.isFinite(o.grain))
+    throw new Error(`regions: ${entry.id} oven.grain must be a number`);
   const pad = o.rim + o.depth + 2;
   const seen = new Set();
   return entry.regions.map((r, i) => {
