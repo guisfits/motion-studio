@@ -136,3 +136,23 @@ test("a polygon partly off the image clamps to it; fully off fails with its id",
   };
   assert.throws(() => cutRegions(jpg, off, dir), /scan-gone.*empty/);
 });
+
+test("EXIF orientation is honoured: no squashing, pixels match the upright image", () => {
+  const raw = join(dir, "raw.jpg");
+  execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=blue:s=400x300,drawbox=x=200:y=0:w=200:h=300:c=red:t=fill", "-frames:v", "1", raw]);
+  const jpeg = readFileSync(raw);
+  // APP1 "Exif" segment with one IFD0 entry: Orientation (0x0112) = 6, rotate 90 clockwise.
+  const tiff = Buffer.from("4d4d002a000000080001011200030000000100060000" + "00000000", "hex");
+  const exif = Buffer.concat([Buffer.from("Exif\0\0"), tiff]);
+  const seg = Buffer.concat([Buffer.from([0xff, 0xe1, 0, 0]), exif]);
+  seg.writeUInt16BE(exif.length + 2, 2);
+  const rot = join(dir, "rot.jpg");
+  writeFileSync(rot, Buffer.concat([jpeg.subarray(0, 2), seg, jpeg.subarray(2)]));
+  const { w, h, rgba } = readRGBA(rot);
+  assert.deepEqual([w, h], [300, 400], "dimensions are the upright ones");
+  const px = (x, y) => rgba.subarray((y * w + x) * 4, (y * w + x) * 4 + 3);
+  const top = px(150, 50),
+    bottom = px(150, 350);
+  assert.ok(top[2] > top[0], "left half (blue) lands on top after a clockwise turn");
+  assert.ok(bottom[0] > bottom[2], "right half (red) lands at the bottom");
+});

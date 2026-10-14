@@ -7,20 +7,27 @@ import { join } from "node:path";
 import { polyMask, fitSize, bake } from "./oven.mjs";
 
 export function readRGBA(path, max = 1600) {
-  const probe = execFileSync("ffprobe", [
-    "-v",
-    "error",
-    "-select_streams",
-    "v:0",
-    "-show_entries",
-    "stream=width,height",
-    "-of",
-    "csv=p=0",
-    path,
-  ])
-    .toString()
-    .trim();
-  const [w0, h0] = probe.split(",").map(Number);
+  // ffmpeg turns the picture upright by its EXIF/display-matrix rotation, but the stream size is
+  // the stored one: read the first frame's size and swap it for a quarter turn.
+  const info = JSON.parse(
+    execFileSync("ffprobe", [
+      "-v",
+      "error",
+      "-select_streams",
+      "v:0",
+      "-read_intervals",
+      "%+#1",
+      "-show_frames",
+      "-show_entries",
+      "frame=width,height:frame_side_data=rotation",
+      "-of",
+      "json",
+      path,
+    ]).toString(),
+  ).frames[0];
+  const turn = (info.side_data_list ?? []).find((d) => "rotation" in d)?.rotation ?? 0;
+  const quarter = Math.abs(turn) % 180 === 90;
+  const [w0, h0] = quarter ? [info.height, info.width] : [info.width, info.height];
   const [w, h] = fitSize(w0, h0, max);
   const buf = execFileSync(
     "ffmpeg",
