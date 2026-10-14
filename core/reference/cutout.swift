@@ -90,9 +90,15 @@ func outline(of mask: CVPixelBuffer, maxPoints: Int = 40) -> [[Double]]? {
     epsilon *= 1.3
     simplified = try? largest.polygonApproximation(epsilon: epsilon)
   }
-  guard let points = simplified?.normalizedPoints, points.count >= 3 else { return nil }
-  // Vision is bottom-left; the catalog is top-left.
-  return points.map { [Double($0.x), 1 - Double($0.y)] }
+  guard var points = simplified?.normalizedPoints, points.count >= 3 else { return nil }
+  // Epsilon is capped, so a very busy outline can still be over budget: thin it evenly.
+  if points.count > maxPoints {
+    points = (0..<maxPoints).map { points[$0 * points.count / maxPoints] }
+  }
+  // Vision is bottom-left; the catalog is top-left. Keep u,v inside 0..1 (contours can touch
+  // the border by a rounding hair).
+  func unit(_ v: Double) -> Double { min(1, max(0, v)) }
+  return points.map { [unit(Double($0.x)), unit(1 - Double($0.y))] }
 }
 
 func instances(_ image: CIImage) {
@@ -106,7 +112,10 @@ func instances(_ image: CIImage) {
   for index in result.allInstances.sorted() {
     do {
       let mask = try result.generateScaledMaskForImage(forInstances: IndexSet(integer: index), from: handler)
-      guard let poly = outline(of: mask) else { continue }
+      guard let poly = outline(of: mask) else {
+        FileHandle.standardError.write(Data("cutout: instance \(index) skipped (no usable outline)\n".utf8))
+        continue
+      }
       regions.append(["id": "i\(regions.count + 1)", "poly": poly])
     } catch { fail("mask: \(error)") }
   }
