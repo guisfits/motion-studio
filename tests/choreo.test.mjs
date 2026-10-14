@@ -168,3 +168,47 @@ test("boilStep cycles hand drawings on a 12 fps clock", () => {
   assert.equal(boilStep(3 / 12), 0);
   assert.equal(boilStep(0.05), 0);
 });
+
+test("fold unfolds from where it is: no snap when a fold to 0 follows a fold to 0.5", () => {
+  const m = [
+    { kind: "fold", at: 0, to: 0.5 },
+    { kind: "fold", at: 2, to: 0 },
+  ];
+  const f = pose(m, 2.2).fold;
+  assert.ok(f > 0 && f < 0.5, `unfolding from 0.5, got ${f}`);
+  // fold animates on twos (12 fps): one tick of the spring is the largest allowed frame step.
+  for (let i = 1; i <= 300; i++) {
+    const d = Math.abs(pose(m, i / 60).fold - pose(m, (i - 1) / 60).fold);
+    assert.ok(d < 0.2, `fold jumps ${d} at ${i / 60}s`);
+  }
+  near(pose(m, 1.99).fold, pose(m, 2.0).fold, 0.02);
+});
+
+test("fold interrupted mid-motion continues from the current value, no jump", () => {
+  const m = [
+    { kind: "fold", at: 0, to: 1 },
+    { kind: "fold", at: 0.1, to: 0 },
+  ];
+  const before = pose(m, 0.0999).fold;
+  const after = pose(m, 0.1001).fold;
+  assert.ok(Math.abs(after - before) < 0.05, `jump ${before} → ${after}`);
+});
+
+test("fold moves given out of order resolve by their at, not array order", () => {
+  const ordered = [
+    { kind: "fold", at: 0, to: 0.5 },
+    { kind: "fold", at: 2, to: 0 },
+  ];
+  const shuffled = [ordered[1], ordered[0]];
+  for (const t of [0.5, 1.9, 2.1, 4])
+    near(pose(shuffled, t).fold, pose(ordered, t).fold);
+});
+
+test("boilStep stays in 0..drawings-1 before t = 0", () => {
+  assert.equal(boilStep(-1 / 12), 2);
+  assert.equal(boilStep(-0.01), 2);
+  for (let i = -48; i <= 48; i++) {
+    const b = boilStep(i / 12);
+    assert.ok(b >= 0 && b <= 2, `boilStep(${i}/12) = ${b}`);
+  }
+});

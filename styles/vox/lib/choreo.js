@@ -106,6 +106,7 @@ export const MOVES = {
               from: m.fromFold ?? 0,
               to: m.to ?? 0.5,
               e: hand(t, m.at, SOFT),
+              at: m.at,
             },
           },
     land: (m) => ({ t: m.at, type: "fold" }),
@@ -141,7 +142,28 @@ export const MOVES = {
   },
 };
 
+// Folds chain in `at` order: each one starts where the fold before it stands at its `at`, so an
+// unfold continues from the current fold instead of snapping. `fromFold` overrides the chain.
+function resolveFolds(moves) {
+  const starts = new Map();
+  let last = null;
+  const folds = moves
+    .filter((m) => m.kind === "fold")
+    .sort((a, b) => a.at - b.at);
+  for (const m of folds) {
+    const from =
+      m.fromFold ??
+      (last ? last.from + (last.to - last.from) * hand(m.at, last.at, SOFT) : 0);
+    starts.set(m, from);
+    last = { from, to: m.to ?? 0.5, at: m.at };
+  }
+  return starts;
+}
+
+// Sums every move's partial pose at t. Moves may come in any order: the effects add up, and the
+// fold is the one started latest (by `at`), so the result is a pure function of (moves, t).
 export function pose(moves, t) {
+  const starts = resolveFolds(moves);
   const p = {
     visible: true,
     dx: 0,
@@ -159,7 +181,7 @@ export function pose(moves, t) {
   for (const m of moves) {
     const mv = MOVES[m.kind];
     if (!mv) throw new Error(`choreo: unknown move "${m.kind}"`);
-    const q = mv.pose(t, m);
+    const q = mv.pose(t, m.kind === "fold" ? { ...m, fromFold: starts.get(m) } : m);
     if (q.visible === false) p.visible = false;
     p.dx += q.dx ?? 0;
     p.dy += q.dy ?? 0;
@@ -170,7 +192,7 @@ export function pose(moves, t) {
     p.curl = Math.max(p.curl, q.curl ?? 0);
     p.flip = Math.max(p.flip, q.flip ?? 0);
     p.crumple = Math.max(p.crumple, q.crumple ?? 0);
-    if (q.fold) fold = q.fold; // moves are in time order: the last started fold wins
+    if (q.fold && (!fold || q.fold.at >= fold.at)) fold = q.fold;
   }
   if (fold) p.fold = clamp(fold.from + (fold.to - fold.from) * fold.e, 0, 1);
   return p;
@@ -203,5 +225,7 @@ export function pile(n, { x, y, spread = 60, seed = 1, z0 = 0 }) {
 }
 
 // Which of `drawings` hand-redrawn edges shows at t (the "boil" of paper animated on twos).
-export const boilStep = (t, fps = HAND_FPS, drawings = 3) =>
-  Math.floor(t * fps + 1e-6) % drawings;
+export const boilStep = (t, fps = HAND_FPS, drawings = 3) => {
+  const n = Math.floor(t * fps + 1e-6);
+  return ((n % drawings) + drawings) % drawings;
+};
