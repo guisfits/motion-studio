@@ -98,7 +98,8 @@ test("a PNG with its own transparency keeps it inside the polygon", () => {
     dir,
   );
   const clip = readRGBA(out);
+  assert.ok(clip.w < 130, "cropped to the opaque half, not the whole polygon");
   const px = (x, y) => clip.rgba[(y * clip.w + x) * 4 + 3];
-  assert.equal(px(40, 50), 0, "the source's transparent half stays transparent");
-  assert.equal(px(150, 50), 255, "the source's opaque half stays opaque");
+  assert.equal(px(1, 50), 0, "the source's transparent half stays transparent");
+  assert.equal(px(clip.w - 20, 50), 255, "the source's opaque half stays opaque");
 });
