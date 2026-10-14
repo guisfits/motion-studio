@@ -224,23 +224,25 @@ function discClip(seed, step) {
 
 // A silhouette (a cutout with alpha) sliced into horizontal bands at `cuts` (fractions of its
 // height). Each band is a full-size clipping on the same spot, so they assemble into the whole;
-// moves(i) gives band i its own moves (a slide off line, a late slap).
-//   K.sliced(stage, { img, w, x, y, cuts: [0.24, 0.34], moves: (i) => [{ kind: "slap", at: 1 + 0.2 * i }] })
-export function sliced(stage, { cuts, moves = () => [], seed = 1, z = 0, ...o }) {
+// moves(i) gives band i its own moves (a slide, a late slap); place(i) may move its rest spot
+// ({ x, y, rot }), e.g. the eye band pushed off line.
+//   K.sliced(stage, { img, w, x, y, cuts: [0.24, 0.34], moves: (i) => [{ kind: "slap", at: 1 + 0.2 * i }],
+//                     place: (i) => (i === 1 ? { x: x + 60 } : {}) })
+export function sliced(stage, { cuts, moves = () => [], place = () => ({}), seed = 1, z = 0, ...o }) {
   const edges = [0, ...cuts, 1];
   return edges.slice(0, -1).map((a, i) =>
-    clipping(stage, { ...o, seed, z: z + i * 0.1, band: [a, edges[i + 1]], moves: moves(i) }),
+    clipping(stage, { ...o, seed, z: z + i * 0.1, band: [a, edges[i + 1]], moves: moves(i), ...place(i) }),
   );
 }
 
 // A ransom label: a strip of black paper, light typewriter caps typed on it from tIn (one key
 // cue per letter), slapped on the table at `moves` (default: a slap 0.25 s before tIn).
 //   K.ransom(stage, { text: "Uma palavra", size: 56, x, y, rot: -2, tIn: V.at("palavra") })
-export function ransom(stage, { text, size = 48, tIn, cps = 16, ink = "#f4efe4", paper = "#141210", face: font, moves, ...o }) {
+export function ransom(stage, { text, size = 48, weight = 400, tIn, cps = 16, ink = "#f4efe4", paper = "#141210", face: font, moves, ...o }) {
   const caps = text.toUpperCase();
   const family = font ?? theme().families.typewriter;
   const meter = document.createElement("canvas").getContext("2d");
-  meter.font = `400 ${size}px ${family}`;
+  meter.font = `${weight} ${size}px ${family}`;
   const padX = size * 0.38, padY = size * 0.26;
   const w = Math.ceil(meter.measureText(caps).width * 1.04 + size * 0.04 * caps.length + 2 * padX);
   const h = Math.ceil(size * 1.05 + 2 * padY);
@@ -248,7 +250,7 @@ export function ransom(stage, { text, size = 48, tIn, cps = 16, ink = "#f4efe4",
   const txt = document.createElement("div");
   txt.dataset.part = "text";
   Object.assign(txt.style, {
-    position: "absolute", left: `${padX}px`, top: `${padY + size * 0.08}px`, font: `400 ${size}px/1 ${family}`,
+    position: "absolute", left: `${padX}px`, top: `${padY + size * 0.08}px`, font: `${weight} ${size}px/1 ${family}`,
     letterSpacing: "0.04em", color: ink, whiteSpace: "pre",
   });
   c.el.firstChild.append(txt);

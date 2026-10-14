@@ -345,16 +345,18 @@ test("clipping: flat coloured paper needs no image; a disc is cut round", async 
 test("sliced: a silhouette cut in horizontal bands whose neighbouring tears match exactly", async () => {
   const r = await probe(() => {
     const S = window.STAGE;
-    const parts = window.K.sliced(S, { img: S.img.a, w: 400, x: 540, y: 900, cuts: [0.3, 0.45], seed: 4, moves: (i) => [{ kind: "slap", at: 0.1 * i }] });
+    const parts = window.K.sliced(S, { img: S.img.a, w: 400, x: 540, y: 900, cuts: [0.3, 0.45], seed: 4, moves: (i) => [{ kind: "slap", at: 0.1 * i }], place: (i) => (i === 1 ? { x: 600 } : {}) });
     parts.forEach((p) => p.draw(2));
+    const tx = (p) => +p.el.style.transform.match(/^translate\(([-\d.]+)px/)[1];
     const pts = (p) => p.el.firstChild.style.clipPath.replace(/^polygon\(|\)$/g, "").split(",").map((s) => s.trim());
     const [a, b, c] = parts.map(pts);
-    return { n: parts.length, hs: parts.map((p) => p.h), aEnd: a.slice(-12), bStart: b.slice(0, 12), cues: parts.map((p) => p.cues().length) };
+    return { shift: tx(parts[1]) - tx(parts[0]), n: parts.length, hs: parts.map((p) => p.h), aEnd: a.slice(-12), bStart: b.slice(0, 12), cues: parts.map((p) => p.cues().length) };
   });
   assert.equal(r.n, 3);
   assert.ok(r.hs.every((h) => h === r.hs[0]), "every band is a full-size box (one shared frame)");
   assert.deepEqual(r.aEnd.slice().reverse(), r.bStart, "the cut under band 1 is the cut over band 2");
   assert.deepEqual(r.cues, [1, 1, 1]);
+  assert.equal(r.shift, 60, "place(i) moves one band's rest spot off line");
 });
 
 test("ransom: a black strip whose caps are typed on, sized to its text, with key cues after its landing", async () => {
