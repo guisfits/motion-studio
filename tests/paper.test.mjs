@@ -1,0 +1,80 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { fileURLToPath } from "node:url";
+import { ensureAssets } from "./_assets.mjs";
+
+const fixture = fileURLToPath(new URL("./fixture-paper", import.meta.url));
+ensureAssets();
+
+async function inPage(fn) {
+  const { chromium } = await import("playwright");
+  const { startServer, filmUrl } = await import("../core/server.mjs");
+  const server = await startServer();
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1080, height: 1920 },
+    });
+    await page.goto(filmUrl(server, fixture, "?format=9x16&render=1"));
+    await page.waitForFunction(() => window.ready === true, null, {
+      timeout: 60_000,
+    });
+    return await page.evaluate(fn);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+}
+
+test("clipping: stacking, boil, fold, crumple, determinism", async () => {
+  const r = await inPage(async () => {
+    const { A, B } = window.PAPER;
+    const snap = (e) => ({
+      t: e.style.transform,
+      c: e.firstChild.style.clipPath,
+      z: e.style.zIndex,
+      v: e.style.visibility,
+    });
+    await window.seek(0.3);
+    const hiddenA = A.el.style.visibility;
+    await window.seek(1.5);
+    const s15 = snap(A.el);
+    const zA = +A.el.style.zIndex,
+      zB = +B.el.style.zIndex;
+    await window.seek(1.5 + 1 / 12);
+    const clipNext = A.el.firstChild.style.clipPath;
+    await window.seek(2.6);
+    const folded = A.el.dataset.fold;
+    await window.seek(4.5);
+    const gone = A.el.style.visibility;
+    await window.seek(1.5);
+    const again = snap(A.el);
+    return {
+      hiddenA,
+      s15,
+      zA,
+      zB,
+      clipNext,
+      folded,
+      gone,
+      again,
+      cues: window.CUES.map((c) => c.type),
+    };
+  });
+  assert.equal(r.hiddenA, "hidden");
+  assert.ok(r.zB < r.zA, "B slid under A");
+  assert.notEqual(r.clipNext, r.s15.c, "torn edge boils on the 12 fps clock");
+  assert.ok(Math.abs(+r.folded - 0.5) < 0.05);
+  assert.equal(r.gone, "hidden");
+  assert.deepEqual(
+    r.again,
+    r.s15,
+    "same t, same frame after seeking elsewhere",
+  );
+  assert.deepEqual(r.cues.sort(), [
+    "crumple",
+    "fold",
+    "paper-place",
+    "paper-slide",
+  ]);
+});

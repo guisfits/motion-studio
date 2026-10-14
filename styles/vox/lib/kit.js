@@ -868,3 +868,6 @@ export function inkSpill(stage, {
 
 // Editorial moves built on these components (heroWord, counter, docZoom, route, split).
 export * from "./moves.js";
+
+export * from "./choreo.js";
+export * from "./paper.js";
