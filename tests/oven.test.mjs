@@ -77,6 +77,14 @@ test("fitSize never returns a zero side for a very thin source", () => {
   assert.deepEqual(fitSize(2, 9000, 1600), [1, 1600]);
 });
 
+test("tornAlpha and fibreRim default their seed like bake does", () => {
+  const t = tornAlpha(square, W, H, {});
+  assert.deepEqual(t, tornAlpha(square, W, H, { seed: 1 }));
+  assert.ok(t.some((v) => v), "not the all-NaN-sampled empty result");
+  assert.deepEqual(fibreRim(square, W, H, {}), fibreRim(square, W, H, { seed: 1 }));
+  assert.deepEqual(t, tornAlpha(square, W, H));
+});
+
 test("bake: opaque body, paper-white rim, transparent outside, deterministic", () => {
   const rgba = new Uint8ClampedArray(W * H * 4).fill(40);
   const out = bake(rgba, W, H, { alpha: square, seed: 2, depth: 0 }); // depth 0: the edge stays put, so the rim's place is known

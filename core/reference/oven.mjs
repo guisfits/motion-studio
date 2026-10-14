@@ -64,7 +64,7 @@ export function tornAlpha(
   alpha,
   w,
   h,
-  { seed, depth = 9, freq = 0.035 },
+  { seed = 1, depth = 9, freq = 0.035 } = {},
 ) {
   const out = new Uint8Array(w * h);
   for (let y = 0; y < h; y++)
@@ -76,7 +76,7 @@ export function tornAlpha(
   return out;
 }
 
-export function fibreRim(alpha, w, h, { width = 7, seed }) {
+export function fibreRim(alpha, w, h, { width = 7, seed = 1 } = {}) {
   const out = new Uint8Array(w * h);
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {
