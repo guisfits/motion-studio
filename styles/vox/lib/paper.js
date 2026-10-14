@@ -8,11 +8,18 @@
 //   stage.run((t) => c.draw(t));   window.CUES.push(...c.cues());
 
 import { pose, contacts, boilStep } from "./choreo.js";
-import { tornClip } from "./kit.js";
+import { tornClip, halftoneFilter } from "./kit.js";
 import { rng } from "../../../core/lib/motion.js";
 
 const EDGES = ["torn", "baked", "straight"];
 const SHADOW = "rgba(30,20,10,";
+// The folded-over triangle sits in the corner's box with its right angle at the box's inner corner.
+const CURL_SHAPE = {
+  tr: "polygon(0 0, 100% 100%, 0 100%)",
+  tl: "polygon(100% 0, 0 100%, 100% 100%)",
+  br: "polygon(0 0, 100% 0, 0 100%)",
+  bl: "polygon(0 0, 100% 0, 100% 100%)",
+};
 
 export function clipping(
   stage,
@@ -24,9 +31,10 @@ export function clipping(
     y,
     rot = 0,
     z = 0,
-    moves,
+    moves = [],
     edge = "torn",
     boil = true,
+    halftone = false,
     seed,
     parent = stage.dom,
   },
@@ -54,21 +62,29 @@ export function clipping(
       inset: "0",
       width: "100%",
       height: "100%",
-      backfaceVisibility: "hidden",
     });
-  if (rear) rear.style.transform = "rotateY(180deg)";
+  // The wrapper's x scale goes negative past the half turn and mirrors everything; the rear is
+  // pre-mirrored so it reads right.
+  if (rear) rear.style.transform = "scaleX(-1)";
   // The curl: a lighter triangle of the paper's back, folded over the corner.
+  // The shadow lives on the unclipped box, the clip on the shape inside it.
   const flap = document.createElement("div");
+  const flapShape = document.createElement("div");
   Object.assign(flap.style, {
     position: "absolute",
     width: "0",
     height: "0",
-    background: "#efe7d6",
-    boxShadow: "-3px 3px 6px rgba(30,20,10,.35)",
+    filter: `drop-shadow(-3px 3px 3px ${SHADOW}.35))`,
   });
+  Object.assign(flapShape.style, { width: "100%", height: "100%", background: "#efe7d6" });
+  flap.append(flapShape);
   wrap.append(face, ...(rear ? [rear] : []), flap);
   parent.append(wrap);
   stage.pending.push(face.decode().catch(() => {}));
+  if (rear) stage.pending.push(rear.decode().catch(() => {}));
+  const screen = halftone
+    ? halftoneFilter(stage, halftone === true ? {} : halftone)
+    : "";
   const edges = [0, 1, 2].map((i) => tornClip(sd + i * 101, 18, 4.5));
   const jit = rng(sd);
   const jitter = [0, 1, 2].map(() => [
@@ -76,6 +92,9 @@ export function clipping(
     (jit() - 0.5) * 1.2,
   ]);
   const curlCorner = moves.find((m) => m.kind === "peel")?.corner ?? "tr";
+  if (!CURL_SHAPE[curlCorner])
+    throw new Error(`clipping: peel corner "${curlCorner}" is not one of ${Object.keys(CURL_SHAPE).join(", ")}`);
+  flapShape.style.clipPath = CURL_SHAPE[curlCorner];
 
   return {
     el: wrap,
@@ -105,14 +124,13 @@ export function clipping(
         rear.style.visibility = p.flip >= 0.5 ? "visible" : "hidden";
       }
       // Folded half darkens (it faces away from the light); a crumpled ball is mottled grey.
-      face.style.filter = `brightness(${1 - 0.25 * fold - 0.3 * crum}) contrast(${1 + 0.4 * crum})`;
+      face.style.filter = `${screen} brightness(${1 - 0.25 * fold - 0.3 * crum}) contrast(${1 + 0.4 * crum})`;
       const c = p.curl * Math.min(w, h) * 0.45;
       Object.assign(flap.style, {
         width: `${c}px`,
         height: `${c}px`,
         left: curlCorner.endsWith("r") ? `${w - c}px` : "0",
         top: curlCorner.startsWith("t") ? "0" : `${h - c}px`,
-        clipPath: "polygon(0 0, 100% 100%, 0 100%)",
       });
       const hgt = Math.min(1, lift + 0.08);
       const s = 2 + 22 * hgt;

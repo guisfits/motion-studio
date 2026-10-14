@@ -78,3 +78,60 @@ test("clipping: stacking, boil, fold, crumple, determinism", async () => {
     "paper-slide",
   ]);
 });
+
+test("clipping: flip shows the rear, edges, halftone, invalid edge", async () => {
+  const { chromium } = await import("playwright");
+  const { startServer, filmUrl } = await import("../core/server.mjs");
+  const server = await startServer();
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+    await page.goto(filmUrl(server, fixture, "?format=9x16&render=1"));
+    await page.waitForFunction(() => window.ready === true, null, { timeout: 60_000 });
+    const px = async (t, x, y) => {
+      await page.evaluate((s) => window.seek(s), t);
+      const buf = await page.screenshot({ clip: { x, y, width: 1, height: 1 } });
+      return buf.toString("base64");
+    };
+    const state = async (t) => {
+      await page.evaluate((s) => window.seek(s), t);
+      return page.evaluate(() => {
+        const { C, D, H } = window.PAPER;
+        const [face, rear] = C.el.children;
+        return {
+          face: face.style.visibility,
+          rear: rear.style.visibility,
+          cFaceClip: face.style.clipPath,
+          dFaceClip: D.el.firstChild.style.clipPath,
+          hFilter: H.el.firstChild.style.filter,
+        };
+      });
+    };
+    const before = await state(0.8);
+    const front = await px(0.8, 200, 300);
+    const after = await state(2.5);
+    const turned = await px(2.5, 200, 300);
+    const empty = await px(2.5, 10, 1800);
+    assert.equal(before.face, "visible");
+    assert.equal(before.rear, "hidden");
+    assert.equal(after.face, "hidden");
+    assert.equal(after.rear, "visible");
+    assert.notEqual(turned, front, "the reverse is a different picture");
+    assert.notEqual(turned, empty, "the reverse renders, not blank");
+    assert.equal(after.cFaceClip, "", "straight edge: no clip-path");
+    assert.equal(after.dFaceClip, "", "baked edge: no clip-path");
+    assert.match(after.hFilter, /url\("?#/, "halftone filter on the face");
+    const threw = await page.evaluate(() => {
+      try {
+        window.clipping(window.STAGE, { img: window.STAGE.img.a, w: 10, x: 0, y: 0, edge: "x" });
+      } catch (e) {
+        return e.message;
+      }
+      return "";
+    });
+    assert.match(threw, /edge "x"/);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});

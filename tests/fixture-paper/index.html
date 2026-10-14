@@ -32,11 +32,29 @@
       seed: 5,
       moves: [{ kind: "slideUnder", at: 0.2, from: [700, 0], under: 2 }],
     });
-    window.PAPER = { A, B };
+    // C: a page with a reverse, turned over at 1 s; D/E/H: edge and halftone variants.
+    const C = clipping(stage, {
+      img: stage.img.a,
+      back: stage.img.b,
+      w: 300,
+      x: 200,
+      y: 300,
+      edge: "straight",
+      boil: false,
+      moves: [{ kind: "slap", at: 0.1 }, { kind: "flip", at: 1 }],
+    });
+    const D = clipping(stage, { img: stage.img.a, w: 200, x: 700, y: 300, edge: "baked", moves: [{ kind: "slap", at: 0.1 }] });
+    const H = clipping(stage, { img: stage.img.a, w: 200, x: 900, y: 300, halftone: true, moves: [{ kind: "slap", at: 0.1 }] });
+    window.STAGE = stage;
+    window.clipping = clipping;
+    window.PAPER = { A, B, C, D, H };
     window.CUES = [...A.cues(), ...B.cues()];
     stage.run((t) => {
       A.draw(t);
       B.draw(t);
+      C.draw(t);
+      D.draw(t);
+      H.draw(t);
     });
   </script>
 </body>
