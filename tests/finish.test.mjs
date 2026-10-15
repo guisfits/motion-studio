@@ -217,3 +217,28 @@ test("the edges never show: blur, fringe and weave leave the frame's borders at 
   }
   await page.close();
 });
+
+test("a grain built while stage.dom is swapped lands in that layer, not in the finish overlay", { timeout: 120_000 }, async () => {
+  const { page } = await open({ flicker: false, weave: false, fringe: false, scan: false, grain: false, vignette: 0.2 }, 0.5);
+  // A film's own K.grain call, and the house outro's, which builds its grain on its own layer by
+  // swapping stage.dom: where each one lands.
+  const r = await page.evaluate(() => {
+    const S = window.STAGE, K = window.K, ov = window.FIN.overlay;
+    const own = document.createElement("div");
+    S.root.append(own);
+    const filmGrain = () => ov.querySelectorAll("feTurbulence").length;
+    K.grain(S, { strength: 0.1 }); // no swap: the film's grain, above the finished composite
+    const afterFilm = { overlay: filmGrain(), own: own.querySelectorAll("feTurbulence").length };
+    const saved = S.dom;
+    S.dom = own; // what outro.js does for its own grain
+    try {
+      K.grain(S, { strength: 0.06 });
+    } finally {
+      S.dom = saved;
+    }
+    return { afterFilm, overlay: filmGrain(), own: own.querySelectorAll("feTurbulence").length };
+  });
+  assert.deepEqual(r.afterFilm, { overlay: 1, own: 0 }, "an ordinary grain goes above the composite");
+  assert.deepEqual({ overlay: r.overlay, own: r.own }, { overlay: 1, own: 1 }, "a grain built on a swapped layer stays on that layer");
+  await page.close();
+});

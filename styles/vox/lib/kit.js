@@ -540,8 +540,9 @@ export function ripple(
 }
 
 // Film grain over the whole frame (seeded per frame, never Math.random). After finish() it
-// lands in the finish overlay, above the softened composite (grain is the last step); `parent`
-// overrides where it goes.
+// lands in the finish overlay, above the softened composite (grain is the last step), unless
+// stage.dom has been swapped for a layer of its own (the house outro does, for its own grain):
+// then it stays on that layer. `parent` overrides where it goes.
 export function grain(stage, { strength = 0.08, parent } = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", stage.W);
@@ -555,7 +556,7 @@ export function grain(stage, { strength = 0.08, parent } = {}) {
   });
   svg.innerHTML = `<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="1"/>
     <feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#grain)"/>`;
-  (parent ?? stage.overlay ?? stage.dom).append(svg);
+  (parent ?? (stage.overlay && stage.dom === stage.overlayDom ? stage.overlay : stage.dom)).append(svg);
   const turb = svg.querySelector("feTurbulence");
   return {
     draw(t) {
@@ -610,6 +611,9 @@ let finishes = 0;
 //   vignette  multiply, darkening the frame's edges by this fraction       default 0.35
 //   grain     strength of K.grain, placed last above everything            default false (a film
 //             that already calls K.grain keeps it; after finish() it lands above the softening too)
+// Everything on stage.dom lands under the wrapper, and so does whatever is built on stage.dom
+// afterwards: a layer that must stay clean (an end card) goes on a div of its own appended to
+// stage.root after finish(), with stage.dom swapped to it while it is built.
 // Every step is off with `false` (or 0); with all off nothing is touched. Returns
 // { draw(t), wrap, overlay }: `wrap` holds the composite, `overlay` the vignette and grain.
 export function finish(
@@ -659,6 +663,7 @@ export function finish(
   Object.assign(overlay.style, { position: "absolute", left: "0", top: "0", width: `${stage.W}px`, height: `${stage.H}px`, pointerEvents: "none" });
   root.append(wrap, overlay);
   stage.overlay = overlay;
+  stage.overlayDom = stage.dom; // the layer the finish wrapped: only a grain built on it goes to the overlay
 
   // The filter: scan softening first, then the channel fringe on the softened picture.
   let prims = "";
