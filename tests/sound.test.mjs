@@ -24,6 +24,8 @@ import {
   measurePlan,
   mix,
   sumVoices,
+  voiceGraph,
+  VOICE_LEVEL,
   SFX_BELOW_VOICE,
   MUSIC_BELOW_VOICE,
   SFX_BELOW_MUSIC,
@@ -327,6 +329,37 @@ test("mix(): voice takes are summed into the voice stem", { timeout: 120_000 }, 
   mix({ video, out, voice: a, voiceTakes: [{ file: a, at: 1.0 }] });
   const codec = execFileSync("ffprobe", ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0", out]).toString().trim();
   assert.equal(codec, "aac");
+});
+
+// The voice leveller is opt-in: a 3:1 compressor on the summed voice stem, before the stem is
+// measured and split for the sidechains.
+test("voiceGraph: the compressor is in the voice stem's graph only with the leveller on", () => {
+  const takes = [{ file: "a.wav", at: 0 }, { file: "b.wav", at: 2 }];
+  assert.ok(!voiceGraph(takes).includes("acompressor"), "off by default");
+  assert.ok(!voiceGraph(takes, { level: false }).includes("acompressor"));
+  const g = voiceGraph(takes, { level: true });
+  assert.ok(g.includes(`acompressor=${VOICE_LEVEL}`), g);
+  assert.ok(g.indexOf("acompressor") > g.indexOf("amix=inputs=2"), "after the takes are summed");
+});
+
+test("mix(): --voice-level pulls a narration's loudness range to 3 LU or less, and leaves it alone without", { timeout: 120_000 }, () => {
+  // 4 s phrases at two levels (about 6 dB apart, 4 Hz syllables): a narration that swings, as a
+  // recorded voice does between its loud and its soft lines.
+  const voice = join(dir, "swing-voice.wav");
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i",
+    "aevalsrc='(0.5+0.5*sin(2*PI*4*t))*if(lt(mod(t,8),4),0.1,0.05)*sin(2*PI*220*t)':s=48000:d=32", voice]);
+  const video = join(dir, "swing.mp4");
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=black:s=64x64:d=32:r=10", "-c:v", "libx264", "-pix_fmt", "yuv420p", video]);
+  const lra = (voiceLevel) => {
+    const out = join(dir, `swing-${voiceLevel}.mp4`);
+    mix({ video, out, voice, voiceLevel, fadeOut: 0 });
+    const log = execFileSync("sh", ["-c", `ffmpeg -nostats -i "${out}" -af ebur128 -f null - 2>&1 | grep -A1 "Loudness range" | grep LRA:`]).toString();
+    return Number(log.match(/LRA:\s*(-?[\d.]+)/)[1]);
+  };
+  const raw = lra(false);
+  const levelled = lra(true);
+  assert.ok(raw > 3, `without the leveller the range is ${raw} LU`);
+  assert.ok(levelled <= 3, `with it the range is ${levelled} LU`);
 });
 
 // --- ducking depth, measured ---------------------------------------------------------------------

@@ -54,7 +54,7 @@ In short form the bed is a floor, never a layer the viewer notices [M]. The clas
 | Quantity | Target | Evidence |
 |---|---|---|
 | Integrated loudness | -14 LUFS (±1); every reference reel measured -14.1 to -15.0 | [M 24/24]; -14 to -16 for web [S IRPR]; -14 YouTube normalisation [S] |
-| Loudness range (LRA) | ≤ 3 LU (earn.edits 1.1–2.6; chrismoran 2.3–4.6) | [M] |
+| Loudness range (LRA) | ≤ 3 LU (earn.edits 1.1–2.6; chrismoran 2.3–4.6); the mix never narrows a narration's own range, so when its draft measures over 3 LU pass `mix.mjs --voice-level` (3:1 compressor on the voice stem; a 4.0 LU ElevenLabs take came out at 3.0) | [M]; [I engine mix] |
 | True peak | ≤ -1 dBTP | [S] |
 | 1 s RMS window | ≤ 5 dB spread across the film | [M] |
 | Music under voice | ≥ 10 LU (floor); 15–20 dB typical | [S AES; guides] |

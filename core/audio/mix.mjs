@@ -6,6 +6,8 @@
 //        [--voice-takes out/voices.auto.json]                more voice takes, each at its start
 //        [--music-gain 1] [--sfx-gain 1] [--voice-gain 1]     trims (linear) on top of the balance below
 //        [--fade-out 0.8]                                    seconds of fade at the end (0 = hard cut)
+//        [--voice-level]                                     level the voice (3:1 compressor) before it is measured;
+//                                                            off by default, the speech stays untouched
 //        [--report]                                          print how the stems sit against the voice
 //
 // The voice leads (effects louder than the voice turn a film into noise). With a
@@ -24,6 +26,12 @@
 // film declares (window.VOICE_TAKES) to out/voices.auto.json as [{ file, at }]; they are summed
 // with --voice (at 0) into one voice stem before anything is measured, so the balance, the ducking
 // and the loudness all follow one speech level.
+//
+// Voice level: the speech itself is left untouched unless --voice-level is passed. A narration that
+// swings between loud and soft lines (an ElevenLabs take measured 4.0 LU of loudness range) cannot
+// meet the craft rubric's LRA <= 3 LU through a linear loudnorm, which never changes the range; the
+// leveller compresses the summed voice stem before anything is measured, so the balance and the
+// ducking key on the levelled voice.
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -112,19 +120,24 @@ export function planLevels(levels, trims = {}) {
   return plan;
 }
 
-// Sums voice takes into one stem: each take delayed to its start `at` (seconds), nothing scaled,
-// written to `out` as 48 kHz mono PCM. takes: [{ file, at = 0 }].
-export function sumVoices(takes, out) {
-  if (!takes?.length) throw new Error("sumVoices needs at least one take");
-  const graph = takes
+// The graph that sums voice takes into [v]: each take delayed to its start `at` (seconds), nothing
+// scaled; with `level` the sum is then compressed (VOICE_LEVEL). takes: [{ file, at = 0 }].
+export function voiceGraph(takes, { level = false } = {}) {
+  return takes
     .map(
       ({ at = 0 }, i) =>
         `[${i}:a]aformat=sample_rates=48000:channel_layouts=mono,adelay=${Math.round(at * 1000)}:all=1[v${i}]`,
     )
     .concat(
-      `${takes.map((_, i) => `[v${i}]`).join("")}amix=inputs=${takes.length}:normalize=0:duration=longest[v]`,
+      `${takes.map((_, i) => `[v${i}]`).join("")}amix=inputs=${takes.length}:normalize=0:duration=longest${level ? `,acompressor=${VOICE_LEVEL}` : ""}[v]`,
     )
     .join(";");
+}
+
+// Sums voice takes into one stem, written to `out` as 48 kHz mono PCM (see voiceGraph).
+export function sumVoices(takes, out, opts) {
+  if (!takes?.length) throw new Error("sumVoices needs at least one take");
+  const graph = voiceGraph(takes, opts);
   execFileSync("ffmpeg", [
     "-y",
     "-loglevel",
@@ -140,6 +153,12 @@ export function sumVoices(takes, out) {
   ]);
   return out;
 }
+
+// The voice leveller (--voice-level). Threshold -30 dB sits under the speech body (a narration
+// reads about -22 dBFS) so every line is compressed a little and the loud lines most; 3:1 is the
+// lightest ratio that takes the 4.0 LU narration to 3.0 LU; the 10 ms attack lets a syllable's
+// onset through before the gain falls; the 250 ms release follows phrases, not single words.
+export const VOICE_LEVEL = "threshold=-30dB:ratio=3:attack=10:release=250";
 
 const STEREO = "aformat=sample_rates=48000:channel_layouts=stereo";
 
@@ -240,14 +259,18 @@ export function mix({
   gains = {},
   fadeOut = 0.8,
   report = false,
+  voiceLevel = false,
 }) {
-  // More than one take: summed into one voice stem first (see "Voice takes" above).
-  const tmp = voiceTakes.length ? mkdtempSync(join(tmpdir(), "mix-voice-")) : null;
+  // More than one take, or a leveller to apply: the voice goes through one summed stem first (see
+  // "Voice takes" and "Voice level" above).
+  const through = voiceTakes.length > 0 || (voiceLevel && voice);
+  const tmp = through ? mkdtempSync(join(tmpdir(), "mix-voice-")) : null;
   try {
     if (tmp)
       voice = sumVoices(
         [...(voice ? [{ file: voice, at: 0 }] : []), ...voiceTakes],
         join(tmp, "voice.wav"),
+        { level: voiceLevel },
       );
     return mixStems({ video, out, music, sfx, voice, gains, fadeOut, report });
   } finally {
@@ -389,6 +412,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       fadeOut:
         arg("fade-out") !== undefined ? Number(arg("fade-out")) : undefined,
       report: process.argv.includes("--report"),
+      voiceLevel: process.argv.includes("--voice-level"),
     });
     console.log(`mix → ${out}`);
   } catch (e) {
