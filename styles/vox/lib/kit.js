@@ -539,8 +539,10 @@ export function ripple(
   };
 }
 
-// Film grain over the whole frame (seeded per frame, never Math.random).
-export function grain(stage, { strength = 0.08 } = {}) {
+// Film grain over the whole frame (seeded per frame, never Math.random). After finish() it
+// lands in the finish overlay, above the softened composite (grain is the last step); `parent`
+// overrides where it goes.
+export function grain(stage, { strength = 0.08, parent } = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", stage.W);
   svg.setAttribute("height", stage.H);
@@ -553,11 +555,169 @@ export function grain(stage, { strength = 0.08 } = {}) {
   });
   svg.innerHTML = `<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="1"/>
     <feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#grain)"/>`;
-  stage.dom.append(svg);
+  (parent ?? stage.overlay ?? stage.dom).append(svg);
   const turb = svg.querySelector("feTurbulence");
   return {
     draw(t) {
       turb.setAttribute("seed", String(Math.floor(t * 24)));
+    },
+  };
+}
+
+// ── Finishing pass ────────────────────────────────────────────────────────────────────────
+
+// A step's amount: `false`, 0 or null switch it off; anything else must be a positive number.
+function amount(name, v) {
+  if (v === false || v == null || v === 0) return 0;
+  if (typeof v !== "number" || !Number.isFinite(v) || v < 0)
+    throw new Error(`finish: ${name} must be a positive number or false, got ${v}`);
+  return v;
+}
+
+// The frame's random draw: flicker gain (x2 per stop) and gate-weave offset in px. Pure in the
+// frame index floor(t * fps), so any t inside a frame repaints it identically and a seek or a
+// re-render lands on the same numbers. A step that is off returns the neutral value but still
+// consumes its draw, so switching one step never reshuffles the others.
+export function finishFrame(t, { fps = 24, seed = 1, flicker = 0.03, weave = 1 } = {}) {
+  const stops = amount("flicker", flicker);
+  const px = amount("weave", weave);
+  const frame = Math.floor(t * fps + 1e-6);
+  const r = rng(Math.imul(frame + 1, 0x9e3779b1) ^ Math.imul(seed | 0, 0x85ebca6b));
+  r();
+  const [g, x, y] = [r() * 2 - 1, r() * 2 - 1, r() * 2 - 1];
+  return { gain: stops ? 2 ** (g * stops) : 1, dx: px ? x * px : 0, dy: px ? y * px : 0 };
+}
+
+let finishes = 0;
+
+// One finishing chain over the whole frame (Chris Moran: "a stack of small imperfections applied
+// the same way to everything"; values in references/craft-chrismoran.md §1). Call it ONCE, last,
+// after the table, pieces and captions are built: everything already on the stage is moved under
+// one wrapper, so the camera and the pieces are never touched, only the finished composite.
+//
+//   const fin = K.finish(stage, { grain: 0.07 });
+//   stage.run((t) => { table.draw(t); ...; fin.draw(t); });
+//
+// Per frame (`fps`, default 24, independent of the render rate; a frame holds its values):
+//   flicker   exposure gain 2^(+-flicker) stops, new each frame            default 0.03  (false = off)
+//   weave     stepped translate of +-weave px                              default 1
+//   scale     zoom of the wrapper so the weave and the filters never show the edge, default 1.02;
+//             applied while weave, fringe or scan is on
+// Constant:
+//   fringe    red -fringe px, blue +fringe px, global                      default 1.5
+//   scan      Gaussian blur of `scan` px, then an unsharp mask (`radius` 5 px, `sharpen` 0.6) so
+//             vector edges lose their digital tell                         default 2
+//   vignette  multiply, darkening the frame's edges by this fraction       default 0.35
+//   grain     strength of K.grain, placed last above everything            default false (a film
+//             that already calls K.grain keeps it; after finish() it lands above the softening too)
+// Every step is off with `false` (or 0); with all off nothing is touched. Returns
+// { draw(t), wrap, overlay }: `wrap` holds the composite, `overlay` the vignette and grain.
+export function finish(
+  stage,
+  {
+    fps = 24,
+    seed = 1,
+    flicker = 0.03,
+    weave = 1,
+    scale = 1.02,
+    fringe = 1.5,
+    scan = 2,
+    sharpen = 0.6,
+    radius = 5,
+    vignette = 0.35,
+    grain: grainStrength = false,
+  } = {},
+) {
+  const o = {
+    fps,
+    seed,
+    flicker: amount("flicker", flicker),
+    weave: amount("weave", weave),
+    fringe: amount("fringe", fringe),
+    scan: amount("scan", scan),
+    vignette: amount("vignette", vignette),
+    grain: amount("grain", grainStrength),
+  };
+  if (o.vignette >= 1) throw new Error(`finish: vignette must be below 1, got ${vignette}`);
+  if (!(scale >= 1)) throw new Error(`finish: scale must be at least 1, got ${scale}`);
+  if (![o.flicker, o.weave, o.fringe, o.scan, o.vignette, o.grain].some(Boolean)) return { draw() {}, wrap: null, overlay: null };
+
+  const n = ++finishes;
+  const { root } = stage;
+  const wrap = document.createElement("div");
+  Object.assign(wrap.style, {
+    position: "absolute",
+    left: "0",
+    top: "0",
+    width: `${stage.W}px`,
+    height: `${stage.H}px`,
+    transformOrigin: "50% 50%",
+    background: root.style.background,
+  });
+  wrap.append(...root.childNodes);
+  const overlay = document.createElement("div");
+  Object.assign(overlay.style, { position: "absolute", left: "0", top: "0", width: `${stage.W}px`, height: `${stage.H}px`, pointerEvents: "none" });
+  root.append(wrap, overlay);
+  stage.overlay = overlay;
+
+  // The filter: scan softening first, then the channel fringe on the softened picture.
+  let prims = "";
+  let last = "SourceGraphic";
+  if (o.scan) {
+    prims += `<feGaussianBlur in="${last}" stdDeviation="${o.scan}" result="soft"/>`;
+    last = "soft";
+    if (sharpen) {
+      const k = amount("sharpen", sharpen);
+      prims += `<feGaussianBlur in="soft" stdDeviation="${amount("radius", radius)}" result="veil"/>
+        <feComposite in="soft" in2="veil" operator="arithmetic" k1="0" k2="${1 + k}" k3="${-k}" k4="0" result="scanned"/>`;
+      last = "scanned";
+    }
+  }
+  if (o.fringe) {
+    // Each channel on its own, red pulled left and blue pushed right, then screened back together.
+    const only = (m, result) => `<feColorMatrix in="${last}" type="matrix" values="${m}" result="${result}"/>`;
+    prims += `${only("1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0", "r0")}
+      ${only("0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0", "g0")}
+      ${only("0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0", "b0")}
+      <feOffset in="r0" dx="${-o.fringe}" dy="0" result="r1"/>
+      <feOffset in="b0" dx="${o.fringe}" dy="0" result="b1"/>
+      <feBlend in="r1" in2="g0" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="b1" mode="screen"/>`;
+  }
+  const fid = `finish${n}`;
+  if (prims) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    Object.assign(svg.style, { position: "absolute", width: "0", height: "0" });
+    svg.innerHTML = `<filter id="${fid}" color-interpolation-filters="sRGB">${prims}</filter>`;
+    overlay.append(svg);
+  }
+  const zoom = o.weave || o.fringe || o.scan ? scale : 1;
+
+  if (o.vignette) {
+    // Multiply by grey: 1 - strength where the frame's edges meet its axes (71% of the way to the
+    // corner), a little more in the corners; clear inside the middle third. The 100% mark is the corner.
+    const g = (k) => Math.round(255 * (1 - o.vignette * k));
+    const stop = (k, at) => `rgb(${g(k)} ${g(k)} ${g(k)}) ${at}%`;
+    const v = document.createElement("div");
+    Object.assign(v.style, {
+      position: "absolute",
+      inset: "0",
+      mixBlendMode: "multiply",
+      background: `radial-gradient(ellipse farthest-corner at 50% 50%, #fff 30%, ${stop(0.2, 52)}, ${stop(1, 71)}, ${stop(1.6, 100)})`,
+    });
+    overlay.append(v);
+  }
+  const film = o.grain ? grain(stage, { strength: o.grain, parent: overlay }) : null;
+
+  return {
+    wrap,
+    overlay,
+    draw(t) {
+      const f = finishFrame(t, o);
+      if (zoom !== 1 || o.weave) wrap.style.transform = `translate(${f.dx}px, ${f.dy}px) scale(${zoom})`;
+      const fx = [prims && `url(#${fid})`, o.flicker && `brightness(${f.gain})`].filter(Boolean);
+      if (fx.length) wrap.style.filter = fx.join(" ");
+      film?.draw(t);
     },
   };
 }
