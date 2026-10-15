@@ -18,11 +18,11 @@ is what makes mixed archive sources (scans, photos, footage, type) cohere.
 | Stepped time | 12 fps for the scene | quantise the clock `t' = floor(t*12)/12` before every animated value |
 | Exposure flicker | new random gain every frame, ±0.04 stops (screens/callouts ±0.02–0.03) | `brightness(2^rand(-0.04,0.04))`, seeded per frame |
 | Gate weave | ±1–1.5 px position, stepped; scale 101–103 % so edges never show | `translate(rand px)` per frame + `scale(1.03)` |
-| Grain | intensity ~0.3, 2 px grains, monochrome, re-seeded each frame | noise at half res, upscaled nearest, `overlay`/`soft-light` 0.15–0.3; ffmpeg `noise=alls=12:allf=t` |
+| Grain | intensity 0.3, size 1 (2 in his callouts), re-seeded each frame; monochrome only in his footage treatment 3 | noise (size 2 = half res, upscaled nearest), `overlay`/`soft-light` 0.15–0.3; ffmpeg `noise=alls=12:allf=t` |
 | Glow | threshold 183/255, radius 50, intensity 0.15 | blurred highlights pass, `screen` |
 | Chromatic aberration | 1–2 px channel offset, 1–3 px blur on the shifted channels; global, not per layer | R −d, B +d px; ffmpeg `rgbashift=rh=-2:bh=2` |
-| Vignette | edges ~0.3–0.5 darker | radial gradient, `multiply` |
-| Scan pass | Gaussian blur 2 px, then unsharp radius ~5 | last before grain: clean vector edges are the digital tell |
+| Vignette | ~0.3–0.5 darker at the edges (~; he shows it, gives no number) | radial gradient, `multiply` |
+| Scan pass | Gaussian blur 2 px, then unsharp radius ~5 (amount to taste) | once, on the composite, ~last before grain: clean vector edges are the digital tell |
 
 The flicker in his expression is per frame even though it names a 2 Hz rate (the hold variables are
 unused); keep it per frame and tiny, or it reads as a fault.
@@ -73,9 +73,9 @@ unused); keep it per frame and tiny, or it reads as a fault.
 - One type effect on screen at a time.
 - **Text belongs to its surface:** a tiny turbulent displacement (size ~2), a displacement map taken
   from the paper texture, and noise inside the glyphs at the texture's grain size.
-- Print decay: rough edges + letterpress noise inside glyphs + 0.5 px blur + a soft same-colour
-  shadow for ink bleed.
-- Print misregistration: R/G/B or ink layers offset 1–2 px (riso: 2–3 inks on Multiply, 1–4 px).
+- Print decay: rough edges + letterpress noise inside glyphs + a tiny blur (~0.5 px, ~) + a soft
+  same-colour shadow for ink bleed.
+- Print misregistration: R/G/B or ink layers offset ~1–2 px (~); riso: 2–3 inks on Multiply, 1–4 px.
 - Letter animators from his presets: random-order pop-on; rise-and-fade 30 px over 12–17 frames
   (LoadUp); a cream fill wiping through the letters; per-letter stepped jitter; odometer lock-in.
 - An accent colour can pop on arrival, then settle to charcoal.
@@ -92,9 +92,9 @@ unused); keep it per frame and tiny, or it reads as a fault.
 
 - **Cut at peak velocity:** two images share one eased scale move (B parented to A); cut where the
   curve moves fastest and keep the direction across the cut. Still cuts feel jarring.
-- **Rack focus:** blur 0 → 8 → 18 → 5 → 0 px over 18 frames with an eased 100 → 200 % zoom (his
-  Focus panel). A moving radial focus mask directs the eye on maps and documents.
-- **Photos as filmed objects:** fringe blur, dust, vignette and a slow 4–8 % push; 2.5D parallax
+- **Rack focus:** blur 0 → 8 → 18 → 5 → 0 px over 18 frames (his Focus panel), inside an eased
+  100 → 200 % zoom of 30 frames (ease influence 80 %). A moving radial focus mask directs the eye on maps and documents.
+- **Photos as filmed objects:** fringe blur, dust, vignette and a slow push (~4–8 % over the shot, ~); 2.5D parallax
   (fore/mid/background cut, hidden areas inpainted, spaced in depth, slow camera).
 
 ## 8. Screens and archive footage
@@ -117,5 +117,12 @@ unused); keep it per frame and tiny, or it reads as a fault.
   travels (a 12 fps camera judders on a one-take table); step everything placed by hand.
 - **Grain strength.** His 0.3 is After Effects grain intensity, not layer opacity; the engine's
   `grain` stays low (0.05–0.1 opacity) and gets its strength from contrast, per §2.
+- **Chromatic aberration** is global and constant in his chain; the defaults keep it at the edges
+  and occasional (`visual-language.md` §1, `motion-and-camera.md`). Keep the defaults' edge-only
+  fringe unless a film adopts the global 1–2 px pass on purpose.
+- **Cuts and palette mapping are per-film choices.** Cut-at-peak-velocity applies to films that cut;
+  a one-take film moves the camera between stations instead. Duotone mapping of every asset is for
+  films whose grade allows it; a film that keeps natural colour maps only its black-and-white
+  sources.
 - **Flicker and weave on everything** extends the defaults' "gate weave on stills": use both on the
   whole finished frame, tiny, so nothing in the film is perfectly still.
