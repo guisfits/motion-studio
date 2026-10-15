@@ -43,6 +43,11 @@ unused); keep it per frame and tiny, or it reads as a fault.
   stretching (stretched dots and fibres read as fake).
 - **Texture is a quality equaliser:** a high-res halftone or grain over a low-res asset hides it.
 - **The ground breathes:** the texture slides on a stepped wiggle (his rig) instead of sitting still.
+- **In code:** `K.texture` (`core/lib/texture.js`) implements the blend pick (`blend: "auto"` from the
+  measured background), the 50 % grey normalisation, strength as a curve, the px-per-cm tiling and
+  the stepped ground wiggle (±2 px at 12 fps by default, ~, his rig gives no number). Layer order:
+  table → texture layers → `finish` → grain. High-pass, the band stack and the pin-light recipe are
+  still by hand (bake them into the scan).
 - His texture recipe (`Texture.psd`): flat colour + a faded newspaper in Pin Light + paper ridges in
   Overlay. Code: `mix-blend-mode` stack or canvas `globalCompositeOperation`.
 
