@@ -40,8 +40,8 @@ exist only to make the evidence legible and trusted. Each beat is a mini-proof:
 |---|---|---|
 | 1 Script | question, hook, turn, payoff, CTA; three columns ears / eyes / sources | **REQUIRED SUB-SKILL:** `explainer-script` |
 | 2 Evidence | find the key document; collect the literal object for every noun; verify | `references/principles.md` |
-| 3 Design | grounds, grade, cut-outs, type tiers, marks, palette | `references/visual-language.md` |
-| 4 Animate | camera language, easing, stepped motion, transitions, holds | `references/motion-and-camera.md` |
+| 3 Design | grounds, grade, cut-outs, type tiers, marks, palette | `references/visual-language.md`; texture, colour mapping and finishing values: `references/craft-chrismoran.md` |
+| 4 Animate | camera language, easing, stepped motion, transitions, holds | `references/motion-and-camera.md`; jitter, boil, cuts on motion: `references/craft-chrismoran.md` |
 | 5 Build | style components on the engine | `references/components.md`, `motion-engine` |
 | 6 Sound | voice first, bed, sparse SFX, mix numbers | `references/sound.md` |
 | 7 Review | scored rubric + hunt list, ≥ 3 rounds | **REQUIRED SUB-SKILL:** `vox-critic` |
