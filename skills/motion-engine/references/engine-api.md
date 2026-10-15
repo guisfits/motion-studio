@@ -72,6 +72,7 @@ overlay injects its identity here, never by editing components.
 | `spring(t, k, d)` | 0→1 from t = 0. `SPRINGS.snappy` (UI, a hair of overshoot), `default` (cards, camera), `heavy` (big type, devices; no overshoot), `playful` (rarely right) |
 | `track(t, [[time, value], …], k, d)` | a value retargeted several times, continuous (retarget, never restart) |
 | `springReach(k, d, frac = 0.95)` | seconds until a spring reaches `frac`: derive cue times from it |
+| `revealProgress(t, tIn, { k, d, dur })` | a spring-paced reveal (a pen writing a line, a wipe) that is exactly 1 from `tIn + dur` on, so the last glyph is never left cropped by the spring's tail; `dur` defaults to when the spring has arrived (97%) |
 | `swapAlpha(t, tIn, tOut)` | content inside a morphing container; the old leaves before the new arrives |
 | `indicator(t, stops, width)` | stretching tab/selection bar `{left, right}` |
 | `stepped(t, fps = 12)` | quantise time for hand-moved, stop-motion feel |

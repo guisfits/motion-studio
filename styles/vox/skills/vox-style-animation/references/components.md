@@ -26,6 +26,10 @@ Colours and faces come from `theme()` (the project overlay sets them); never har
 | Plain word / label | `word`, `tag` | `face`: display, serif, body, mono, typewriter, script, hand |
 | One mark | `rubric({ kind: "underline" \| "circle" \| "arrow" })`, `highlight`, `say` marks | one per frame, drawn on in 0.3–0.5 s |
 | Writing | `handwrite` (pen along the stroke), `typewriter` (key cue per letter, collapsed to one burst by thinning) | a margin note, a factual line |
+| A line written by hand | `handText(stage, { text, x, y, size, face, color, tIn, k, d, dur, parent })` | revealed left to right at the pen's pace and finished exactly at `tIn + dur` (last glyph unclipped); `parent` puts it on a piece (a clipping's `.el`) |
+| Ransom label | `ransom(stage, { text, size, tracking, upper, face, paper, ink, tIn, cps, ...clipping options })` | a strip whose letters are typed on, one key cue each, as it feeds out; `upper: false` + `edge: "torn"` is a headline banner that keeps its tear |
+| Silhouette in bands | `sliced(stage, { img, w, x, y, cuts, moves: (i) => [...], place: (i) => ({ x }) })` | a cut-out sliced into torn bands that assemble; `place(i)` pushes one band off line |
+| Scribble round a cut-out | `outline(img, { w, offset, seed })` → `pt(u)` | a seeded path hugging the image's alpha silhouette, for a stroke reveal |
 | Numbers | `counter(stage, { from, to, tIn, dur, face: "type" \| "odometer" })` | lands on the value and holds |
 | Quote on a document | `docZoom(stage, { img, rect, word, tIn, … })` | camera push to the quote; highlighter sweeps the spoken word |
 | Map route | `route(stage, { points, tIn, dur })`, `route.follow` for camera keys | one route, storyboarded camera |
