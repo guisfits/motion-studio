@@ -10,7 +10,7 @@
 // being placed (lift → land, stepped like paper moved by hand) and leave by being lifted
 // away; type rises out of a mask and sinks back. Nothing fades in from nothing.
 
-import { spring, springReach, revealProgress, SPRINGS, stepped, progress, rng, clamp } from "../../../core/lib/motion.js";
+import { spring, springReach, revealProgress, SPRINGS, stepped, progress, rng, clamp, fbm } from "../../../core/lib/motion.js";
 import { theme } from "../../../core/lib/theme.js";
 import { tornClip } from "../../../core/lib/torn.js";
 const C = () => theme().colors;
@@ -818,14 +818,30 @@ export function caption(stage, { lead = "", key, x, y, size = 150, accent = fals
 // Ink poured onto the table (poured, never stamped): a drop falls from `from`
 // (default: above the frame), lands at (x, y) at tIn, flings droplets around and spreads into a
 // blot with a living edge. Create it BEFORE the piece it sits behind. r = final radius.
-export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
+//
+// As a transition (frame px; build it on stage.dom, over the outgoing shot):
+//   cover: true    the blot spreads until it fills the whole frame (r is worked out); `done` =
+//                  the moment no corner is left
+//   reveal: el     the ink carries the next shot: `el` (a full-frame shot built ABOVE the
+//                  outgoing one) shows inside the spreading blot, a band of ink running ahead of
+//                  it, its edge a seeded fbm outline that changes as it soaks out
+//   matte: { clip, at }  real ink footage (a makeClip of black ink on white, e.g. a splatter
+//                  landing) multiplied over the frame, its frame `at` s on the drop's contact;
+//                  shown until the frame is covered (or tOut). The procedural blot stays under it.
+//   out: el        the outgoing shot, hidden once the frame is covered (it lies under `reveal`)
+export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from, cover = false, reveal, out, matte, ring = 34 }) {
   const id = `blot${seed}${Math.round(x)}${Math.round(y)}`;
+  const { W, H } = stage;
+  const WOB = 0.22; // how far the fbm edge strays from the circle, as a share of the radius
+  const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([cx, cy]) => Math.hypot(cx - x, cy - y)));
+  // Big enough that the edge's deepest bay still clears the farthest corner.
+  const R = cover || reveal ? (far + ring) / (1 - WOB) + 8 : r;
   const src = from ?? { x: x + 60, y: y - 1400 };
   const fall = 0.32;
   const rr = rng(seed);
   const drops = Array.from({ length: 9 }, () => {
     const a = rr() * Math.PI * 2;
-    return { a, d: r * (0.75 + rr() * 0.7), s: 7 + rr() * 20 };
+    return { a, d: Math.min(R, r) * (0.75 + rr() * 0.7), s: 7 + rr() * 20 };
   });
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", "1");
@@ -836,14 +852,42 @@ export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
       <feDisplacementMap in="SourceGraphic" scale="64" xChannelSelector="R" yChannelSelector="G"/></filter>
     <g fill="${C().accent}">
       <ellipse class="drop" rx="16" ry="30"/>
-      <g filter="url(#${id})"><circle class="blot" cx="${x}" cy="${y}" r="0"/>
+      <g filter="url(#${id})">${reveal ? `<polygon class="blot"/>` : `<circle class="blot" cx="${x}" cy="${y}" r="0"/>`}
       ${drops.map(() => `<circle class="spl" r="0"/>`).join("")}</g>
     </g>`;
-  stage.dom.append(svg);
+  if (reveal) reveal.before(svg);
+  else stage.dom.append(svg);
   const drop = svg.querySelector(".drop");
   const blot = svg.querySelector(".blot");
   const spl = [...svg.querySelectorAll(".spl")];
+  // The soaked outline: radius at angle a when the spread is at e (0..1), the edge wandering
+  // as it goes (the same fbm field sampled further on, never re-rolled).
+  const edge = fbm(seed, { octaves: 4, periodX: 8 });
+  const N = 96;
+  const outline = (rad, e, inset = 0) =>
+    Array.from({ length: N }, (_, i) => {
+      const a = (i / N) * Math.PI * 2;
+      const k = Math.max(0, rad * e * (1 + WOB * edge((i / N) * 8, e * 1.5)) - inset);
+      return [x + Math.cos(a) * k, y + Math.sin(a) * k];
+    });
+  const spread = (t) => spring(t - tIn, 70, 16);
+  // The spread at which the edge's nearest point (minus the ink band) clears the farthest corner.
+  const coverAt = (() => {
+    if (!(cover || reveal)) return null;
+    for (let u = 0.001; u < 8; u += 0.001) {
+      const e = spread(tIn + u);
+      if (outline(R, e, reveal ? ring : 0).every(([px, py]) => Math.hypot(px - x, py - y) >= far)) return tIn + u;
+    }
+    return null;
+  })();
+  const shownUntil = coverAt ?? tOut;
+  if (matte) {
+    Object.assign(matte.clip.el.style, { width: `${W}px`, height: `${H}px`, objectFit: "cover", mixBlendMode: "multiply", pointerEvents: "none" });
+    (reveal ?? svg).after(matte.clip.el);
+  }
   return {
+    // The frame is all ink (cover) or all next shot (reveal) from here on.
+    done: coverAt,
     cues: () => [{ t: tIn, type: "drip" }, { t: tIn + 0.02, type: "splash", gain: 0.5 }],
     draw(t) {
       const l = leave(t, tOut);
@@ -853,8 +897,13 @@ export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
       drop.setAttribute("cy", String(src.y + (y - src.y) * f * f));
       drop.style.visibility = f > 0 && f < 1 ? "visible" : "hidden";
       // The impact: a fast spread that slows, like ink soaking into paper.
-      const e = spring(t - tIn, 70, 16);
-      blot.setAttribute("r", String(Math.max(0, r * e * (1 - l))));
+      const e = spread(t);
+      if (reveal) {
+        const pts = (inset) => outline(R, e, inset).map(([px, py]) => `${px.toFixed(1)}px ${py.toFixed(1)}px`);
+        blot.setAttribute("points", outline(R, e).map((p) => p.join(",")).join(" "));
+        const covered = coverAt != null && t >= coverAt;
+        reveal.style.clipPath = covered ? "" : t < tIn ? "polygon(0 0, 0 0, 0 0)" : `polygon(${pts(ring).join(",")})`;
+      } else blot.setAttribute("r", String(Math.max(0, R * e * (1 - l))));
       const p = spring(t - tIn, 140, 18);
       spl.forEach((c, i) => {
         const d = drops[i];
@@ -862,7 +911,14 @@ export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
         c.setAttribute("cy", String(y + Math.sin(d.a) * d.d * p));
         c.setAttribute("r", String(t >= tIn ? d.s * Math.min(1, (t - tIn) * 8) * (1 - l) : 0));
       });
-      show(svg, t >= tIn - fall);
+      const gone = coverAt != null && t >= coverAt;
+      show(svg, t >= tIn - fall && !(reveal && gone));
+      if (out) out.style.display = gone ? "none" : ""; // not visibility: its pieces set their own
+      if (matte) {
+        const on = t >= tIn && (shownUntil == null || t < shownUntil);
+        show(matte.clip.el, on);
+        if (on) matte.clip.at((matte.at ?? 0) + (t - tIn));
+      }
     },
   };
 }
@@ -1053,3 +1109,5 @@ export * from "./moves.js";
 export * from "./choreo.js";
 export * from "./paper.js";
 export * from "./outline.js";
+// Paper transitions (tearReveal, pageTurn, zoomThrough) and tapeOn.
+export * from "./transitions.js";

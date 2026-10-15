@@ -1,0 +1,68 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture transitions</title>
+<!-- Used by tests/transitions.test.mjs and as the visual check of the paper transitions
+     (vox transitions.js, kit inkBlot cover/reveal) and the table's hard cut. Five shots, each its
+     own table, stacked so every outgoing shot lies above the one it hands over to (the ink's
+     incoming shot lies above its outgoing one: the ink carries it in):
+       0.6  A → B  tearReveal from the bottom
+       2.0  B → C  pageTurn on the left spine (8 fps), crumple relief
+       3.6  C → D  inkBlot cover + reveal (?matte=1 adds the ink-footage matte stand-in)
+       5.2  D → E  zoomThrough into the dark "hole" on D, cut at peak velocity
+       6.8  E      tapeOn across a piece's top edge
+       7.9  E      a hard cut to another station of the same table -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeTable } from "../../core/lib/table.js";
+  import { makeClip } from "../../core/lib/clip.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  const P = "../.assets";
+  const q = new URLSearchParams(location.search);
+  const stage = await createStage({
+    dur: 9,
+    images: { a: `${P}/portrait-1.png`, b: `${P}/portrait-2.png`, c: `${P}/portrait-3.png`, d: `${P}/portrait-4.png`, page: `${P}/page-a.jpg`, scrap: `${P}/scrap.png` },
+  });
+  const { W, H, img } = stage;
+  // One shot: a table with a coloured ground, a page and a cut-out on it.
+  const shot = (ground, pic, rot) => {
+    const table = makeTable(stage, { breathe: 0.4 });
+    table.surface({ x: -9000, y: -9000, w: 24000, h: 24000, color: ground, shadow: false });
+    table.surface({ x: 90, y: 260, w: 900, h: 1300, src: `${P}/page-a.jpg`, rot, torn: { seed: 9 } });
+    table.add(() => [K.piece(stage, { img: pic, w: 640, x: 540, y: 980, tIn: -1, edge: "torn" })]);
+    return table;
+  };
+  // Bottom → top: E, C, D, B, A.
+  const E = shot("#2f4a5c", img.d, 2);
+  const E2 = E.station({ x: 3000, y: 400, rot: 6 });
+  E2.surface({ x: 60, y: 300, w: 960, h: 1300, color: "#b5462f", torn: { seed: 4 } });
+  const C = shot("#7a8c5a", img.c, -3);
+  const D = shot("#3a2a20", img.b, 1);
+  // The "hole" D dives into.
+  D.add(() => {
+    const hole = document.createElement("div");
+    Object.assign(hole.style, { position: "absolute", left: "700px", top: "420px", width: "120px", height: "120px", borderRadius: "50%", background: "#120c08", boxShadow: "inset 0 8px 18px #000" });
+    stage.dom.append(hole);
+    return [];
+  });
+  const B = shot("#c9a227", img.a, 3);
+  const A = shot("#b8473a", img.d, -2);
+
+  const tr = K.tearReveal(stage, { from: A.view, tIn: 0.6, side: "bottom" });
+  const pt = K.pageTurn(stage, { from: B.view, tIn: 2.0, shade: `${P}/crumple.png` });
+  const matte = q.get("matte") ? { clip: makeClip(stage, `${P}/ink-matte`), at: 0 } : undefined;
+  const ink = K.inkBlot(stage, { x: 600, y: 900, tIn: 3.6, cover: true, reveal: D.view, out: C.view, seed: 5, matte });
+  const zt = K.zoomThrough(stage, { from: D.view, to: E.view, x: 760, y: 480, z: 14, tIn: 5.2 });
+  const [tape] = E.add(() => [K.tapeOn(stage, { src: `${P}/tape.png`, x: 640, y: 560, w: 360, h: 80, rot: -24, tIn: 6.8 })]);
+  E.camera([
+    [0, { x: W / 2, y: H / 2, z: 1, r: 0 }],
+    [7.9, { ...E2.view(540, 960), cut: true }],
+  ]);
+  const shots = { A, B, C, D, E };
+  window.TR = { tr, pt, ink, zt, tape, shots, E };
+  window.CUES = [...Object.values(shots).flatMap((s) => s.cues()), ...[tr, pt, ink, zt].flatMap((m) => m.cues())];
+  stage.run((t) => {
+    for (const s of Object.values(shots)) s.draw(t);
+    for (const m of [tr, pt, ink, zt]) m.draw(t);
+  });
+</script>

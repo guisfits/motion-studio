@@ -36,6 +36,12 @@ Colours and faces come from `theme()` (the project overlay sets them); never har
 | Map route | `route(stage, { points, tIn, dur })`, `route.follow` for camera keys | one route, storyboarded camera |
 | Before / after | `split(stage, { a, b, seam, dir, at, tIn })` | the "take it away" beat |
 | Colour with a cause | `inkBlot` (drop → splash → spread), `inkSpill` (a vessel pours), `inkFlood` (surface floods to night) | colour never appears from nothing |
+| Tear transition | `tearReveal(stage, { from, tIn, dur, side, seed, bite, tilt, rim })` → `contact`, `done`, `progress(t)` | the shot on top ripped away along a torn front in uneven 12 fps jerks: white fibre rim, shadow lip on the shot beneath; one `tear` cue at the first step. `from` = the outgoing shot (a table's `view`), built above the incoming one |
+| Page-turn transition | `pageTurn(stage, { from, tIn, dur, spine, shade, back })` → `done`, `angle(t)` | the shot turns over on its spine at 8 fps with curl shading, a paper back and a cast shadow; `shade` = a real crumple scan multiplied in; one `page` cue as it lifts |
+| Ink transition | `inkBlot(stage, { x, y, tIn, cover: true, reveal, out, matte })` → `done` | the drop spreads to fill the frame, the next shot (`reveal`, built **above** `out`) carried inside a seeded fbm ink edge; `matte: { clip, at }` multiplies real ink footage (a `makeClip`) from the contact; `drip` + `splash` cues |
+| Zoom-through | `zoomThrough(stage, { from, to, x, y, z, tIn, dur, ease })` → `cut`, `done` | dive into a point (hole, word, eye) on one eased scale move shared by both shots, hard cut at peak velocity (`cutAtPeak`), `to` lands upright at scale 1; `to` should be a table's view (its world fills the frame while small); one `whoosh` on the cut |
+| Tape | `tapeOn(stage, { src, x, y, w, h, rot, tIn, lay, from })` → `pressed` | a strip laid across a piece's edge on the 12 fps clock, hovering, then pressed flat and held; `src` must be a photographed tape cut-out (never drawn); one `tape` cue on the press |
+| Hard cut on the table | camera key `{ ..., cut: true }`; `cutAtPeak(curve, t0, t1)` (core motion.js) | an instant, silent, unblurred jump between table regions; a move still in flight keeps going through it, so cutting at the move's peak keeps its direction |
 | Light | `candle`, `lightSweep`, `ripple` | atmosphere, a reveal |
 | Drop cap | `dropCap` | a capital that fills |
 | Legacy | `lockup` | an end card; prefer the CTA as the last spoken line |
@@ -59,7 +65,7 @@ The engine's infinite table maps the style's grammar like this:
 | A new ground for a new idea | a new **station** (far apart, turned), reached by camera travel |
 | A shot (≈ 1.6–3.2 s average) | a visual beat inside a station: a piece placed, a push to the next object, a mark landing, a cut to a new framing |
 | Hero hold (3–8 s) | a station held with a slow push (`glide`, ≤ ~2 % scale per second) while the voice explains |
-| Hard cut on a noun change | a `whip` or `move` between stations, or a plain cut between framings; never to black or a dead frame |
+| Hard cut on a noun change | a `whip` or `move` between stations, or a plain cut between framings (a `cut: true` key); never to black or a dead frame |
 | Whip | `ease: "whip"`, ≤ 3 per film, only where the idea changes |
 
 So a station can last 4–8 s while the picture still renews every 2–3 s. Hopping stations every
