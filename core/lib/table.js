@@ -117,8 +117,14 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
   const parts = [];
   let keys = [[0, { x: W / 2, y: H / 2, z: 1, r: 0 }]];
 
-  const at = (t) => {
-    // Each key brings its own spring (its `ease`), so one move can whip and the next glide.
+  // The pose at t. `cutClock` decides which hard cuts have happened (default: t itself); the
+  // velocity reads the frame before t with the cuts of t already taken, so a cut is never a
+  // smear.
+  const pose = (t, cutClock = t) => {
+    // Each key brings its own spring (its `ease`), so one move can whip and the next glide. A
+    // `cut: true` key jumps instead: the whole step at its time, no spring. A move still in
+    // flight keeps going through the cut (its spring is not reset), so a cut at peak velocity
+    // keeps the direction of the move.
     const ax = (k) => {
       let v = keys[0][1][k] ?? (k === "z" ? 1 : 0);
       let prev = v;
@@ -126,7 +132,7 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
         const [tt, key] = keys[i];
         const next = key[k] ?? prev;
         const e = EASE[key.ease ?? "move"] ?? EASE.move;
-        v += (next - prev) * spring(t - tt, e.k, e.d);
+        v += (next - prev) * (key.cut ? (cutClock >= tt ? 1 : 0) : spring(t - tt, e.k, e.d));
         prev = next;
       }
       return v;
@@ -144,10 +150,11 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
       r: r + b * 0.35 * Math.sin(t * 0.27),
     };
   };
+  const at = (t) => pose(t);
 
   const velocity = (t) => {
     const a = at(t);
-    const b = at(t - FRAME);
+    const b = pose(t - FRAME, t);
     // Where the world point now at the centre was on screen one frame ago.
     const rad = (-b.r * Math.PI) / 180;
     const dx = (a.x - b.x) * b.z;
@@ -220,7 +227,9 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
       return el;
     },
     // Camera keys: [[t, { x, y, z, r }], ...] — the world point at the frame's centre, the zoom,
-    // the roll in degrees. Missing fields keep the first key's value.
+    // the roll in degrees. Missing fields keep the first key's value. `ease` picks the spring;
+    // `cut: true` is a hard cut to that pose (instant, silent, never blurred): how a film cuts
+    // between regions of the table. Cut at `cutAtPeak` of a move to keep its direction.
     camera(k) {
       keys = k;
     },
@@ -239,6 +248,8 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
       const moves = [];
       for (let i = 1; i < keys.length; i++) {
         const [t, v] = keys[i];
+        // A hard cut is silent: no whoosh, the picture just changes.
+        if (v.cut) continue;
         const p = keys[i - 1][1];
         const e = EASE[v.ease ?? "move"] ?? EASE.move;
         const d =
