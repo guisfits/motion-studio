@@ -129,7 +129,8 @@ export function clipping(
         ? discClip(sd, i)
         : tornClip(sd + i * 101, 18, rim ? 6 : 4.5),
   );
-  const rimEdges = [0, 1, 2].map((i) => tornClip(sd + i * 101 + 7, 18, 2));
+  // A band's rim is cut to the band too: a full-size rim would paper over the bands beneath it.
+  const rimEdges = [0, 1, 2].map((i) => (band ? bandClip(band, sd, i) : tornClip(sd + i * 101 + 7, 18, 2)));
   const jit = rng(sd);
   const jitter = [0, 1, 2].map(() => [
     (jit() - 0.5) * 1.2,

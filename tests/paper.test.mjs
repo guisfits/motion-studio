@@ -359,6 +359,26 @@ test("sliced: a silhouette cut in horizontal bands whose neighbouring tears matc
   assert.equal(r.shift, 60, "place(i) moves one band's rest spot off line");
 });
 
+test("sliced: with a rim, each band's rim is cut to its own band (a full-size rim would paper over the bands beneath)", async () => {
+  const r = await probe(() => {
+    const S = window.STAGE;
+    const cuts = [0.3, 0.45];
+    const parts = window.K.sliced(S, { img: S.img.a, crop: [0.1, 0.1, 0.9, 0.9], rim: true, w: 400, x: 540, y: 900, cuts, seed: 4, moves: () => [{ kind: "slap", at: 0 }] });
+    parts.forEach((p) => p.draw(2));
+    const ys = (clip) => [...clip.matchAll(/(-?[\d.]+)% (-?[\d.]+)%/g)].map((m) => +m[2]);
+    return parts.map((p) => {
+      const rim = [...p.el.children].find((e) => e.dataset.part === "rim");
+      const y = ys(rim.style.clipPath);
+      return { min: Math.min(...y), max: Math.max(...y), n: y.length };
+    });
+  });
+  const edges = [0, 0.3, 0.45, 1];
+  r.forEach((b, i) => {
+    assert.ok(b.n > 4, `band ${i} rim is a polygon`);
+    assert.ok(b.min >= edges[i] * 100 - 2 && b.max <= edges[i + 1] * 100 + 2, `band ${i} rim spans ${b.min}..${b.max} %, its band is ${edges[i] * 100}..${edges[i + 1] * 100}`);
+  });
+});
+
 test("ransom: a black strip whose caps are typed on, sized to its text, with key cues after its landing", async () => {
   const r = await probe(() => {
     const S = window.STAGE;
