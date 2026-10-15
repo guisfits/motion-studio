@@ -147,10 +147,10 @@ export function pageTurn(stage, { from, tIn, dur = 0.9, spine = "left", fps = 8,
   };
   const cast = sheet({});
   from.before(cast);
-  const paper = back ? `url(${back}) center/cover` : `${C().ground} url(${theme().textures.paper}) center/cover`;
-  const reverse = sheet({ background: paper, backfaceVisibility: "hidden" });
+  const paper = back ? `url("${back}") center/cover` : `${C().ground} url("${theme().textures.paper}") center/cover`;
+  const reverse = sheet({ background: paper });
   const frontShade = sheet({ backfaceVisibility: "hidden" });
-  const relief = shade ? sheet({ background: `url(${shade}) center/cover`, mixBlendMode: "multiply", backfaceVisibility: "hidden" }) : null;
+  const relief = shade ? sheet({ background: `url("${shade}") center/cover`, mixBlendMode: "multiply", backfaceVisibility: "hidden" }) : null;
   from.after(...[relief, frontShade, reverse].filter(Boolean));
   const turned = (t) => {
     const u = clamp(stepped(t - tIn, fps) / dur);
@@ -166,7 +166,9 @@ export function pageTurn(stage, { from, tIn, dur = 0.9, spine = "left", fps = 8,
     draw(t) {
       const th = turned(t);
       const live = t >= tIn && t < end;
-      for (const e of [cast, reverse, frontShade, relief].filter(Boolean)) show(e, live && th > 0);
+      for (const e of [cast, frontShade, relief].filter(Boolean)) show(e, live && th > 0);
+      // Past 90° the viewer sees the page's back: plain paper, so mirroring it does not matter.
+      show(reverse, live && th > 90);
       showShot(from, t < end);
       if (!live || th === 0) {
         from.style.transform = "";
@@ -182,7 +184,7 @@ export function pageTurn(stage, { from, tIn, dur = 0.9, spine = "left", fps = 8,
         relief.style.transform = tf;
         relief.style.opacity = String(0.25 + 0.6 * Math.sin(rad));
       }
-      reverse.style.transform = `${tf} rotateY(180deg)`;
+      reverse.style.transform = tf;
       // The face darkens toward the lifted edge as it turns away from the light.
       const toFree = spine === "left" ? "to right" : "to left";
       const dark = 0.55 * Math.sin(rad);
@@ -261,7 +263,7 @@ export function tapeOn(stage, { src, x, y, w, h, rot = 0, tIn, lay = 0.33, from 
     top: `${y - h / 2}px`,
     width: `${w}px`,
     height: `${h}px`,
-    background: `url(${src}) center/100% 100% no-repeat`,
+    background: `url("${src}") center/100% 100% no-repeat`,
     opacity: String(opacity),
     transformOrigin: "50% 50%",
   });

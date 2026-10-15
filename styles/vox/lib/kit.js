@@ -829,7 +829,7 @@ export function caption(stage, { lead = "", key, x, y, size = 150, accent = fals
 //                  landing) multiplied over the frame, its frame `at` s on the drop's contact;
 //                  shown until the frame is covered (or tOut). The procedural blot stays under it.
 //   out: el        the outgoing shot, hidden once the frame is covered (it lies under `reveal`)
-export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from, cover = false, reveal, out, matte, ring = 34 }) {
+export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from, cover = false, reveal, out, matte, ring = 64 }) {
   const id = `blot${seed}${Math.round(x)}${Math.round(y)}`;
   const { W, H } = stage;
   const WOB = 0.22; // how far the fbm edge strays from the circle, as a share of the radius
