@@ -126,3 +126,5 @@ unused); keep it per frame and tiny, or it reads as a fault.
   sources.
 - **Flicker and weave on everything** extends the defaults' "gate weave on stills": use both on the
   whole finished frame, tiny, so nothing in the film is perfectly still.
+  The engine's `finish()` (components.md) is that pass: it wraps the finished composite, so the
+  smooth table camera is never weaved or stepped.
