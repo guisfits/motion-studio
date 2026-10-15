@@ -56,7 +56,8 @@ const facts = async () =>
         after: await at(tr.done + 0.01, () => disp(shots.A.view)),
       },
       page: {
-        tIn: 2.0, done: pt.done, cues: pt.cues(),
+        tIn: 2.0, done: pt.done, cues: pt.cues(), contact: pt.contact,
+        lifted: [pt.contact - 1e-3, pt.contact].map(pt.angle),
         a: [1.99, 2.0, pt.done - 1e-3, pt.done].map(pt.angle),
         hold: [pt.angle(2.26), pt.angle(2.26 + 1 / 10)],
         steps: new Set(Array.from({ length: 90 }, (_, i) => pt.angle(2.0 + i / 100))).size,
@@ -114,13 +115,17 @@ test("tearReveal: uneven 12 fps rip from 0 to 1, heard at its first step, the sh
   assert.equal(tear.after, "none");
 });
 
-test("pageTurn: 0° → 180° on an 8 fps clock, heard as it lifts, the shot gone after", { timeout: 120_000 }, async () => {
+test("pageTurn: 0° → 180° on an 8 fps clock, heard on its first lifted pose, the shot gone after", { timeout: 120_000 }, async () => {
   const { page } = await facts();
   assert.deepEqual(page.a.map((a) => Math.round(a)), [0, 0, Math.round(page.a[2]), 180]);
   assert.ok(page.a[2] > 150 && page.a[2] < 180);
   assert.equal(page.hold[0], page.hold[1], "holds within an 8 fps step");
   assert.ok(page.steps <= Math.ceil(0.9 * 8) + 1, `${page.steps} poses in 0.9 s`);
-  assert.deepEqual(page.cues, [{ t: page.tIn, type: "page", gain: 0.9 }]);
+  // Heard when the page is first seen lifting (one 8 fps step after tIn), never on a still page.
+  assert.ok(Math.abs(page.contact - (page.tIn + 1 / 8)) < 1e-9, `contact at ${page.contact}`);
+  assert.equal(page.lifted[0], 0, "flat until the contact");
+  assert.ok(page.lifted[1] > 0, "lifted on the contact");
+  assert.deepEqual(page.cues, [{ t: page.contact, type: "page", gain: 0.9 }]);
   assert.match(page.mid, /rotateY\(-\d/);
   assert.deepEqual(page.after, ["none", ""]);
 });

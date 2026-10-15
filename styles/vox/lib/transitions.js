@@ -134,7 +134,8 @@ export function tearReveal(stage, { from, tIn, dur = 0.6, side = "bottom", seed 
 // light, shows a paper back past 90° and casts a moving shadow on the shot beneath. shade: an
 // optional real crumple or paper scan (image url) multiplied into the turning page, so its relief
 // catches the light as it bends; back: the reverse's picture (default: the theme's paper).
-// Heard as one page turn as it lifts (tIn); `done` = the frame is the next shot.
+// Heard as one page turn on its first lifted pose (`contact`, one step after tIn: at tIn the page
+// still lies flat, and a sound ahead of the picture reads as a slip); `done` = the next shot.
 export function pageTurn(stage, { from, tIn, dur = 0.9, spine = "left", fps = 8, shade, back, perspective = 2600 }) {
   if (!from) throw new Error("pageTurn: `from` (the outgoing shot's element) is required");
   const { W, H } = stage;
@@ -158,11 +159,13 @@ export function pageTurn(stage, { from, tIn, dur = 0.9, spine = "left", fps = 8,
     return 180 * (u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u));
   };
   const end = tIn + dur;
+  const contact = tIn + 1 / fps;
   return {
+    contact,
     done: end,
     // The page's turn at t in degrees (0 flat .. 180 over), on the 8 fps clock.
     angle: turned,
-    cues: () => [{ t: tIn, type: "page", gain: 0.9 }],
+    cues: () => [{ t: contact, type: "page", gain: 0.9 }],
     draw(t) {
       const th = turned(t);
       const live = t >= tIn && t < end;
