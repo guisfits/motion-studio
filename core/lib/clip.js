@@ -5,6 +5,14 @@
 //   const rec = makeClip(stage, "assets/rec-lexicon");      // or phone.js: screens: [rec]
 //   // in draw(t): rec.at(t - T.lexIn);                      // clamps to the first/last frame
 
+// Which recorded frame shows at s seconds, and where its file is. Shared with lib/texture.js
+// (a film-scratch texture plays the same sequences). `loop` wraps instead of clamping.
+export const clipUrl = (dir, i) => `${dir}/${String(i + 1).padStart(5, "0")}.jpg`;
+export function clipFrame(meta, s, loop = false) {
+  const i = Math.floor(s * meta.fps + 1e-6);
+  return loop ? ((i % meta.count) + meta.count) % meta.count : Math.min(meta.count - 1, Math.max(0, i));
+}
+
 export function makeClip(stage, dir) {
   const el = new Image();
   Object.assign(el.style, { position: "absolute", left: "0", top: "0", display: "block" });
@@ -23,8 +31,7 @@ export function makeClip(stage, dir) {
   );
 
   function show(s) {
-    const i = Math.min(meta.count - 1, Math.max(0, Math.floor(s * meta.fps + 1e-6)));
-    const src = `${dir}/${String(i + 1).padStart(5, "0")}.jpg`;
+    const src = clipUrl(dir, clipFrame(meta, s));
     if (src === shown) return Promise.resolve();
     shown = src;
     el.src = src;
