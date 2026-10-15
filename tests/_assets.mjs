@@ -48,5 +48,40 @@ export function ensureAssets() {
       "-vf", "format=gray,geq=lum='if(lt(hypot(X-270,Y-480),(N+1)*45),0,255)'", "-frames:v", "12", `${matte}/%05d.jpg`]);
     writeFileSync(`${matte}/clip.json`, JSON.stringify({ fps: 12, count: 12, w: 540, h: 960 }));
   }
+  // Stand-ins for texture scans (lib/texture.js), never a shipped scan. Paper: warm fibre and
+  // soft blotches on a light ground. Specks: dark dust on light / bright dust on dark (the two
+  // backgrounds blend "auto" tells apart). Marker: an 80x40 tile with one dark 20x20 square in its
+  // corner, so a pixel row and a column show the period and that the tile was not stretched.
+  // Dust: a 12-frame clip at 12 fps, frame N a flat grey of 10 + 20 N (a frame is identifiable by one pixel).
+  if (!existsSync(`${ASSETS}tex-paper.png`))
+    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-filter_complex",
+      "color=c=0xf0f0f0:s=1400x1400,format=gray,noise=alls=34:allf=t+u,gblur=sigma=0.8[fine];" +
+      "color=c=0x808080:s=1400x1400,format=gray,noise=alls=100:allf=t+u,gblur=sigma=26,lut=y='clip((val-128)*9+247,0,255)'[blot];" +
+      "color=c=0x808080:s=1400x1400,format=gray,noise=alls=100:allf=t+u,gblur=sigma=5:sigmaV=0.7,lut=y='clip((val-128)*3.5+249,0,255)'[fibre];" +
+      "[fine][blot]blend=all_mode=multiply[a];" +
+      "[a][fibre]blend=all_mode=multiply,format=gray,scale=in_range=full:out_range=full,format=rgb24,colorchannelmixer=rr=0.99:gg=0.95:bb=0.85",
+      "-frames:v", "1", `${ASSETS}tex-paper.png`]);
+  const speck = "mod(X*7+Y*13+X*Y,41)";
+  ff(["-f", "lavfi", "-i", "color=c=white:s=200x200", "-vf", `format=rgb24,geq=r='if(lt(${speck},2),60,238)':g='if(lt(${speck},2),60,238)':b='if(lt(${speck},2),60,238)'`], "tex-specks-light.png");
+  ff(["-f", "lavfi", "-i", "color=c=white:s=200x200", "-vf", `format=rgb24,geq=r='if(lt(${speck},2),210,10)':g='if(lt(${speck},2),210,10)':b='if(lt(${speck},2),210,10)'`], "tex-specks-dark.png");
+  ff(["-f", "lavfi", "-i", "color=c=white:s=80x40", "-vf", "format=rgb24,geq=r='if(lt(X,20)*lt(Y,20),32,255)':g='if(lt(X,20)*lt(Y,20),32,255)':b='if(lt(X,20)*lt(Y,20),32,255)'"], "tex-marker.png");
+  const dust = `${ASSETS}tex-dust`;
+  if (!existsSync(`${dust}/clip.json`)) {
+    mkdirSync(dust, { recursive: true });
+    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=black:s=64x64:r=12:d=1",
+      "-vf", "format=gray,geq=lum='10+20*N'", "-frames:v", "12", `${dust}/%05d.jpg`]);
+    writeFileSync(`${dust}/clip.json`, JSON.stringify({ fps: 12, count: 12, w: 64, h: 64 }));
+  }
+  // Film dust that looks like dust: sparse bright specks and the odd hairline scratch on black, a
+  // different scatter each frame (12 frames at 12 fps), for the visual before/after of a film.
+  const fine = `${ASSETS}tex-dust-fine`;
+  if (!existsSync(`${fine}/clip.json`)) {
+    mkdirSync(fine, { recursive: true });
+    const scatter = "mod(X*7+Y*13+X*Y+N*911*X+N*37*Y,1499)";
+    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=black:s=540x960:r=12:d=1",
+      "-vf", `format=gray,geq=lum='if(lt(${scatter},2),210,if(eq(X,mod(N*173+40,540))*lt(mod(Y+N*97,960),300),120,6))'`,
+      "-frames:v", "12", `${fine}/%05d.jpg`]);
+    writeFileSync(`${fine}/clip.json`, JSON.stringify({ fps: 12, count: 12, w: 540, h: 960 }));
+  }
   return ASSETS;
 }

@@ -301,6 +301,8 @@ export function rubric(
 
 // A torn paper edge on all four sides lives in the engine (core/lib/torn.js); kept importable from here.
 export { tornClip };
+// Real-scan texture layers over the table, before finish() (see core/lib/texture.js).
+export { texture, textureFrame, PX_PER_CM } from "../../../core/lib/texture.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 // One hidden <svg> per stage holding the shared filters (referenced by url(#id) from CSS).
@@ -611,6 +613,7 @@ let finishes = 0;
 //   vignette  multiply, darkening the frame's edges by this fraction       default 0.35
 //   grain     strength of K.grain, placed last above everything            default false (a film
 //             that already calls K.grain keeps it; after finish() it lands above the softening too)
+// Texture layers (texture(), core/lib/texture.js) go under it: table -> textures -> finish -> grain.
 // Everything on stage.dom lands under the wrapper, and so does whatever is built on stage.dom
 // afterwards: a layer that must stay clean (an end card) goes on a div of its own appended to
 // stage.root after finish(), with stage.dom swapped to it while it is built.
