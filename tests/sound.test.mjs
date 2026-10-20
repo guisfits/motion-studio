@@ -17,13 +17,18 @@ import {
   FIRST_WINDOW,
   BURST_MIN,
 } from "../core/audio/thin.mjs";
-import { renderSfx, loadLibrary, ONE_SHOT_TAIL } from "../core/audio/sfx.mjs";
+import { renderSfx, loadLibrary, ONE_SHOT_TAIL, MAX_PRE, VOICES, cuePre } from "../core/audio/sfx.mjs";
 import {
   buildGraph,
   planLevels,
   measurePlan,
   mix,
+  mixReport,
+  MUSIC_DUCK,
+  MUSIC_FIXED_BELOW_VOICE,
   sumVoices,
+  voiceGraph,
+  VOICE_LEVEL,
   SFX_BELOW_VOICE,
   MUSIC_BELOW_VOICE,
   SFX_BELOW_MUSIC,
@@ -220,6 +225,22 @@ test("planLevels without a voice: the music keeps 0.8, the SFX hit 6 dB under th
   assert.equal(solo.voice, 1);
 });
 
+test("planLevels --music-duck: default = MUSIC_DUCK, 0 = a fixed bed 12 dB under the speech with no sidechain, other depths scale the threshold", () => {
+  const levels = { voice: -22.3, sfx: -30, music: -34 };
+  const base = planLevels(levels, {});
+  assert.deepEqual(planLevels(levels, {}, { musicDuck: MUSIC_DUCK }), base, "the default depth changes nothing");
+  assert.equal(MUSIC_FIXED_BELOW_VOICE, 12);
+  const fixed = planLevels(levels, {}, { musicDuck: 0 });
+  assert.equal(fixed.musicDuck, null, "no sidechain on the bed");
+  assert.ok(Math.abs(levels.music + db(fixed.music) - (levels.voice - 12)) < 1e-9, "fixed bed: speech - 12 dB");
+  assert.deepEqual(fixed.sfxDuck, base.sfxDuck, "the SFX bus is untouched");
+  const deeper = planLevels(levels, {}, { musicDuck: 14 });
+  assert.ok(deeper.musicDuck.threshold < base.musicDuck.threshold, "a deeper duck lowers the threshold");
+  assert.equal(deeper.music, base.music, "the gap level is the same");
+  assert.throws(() => planLevels(levels, {}, { musicDuck: -3 }), /music-duck/);
+  assert.throws(() => planLevels(levels, {}, { musicDuck: NaN }), /music-duck/);
+});
+
 // --- the filter graph ----------------------------------------------------------------------------
 
 const stems3 = [["music", "m.wav"], ["sfx", "s.wav"], ["voice", "v.wav"]];
@@ -236,6 +257,15 @@ test("buildGraph: the SFX bus and the music bed are both sidechain-compressed by
   assert.match(g, /alimiter/);
   // The voice itself carries no compressor: it stays the reference.
   assert.doesNotMatch(g, /\[voice\]\[[a-z_]+\]sidechaincompress/);
+});
+
+test("buildGraph: a fixed bed (musicDuck 0) has no voice sidechain on the music", () => {
+  const plan = planLevels({ voice: -22, sfx: -30, music: -30 }, {}, { musicDuck: 0 });
+  const g = buildGraph({ stems: stems3, plan, dur: 10, norm: "I=-14" });
+  assert.doesNotMatch(g, /vk_music/);
+  assert.match(g, /\[voice\]asplit=2\[voice\]\[vk_sfx\]/);
+  const musicVoice = buildGraph({ stems: [["music", "m.wav"], ["voice", "v.wav"]], plan, dur: 10, norm: "I=-14" });
+  assert.doesNotMatch(musicVoice, /asplit|sidechaincompress/, "voice + fixed bed: nothing to key");
 });
 
 test("buildGraph: with only the voice there is no asplit; with one stem to key it splits in two", () => {
@@ -327,6 +357,37 @@ test("mix(): voice takes are summed into the voice stem", { timeout: 120_000 }, 
   mix({ video, out, voice: a, voiceTakes: [{ file: a, at: 1.0 }] });
   const codec = execFileSync("ffprobe", ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0", out]).toString().trim();
   assert.equal(codec, "aac");
+});
+
+// The voice leveller is opt-in: a 3:1 compressor on the summed voice stem, before the stem is
+// measured and split for the sidechains.
+test("voiceGraph: the compressor is in the voice stem's graph only with the leveller on", () => {
+  const takes = [{ file: "a.wav", at: 0 }, { file: "b.wav", at: 2 }];
+  assert.ok(!voiceGraph(takes).includes("acompressor"), "off by default");
+  assert.ok(!voiceGraph(takes, { level: false }).includes("acompressor"));
+  const g = voiceGraph(takes, { level: true });
+  assert.ok(g.includes(`acompressor=${VOICE_LEVEL}`), g);
+  assert.ok(g.indexOf("acompressor") > g.indexOf("amix=inputs=2"), "after the takes are summed");
+});
+
+test("mix(): --voice-level pulls a narration's loudness range to 3 LU or less, and leaves it alone without", { timeout: 120_000 }, () => {
+  // 4 s phrases at two levels (about 6 dB apart, 4 Hz syllables): a narration that swings, as a
+  // recorded voice does between its loud and its soft lines.
+  const voice = join(dir, "swing-voice.wav");
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i",
+    "aevalsrc='(0.5+0.5*sin(2*PI*4*t))*if(lt(mod(t,8),4),0.1,0.05)*sin(2*PI*220*t)':s=48000:d=32", voice]);
+  const video = join(dir, "swing.mp4");
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=black:s=64x64:d=32:r=10", "-c:v", "libx264", "-pix_fmt", "yuv420p", video]);
+  const lra = (voiceLevel) => {
+    const out = join(dir, `swing-${voiceLevel}.mp4`);
+    mix({ video, out, voice, voiceLevel, fadeOut: 0 });
+    const log = execFileSync("sh", ["-c", `ffmpeg -nostats -i "${out}" -af ebur128 -f null - 2>&1 | grep -A1 "Loudness range" | grep LRA:`]).toString();
+    return Number(log.match(/LRA:\s*(-?[\d.]+)/)[1]);
+  };
+  const raw = lra(false);
+  const levelled = lra(true);
+  assert.ok(raw > 3, `without the leveller the range is ${raw} LU`);
+  assert.ok(levelled <= 3, `with it the range is ${levelled} LU`);
 });
 
 // --- ducking depth, measured ---------------------------------------------------------------------
@@ -519,4 +580,45 @@ test("Table.cues: one whoosh per real camera travel, at the middle of its spring
   assert.equal((await cuesFor([[0, home], [1, { x: 540, y: 960, z: 1.7 }]])).length, 1, "a 0.7 zoom is 630 px of travel");
   assert.equal((await cuesFor([[0, home], [1, { x: 540, y: 960, z: 1, r: 40 }]])).length, 1, "40° of roll is 560 px of travel");
   assert.equal((await cuesFor([[0, { x: 540, y: 960 }], [1, { x: 540 + 700, y: 960 }]])).length, 1);
+});
+
+// Real audio: speech 0-2 s and 4-6 s, a pause 2-4 s and 6-8 s, over a steady bed. How far the bed
+// sits above/below itself between speech and pause is read off the report taps.
+function bedSwell(musicDuck) {
+  const n = noiseSource(7);
+  const bed = new Float32Array(SR * 8).map(() => n() * 0.1);
+  const voice = new Float32Array(SR * 8).map((_, i) => {
+    const t = i / SR;
+    return t % 4 < 2 ? 0.3 * Math.sin(2 * Math.PI * 220 * t) * (0.7 + 0.3 * Math.sin(2 * Math.PI * 3 * t)) : 0;
+  });
+  const bedFile = join(dir, `bed-${musicDuck}.wav`);
+  const voiceFile = join(dir, `voice-${musicDuck}.wav`);
+  writeWav(bedFile, [bed]);
+  writeWav(voiceFile, [voice]);
+  const video = join(dir, `bed-${musicDuck}.mp4`);
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=black:s=64x64:d=8:r=10", "-c:v", "libx264", "-pix_fmt", "yuv420p", video]);
+  const stems = [["music", bedFile], ["voice", voiceFile]];
+  const { plan, levels } = measurePlan({ music: bedFile, voice: voiceFile, musicDuck });
+  const inputs = ["-i", video, ...stems.flatMap(([, f]) => ["-i", f])];
+  const rep = mixReport({ stems, plan, levels, dur: 8, inputs });
+  const m = rep.match(/music re voice: (-?[\d.]+) dB mean under speech \(p90 -?[\d.]+\), (-?[\d.]+) dB in the gaps/);
+  return { under: Number(m[1]), gap: Number(m[2]) };
+}
+
+test("a fixed bed (musicDuck 0) does not swell in the pauses; the default duck does", { timeout: 120_000 }, () => {
+  const fixed = bedSwell(0);
+  assert.ok(Math.abs(fixed.gap - fixed.under) < 1, `fixed: ${fixed.under} under speech, ${fixed.gap} in the gaps`);
+  assert.ok(Math.abs(fixed.under + 12) < 1.5, `fixed bed ~12 dB under the speech (${fixed.under})`);
+  const ducked = bedSwell(MUSIC_DUCK);
+  assert.ok(ducked.gap - ducked.under > 3, `default: the bed swells ${ducked.gap - ducked.under} dB in the gaps`);
+});
+
+test("cuePre: how long a cue sounds before its time, bounded by the renderer's own limits", () => {
+  const lib = loadLibrary();
+  const voice = Object.keys(VOICES).find((type) => !lib[type]);
+  assert.equal(cuePre(voice), 0, "a synthesized voice starts on the cue");
+  assert.equal(cuePre("no-such-sound"), 0);
+  const pres = Object.keys(lib).map((type) => cuePre(type));
+  assert.ok(pres.every((p) => p >= 0 && p <= Math.max(...Object.values(MAX_PRE))), `within MAX_PRE: ${pres}`);
+  assert.ok(pres.some((p) => p > 0), "some recording starts before its anchor");
 });

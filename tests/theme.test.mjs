@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { theme, setTheme, resetTheme } from "../core/lib/theme.js";
+import { theme, setTheme, resetTheme, fontFaceCss, fontLoadSpecs } from "../core/lib/theme.js";
 
 const COLOR_KEYS = ["ground", "ground2", "ink", "ink2", "ink3", "rule", "ruleSoft", "accent", "accentInk",
   "accentWash", "night", "night2", "nightInk", "nightInk2", "nightRule", "nightAccent", "glow"];
@@ -36,4 +36,14 @@ test("every bundled font file exists and ships with its licence", () => {
   const fonts = new URL("../core/fonts/", import.meta.url);
   assert.ok(readFileSync(new URL("PinyonScript-OFL.txt", fonts), "utf8").includes("SIL Open Font License"));
   assert.ok(readFileSync(new URL("SpecialElite-HomemadeApple-LICENSE-Apache2.txt", fonts), "utf8").includes("Apache License"));
+});
+
+test("font faces carry their weight (default 400), so a project can ship real medium/semibold cuts", () => {
+  const css = fontFaceCss([
+    { family: "A", style: "normal", url: "/a.ttf" },
+    { family: "B", style: "italic", weight: 600, url: "/b.ttf", range: "U+0370-03FF" },
+  ]);
+  assert.match(css, /font-family:"A";font-style:normal;font-weight:400;src:url\(\/a\.ttf\);/);
+  assert.match(css, /font-family:"B";font-style:italic;font-weight:600;src:url\(\/b\.ttf\);unicode-range:U\+0370-03FF;/);
+  assert.deepEqual(fontLoadSpecs([{ family: "B", style: "italic", weight: 600 }]), ['italic 600 32px "B"']);
 });

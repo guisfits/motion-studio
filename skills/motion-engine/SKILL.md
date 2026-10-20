@@ -16,10 +16,10 @@ identity from a project overlay (level 3):
 | Level | Skill | Decides |
 |---|---|---|
 | 1 Engine | `motion-engine` (this) | how to render, time, sound and review anything |
-| 2 Style | `vox-style-animation`, `explainer-script`, `vox-critic`, `motion-graphics` | grammar: pacing, type, camera, mix norms |
+| 2 Crew | `film-director` (entry) and its specialists `film-writer`, `film-fact-checker`, `film-storyboard`, `film-art-director`, `film-archivist`, `film-animator`, `film-sound`, `film-reviewer` | the film's craft, hand-offs and gates (`core/checks/`) |
 | 3 Project | the project's overlay skill | identity, audience, voice, outro, bridge lines; overrides where it says so |
 
-**REQUIRED:** load one style skill before designing a single frame.
+**REQUIRED:** a film starts at `film-director`; it briefs each specialist. The old style skills are archived in `archive/skills/` (reference only).
 
 ## The pipeline
 
@@ -27,12 +27,12 @@ Never reorder it: each step is the input of the next.
 
 | # | Step | Writes | Reference |
 |---|---|---|---|
-| 1 | Script: one question, hook, turn, payoff, CTA; voice draft timed per word | `script.md`, `narration.json`, `voice/words.json` | **REQUIRED SUB-SKILL:** `explainer-script` |
-| 2 | Beat grid: score or track measured into beats | `beats.json`, `music.wav` | `references/audio.md` |
-| 3 | Shot list on the voice and the grid: words, evidence, largest element, camera, cause, SFX | `shotlist.md` | `references/pipeline.md` |
+| 1 | Script: one question, hook, turn, payoff, CTA; voice draft timed per word | `crew/script.md`, `narration.json`, `voice/words.json` | **REQUIRED SUB-SKILL:** `film-writer` |
+| 2 | Beat grid: score or track measured into beats | `beats.json`, `assets/music/music.wav` | `references/audio.md` |
+| 3 | Sync sheet (the shot list) on the voice and the grid: words, evidence, largest element, camera, cause, SFX | `crew/sync-sheet.json` | `references/pipeline.md` |
 | 4 | Build: stations, pieces, captions with `say`, cues | `index.html` | `references/engine-api.md`, `references/kit-and-cutouts.md` |
-| 5 | Review with the client, part by part (below); the style's critic on demand | `review_log.md` | `references/render-and-review.md`, the style's critic |
-| 6 | Final: render → SFX → mix → sync check → sheets on the final MP4 | `out/final-9x16.mp4` | `references/audio.md` |
+| 5 | Review with the client, part by part (below); the style's critic on demand | `crew/review.md` | `references/render-and-review.md`, the style's critic |
+| 6 | Final: render → SFX → mix → sync check → sheets on the final MP4 | `out/silent-9x16.mp4`, `out/final-9x16.mp4` | `references/audio.md` |
 
 ## Iterating with a human client
 

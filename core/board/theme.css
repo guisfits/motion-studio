@@ -1,0 +1,45 @@
+/* motion-studio film board: the engine's own look. A work desk with the film's papers on it:
+   a pale grey-board desk by day, a dark wooden desk by night; the sheets stay the same light
+   newsprint in both. A project may pass `--theme <css>` to override these tokens (same names,
+   same three blocks). Fonts are loaded by the page (a Google Fonts link), not here. */
+
+:root {
+  --desk: #d9d5cc;
+  --desk-ink: #2a2622;
+  --paper: #f3eee2;
+  --paper-2: #e8e1d1;
+  --sticker: #fffdf6;
+  --ink: #161412;
+  --ink-2: #3b3631;
+  --ink-3: #6a6259;
+  --rule: #cdc3b0;
+  --highlight: #ffd84a;
+  --marker: #e0432f;
+  --on-marker: #ffffff;
+  --kraft: #c8a77a;
+  --tape: rgba(255, 250, 235, 0.55);
+  --tape-edge: rgba(120, 100, 70, 0.18);
+  --shadow: rgba(40, 28, 14, 0.26);
+  --contact: rgba(40, 28, 14, 0.4);
+  --focus: #161412;
+  --font-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --font-body: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-hand: "Permanent Marker", "Comic Sans MS", "Chalkboard SE", cursive;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #1b1712;
+    --desk-ink: #e8e1d1;
+    --shadow: rgba(0, 0, 0, 0.6);
+    --contact: rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  --desk: #1b1712;
+  --desk-ink: #e8e1d1;
+  --shadow: rgba(0, 0, 0, 0.6);
+  --contact: rgba(0, 0, 0, 0.7);
+}

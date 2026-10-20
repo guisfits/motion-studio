@@ -1,31 +1,39 @@
-# Pipeline: script → beat grid → shot list → build → critique loop → final mix
+# Pipeline: brief → script and voice → sync sheet → look and pictures → animatic → draft and master → sound → review
 
-Without a script, a reference and a shot list, a model falls back to its default film: centred
+Without a script, a reference and a sync sheet, a model falls back to its default film: centred
 text on a gradient, everything fading in, a logo at the end. Each step below exists to prevent it.
+The flow, its gates and the order of roles belong to `film-director`
+(`skills/film-director/SKILL.md`); this page keeps the engine facts each step relies on.
 
-## Film folder (what `new-film.mjs` writes and the steps fill)
+## Film folder (what the crew's steps fill)
 
 ```
 <film>/
-  index.html        the film: draw(t)
-  brief.md          logline, format, length, CTA, inspirations
-  style_guide.md    every visual choice with its source (theme token, named inspiration)
-  script.md         the script, beats table, sources, the one sentence to remember
-  narration.json    lines for the voice engine (shape below)
-  voice/            voice.wav + words.json (per-word times), written by the project's TTS step
-  score.json        a code score (or music.plan.json / a supplied track)
-  beats.json        the grid: { bpm, beats[], downbeats[], hits[] }
-  shotlist.md       one row per shot
-  cues.json         hand-written SFX cues (components emit the rest)
-  review_log.md     critique rounds
-  assets/           cut pieces, clip frames
-  out/              renders, sheets, cues.auto.json (gitignored)
+  index.html           the film: draw(t), window.trace, window.camera, window.CUES (film-animator)
+  narration.json       lines for the voice engine (shape below) (film-writer)
+  voice/               voice.wav + words.json (per-word times), written by the project's TTS step
+  crew/
+    brief.md           the client-approved brief (film-director)
+    research.md        sourced facts (film-writer)
+    script.md          the script, beats table, the one sentence to remember (film-writer)
+    cer.md             ASR check of the take (film-writer)
+    sync-sheet.json    one row per beat: hero, supports, lettering, marks, zoom (film-storyboard)
+    style-bible.md     every visual choice with its source (film-art-director)
+    manifest.json      one row per picture: created by the art director, provenance filled by the archivist
+    assets-notes.md    search trail per asset (film-archivist)
+    animation-notes.md camera and motion intent per beat (film-animator)
+    sfx-cues.json      SFX cue list; sound.md has the reason per cue (film-sound)
+    checks-<stage>.md  gate reports (+ .json), written by `core/checks/run.mjs` for sheet|animatic|draft|final
+    review.md          ranked defects per round (film-reviewer)
+  assets/              cut pieces, grounds, sources/, music/ (film-archivist, film-sound)
+  out/                 animatic, draft, master (silent), sfx.wav, final, stills, cues.auto.json (gitignored)
+  score.json, beats.json   optional music grid for film-sound (a code score or a measured track)
 ```
 
-## 1. Script
+## 1. Script and voice
 
-Owned by the `explainer-script` skill (or the project overlay's script skill). Output that the
-engine consumes:
+Owned by the `film-writer` skill (`crew/research.md`, `crew/script.md`, `crew/cer.md`). Output that the
+engine consumes, `narration.json` at the film root:
 
 ```json
 {
@@ -51,11 +59,11 @@ The engine does not ship a TTS. A project step speaks `narration.json` and write
 Use a free draft voice for every iteration; a paid final voice only after the picture is approved.
 Because both are timed by forced alignment into the same `words.json`, the film re-syncs itself.
 
-## 2. Beat grid
+## 2. Beat grid (optional music grid, `film-sound`)
 
 | Situation | Do |
 |---|---|
-| No track | write `score.json`, run `audio/score.mjs` → `music.wav` + `beats.json` |
+| No track | write `score.json`, run `audio/score.mjs` → `music.wav` (kept as `assets/music/music.wav`) + `beats.json` |
 | Generated track | `audio/music.mjs` (plan or prompt, cached by request), then `beats.py` |
 | Supplied track | `python <E>/core/audio/beats.py track.wav > beats.json`; keep the track as the music stem |
 | Voice only, no music | still make a grid from the voice: beats = line starts in `words.json` |
@@ -63,46 +71,52 @@ Because both are timed by forced alignment into the same `words.json`, the film 
 Shots start on beats, big moments on downbeats; the voice still wins any conflict (a cut lands
 on the word, not on the bar).
 
-## 3. Shot list
+## 3. Sync sheet
 
-Write it before building. Time every row on a word (`V.at`) or a beat (`B(i)`).
-
-| t | words spoken | evidence / object on screen | largest element (% width) | camera (station · ease · roll) | entrance cause | text (caption chunk, hero word) | mark | SFX | move |
-|---|---|---|---|---|---|---|---|---|---|
+`film-storyboard` writes `crew/sync-sheet.json`: one row per beat, timed on words (`words.json`), with
+the hero and support pictures, the lettered key word, marks and the camera move
+(`skills/film-storyboard/references/sync-sheet-fields.md`). It is the shot list; there is no separate
+`shotlist.md`. The sheet gate (`node core/checks/run.mjs <film> --stage sheet`) reads it.
 
 Checks before building: every row has a literal object for its noun; one accent mark at most;
 one element ≥ 70 % of width or ≥ 35 % of area (scale contrast); the hook frame is a subject, not
 a title card; nothing essential in the UI zones.
 
-**Inspirations** lend grammar only (pacing, transitions, camera, structure), never palette,
-type, content or logos. Pick 1–3, open them (not just the catalog row), and name in
-`style_guide.md` which grammar comes from which. Studied references live in `inspirations/`;
+**Inspirations** are the visual target: a film matches their look (composition, density, finish,
+texture, type treatment, colour balance) and their grammar (pacing, transitions, camera, structure);
+the project's theme supplies colour tokens and type, and no author's pixels, logos or copy are lifted.
+Pick 1–3, open them (not just the catalog row), and name in `crew/style-bible.md` what comes from which. Studied references live in `inspirations/` (`vox-collage/`, `motion-graphics/`);
 `core/reference/inspiration.mjs <id> <url> --out <dir>` downloads one clip and builds a labelled
 frame sheet (media stays local, never committed).
 
-## 4. Build
+## 4. Build and animatic
 
-`references/engine-api.md` for the API, `references/kit-and-cutouts.md` for material. Build in
+Owned by `film-animator`: the layout first, `node core/animatic.mjs <F>` → `out/animatic-9x16.mp4`
+(`--stage animatic`), the client sees it, then motion and montage → `out/draft-9x16.mp4`
+(`--stage draft`, picture lock). `references/engine-api.md` for the API, `references/kit-and-cutouts.md` for material. Build in
 this order: theme → stations and surfaces → pieces (with causes) → captions (`say`) → camera keys
 → cues. Stills first (`--stills beats`) to fix composition before any motion.
 
-## 5. Critique loop
+## 5. Review loop
 
 A round: make sheets → open every sheet → score → log the 3 worst problems with timestamps → fix →
 re-render only those seconds (`--draft --from a --to b`) → next round. The style's critic owns
-the rubric (`vox-critic` for editorial explainers). Round 1 may be stills; every later round
+the rubric (`film-reviewer`, ranked defects in `crew/review.md`, at most two fix rounds). Round 1 may be stills; every later round
 includes the draft video, contact sheet, phone sheet, a strip at each shot change and the
 `--flat` report. Ship only after the critic's gate passes, then a fresh-eyes reviewer that never
 saw the code agrees.
 
 ## 6. Final
 
+After picture lock the animator renders the silent full-quality master; the sound role mixes onto it
+(`film-sound`). Gate: `node core/checks/run.mjs <F> --stage final`.
+
 ```bash
-node <E>/core/render.mjs <F> --sub 8                       # silent-9x16.mp4 + cues.auto.json
-node <E>/core/audio/sfx.mjs <F>/out/cues.auto.json <F>/sfx.wav --dur <dur>
+node <E>/core/render.mjs <F> --sub 8                       # out/silent-9x16.mp4 + out/cues.auto.json (the event times sound reads)
+node <E>/core/audio/sfx.mjs <F>/crew/sfx-cues.json <F>/out/sfx.wav --dur <dur>
 node <E>/core/audio/mix.mjs --video <F>/out/silent-9x16.mp4 --voice <F>/voice/voice.wav \
-  --music <F>/music.wav --sfx <F>/sfx.wav --out <F>/out/final-9x16.mp4 --report
-python <E>/core/audio/sync_check.py <F>/out/final-9x16.mp4 <cuts.json> --music <F>/music.wav
+  --music <F>/assets/music/music.wav --sfx <F>/out/sfx.wav --out <F>/out/final-9x16.mp4 --report
+python <E>/core/audio/sync_check.py <F>/out/final-9x16.mp4 <cuts.json> --music <F>/assets/music/music.wav
 node <E>/core/critique/sheets.mjs <F>/out/final-9x16.mp4
 ```
 

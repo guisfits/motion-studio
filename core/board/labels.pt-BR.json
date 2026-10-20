@@ -1,0 +1,61 @@
+{
+  "lang": "pt-BR",
+  "board": "Board",
+  "updated": "Atualizado em",
+  "skip": "Ir para o conteúdo",
+  "now": {
+    "title": "Agora",
+    "none": "Nada precisa de você agora.",
+    "next": "A seguir"
+  },
+  "scenes": {
+    "title": "Cenas",
+    "scene": "Cena",
+    "empty": "Nenhuma cena definida ainda.",
+    "world": "Mundo",
+    "worlds": {
+      "A": "vermelho",
+      "C": "jornal"
+    },
+    "status": {
+      "approved": "Aprovada",
+      "waiting": "Aguardando nota",
+      "todo": "A fazer"
+    }
+  },
+  "feed": {
+    "title": "Novidades, da mais nova para a mais antiga",
+    "empty": "Nada publicado ainda.",
+    "waiting": "Aguarda você",
+    "tooBig": "fora da página (arquivo grande demais)",
+    "noMedia": "não coube na página",
+    "noVideo": "Seu navegador não toca este vídeo.",
+    "noAudio": "Seu navegador não toca este áudio."
+  },
+  "readError": "não pôde ser lido",
+  "approvals": {
+    "approve": "Aprovar",
+    "changes": "Pedir ajustes",
+    "reject": "Reprovar",
+    "comment": "Comentário",
+    "commentHint": "Obrigatório para pedir ajustes ou reprovar.",
+    "needComment": "Escreva um comentário para pedir ajustes ou reprovar.",
+    "offline": "Abra o board no claude.ai para aprovar.",
+    "saving": "Salvando…",
+    "saved": "Salvo.",
+    "failed": "Não foi possível salvar. Tente de novo.",
+    "readOnly": "Você pode ver a decisão, mas não decidir por aqui.",
+    "decided": {
+      "approve": "Aprovado",
+      "changes": "Ajustes pedidos",
+      "reject": "Reprovado"
+    },
+    "by": "por",
+    "you": "você",
+    "someone": "alguém",
+    "none": "Ainda sem decisão.",
+    "closed": "Encerrado",
+    "judge": "O que avaliar"
+  },
+  "comment": "Comentar"
+}

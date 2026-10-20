@@ -35,7 +35,7 @@ enforces section lengths; a free prompt treats length as a suggestion. Time the 
 
 ## SFX: cues
 
-Components emit cues for their own gestures (`cues()`); hand cues go in `<F>/cues.json`, same
+Components emit cues for their own gestures (`cues()`); hand cues go in `<F>/crew/sfx-cues.json` (the sound role's file), same
 shape: `[{ "t": 2.41, "type": "paper-place", "gain": 0.8, "len": 0.4 }]`.
 
 **`t` is when the thing is seen to land, never when its motion starts.**
@@ -85,7 +85,7 @@ crumple, drip, scratch…). CC0 files ship with the engine; others are fetched l
 ```bash
 node <E>/core/audio/mix.mjs --video <F>/out/silent-9x16.mp4 --out <F>/out/final-9x16.mp4 \
   --voice <F>/voice/voice.wav --music <F>/music.wav --sfx <F>/sfx.wav \
-  [--music-gain 1] [--sfx-gain 1] [--voice-gain 1] [--fade-out 0.8] [--report]
+  [--music-gain 1] [--sfx-gain 1] [--voice-gain 1] [--fade-out 0.8] [--music-duck 8] [--report]
 ```
 
 **More than one voice take.** A film that speaks in two takes (its own narration and a reusable
@@ -101,7 +101,7 @@ the voice itself is not touched.
 | Stem | In the pauses | While the voice speaks |
 |---|---|---|
 | SFX | typical hit (p90) **12 dB under speech** | sidechain ducks a further 10 dB (attack 5 ms, release 250 ms): ≈ 22 dB under |
-| Music | 10.5 dB under speech | ducks a further 8 dB (attack 20 ms, release 500 ms): **≈ 20 dB under**; dips under each SFX |
+| Music | 10.5 dB under speech | ducks a further 8 dB (attack 20 ms, release 500 ms): **≈ 20 dB under**; dips under each SFX. `--music-duck 0`: a fixed bed 12 dB under speech, no sidechain |
 | No voice | music at 0.8; SFX 6 dB under the bed | — |
 
 Then a gentle limiter and two-pass `loudnorm` to **-14 LUFS integrated, true peak -1 dBTP**,

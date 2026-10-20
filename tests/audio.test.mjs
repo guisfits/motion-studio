@@ -42,6 +42,20 @@ test("sfx.mjs renders cues at their times into a WAV of the requested length", (
   assert.ok(Math.abs(duration(join(dir, "sfx.wav")) - 9) < 0.01);
 });
 
+test("sfx.mjs writes <out>.cues.json: the cue file's hash and the post-thin list it rendered", () => {
+  // Two identical landings 0.1 s apart: thinning keeps one.
+  const cues = [{ t: 1, type: "thump" }, { t: 1.1, type: "thump" }, { t: 3, type: "click" }];
+  writeFileSync(join(dir, "dense.json"), JSON.stringify(cues));
+  execFileSync("node", [join(studio, "core/audio/sfx.mjs"), "dense.json", "dense.wav", "--dur", "4"], { cwd: dir, stdio: "pipe" });
+  const side = JSON.parse(readFileSync(join(dir, "dense.wav.cues.json"), "utf8"));
+  assert.equal(side.source, "dense.json");
+  assert.equal(side.sha256, createHash("sha256").update(readFileSync(join(dir, "dense.json"))).digest("hex"));
+  assert.ok(side.cues.length < cues.length, `thinned: ${side.cues.length} of ${cues.length}`);
+  assert.ok(side.cues.every((c) => cues.some((o) => o.t === c.t && o.type === c.type)));
+  execFileSync("node", [join(studio, "core/audio/sfx.mjs"), "dense.json", "raw.wav", "--dur", "4", "--no-thin"], { cwd: dir, stdio: "pipe" });
+  assert.equal(JSON.parse(readFileSync(join(dir, "raw.wav.cues.json"), "utf8")).cues.length, cues.length, "--no-thin renders the list as given");
+});
+
 test("unknown sfx type is an error that names the valid ones", () => {
   writeFileSync(
     join(dir, "bad.json"),

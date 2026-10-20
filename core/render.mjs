@@ -6,6 +6,10 @@
 //        [--from s] [--to s]       render only that range (review clip of the seconds a fix touched)
 //        [--stills beats|downbeats|t1,t2,...]   PNG per moment + a labelled contact sheet; no video
 //        [--fps N] [--sub N]       final defaults: 60 fps, 4 subframes blended for motion blur
+//        [--width N]               draft frame width in px (default half the format's); animatic.mjs uses it
+//        [--through-house]         when the film declares FILM.house = [t0, t1], run to t1 whatever --to says
+//        [--out FILE]              write the video to FILE instead of out/<kind>-<format>[-from-to].mp4 (one format)
+//        [--tag NAME]              stills land in out/stills-<format>-<NAME>/ + .png (parallel renders don't collide)
 //
 // The served root: see server.mjs. Outputs land in <film-dir>/out/: silent-<format>.mp4, draft-<format>.mp4,
 // <kind>-<format>-<from>-<to>.mp4 for ranges, stills-<format>/ + stills-<format>.png.
@@ -18,19 +22,20 @@ import { layout, FORMATS } from "./lib/layout.js";
 import { makeSheet } from "./critique/sheet.mjs";
 
 function parseArgs(argv) {
-  const film = argv[2];
-  if (!film || film.startsWith("--")) {
+  const usage = (msg) => {
     console.error(
-      "usage: node core/render.mjs <film-dir> [--format F|all] [--draft] [--from s --to s] [--stills ...] [--root DIR]",
+      `${msg ? `${msg}\n` : ""}usage: node core/render.mjs <film-dir> [--format F|all] [--draft] [--from s --to s] [--stills ...] [--root DIR]`,
     );
     process.exit(2);
-  }
+  };
+  const film = argv[2];
+  if (!film || film.startsWith("--")) usage();
   const get = (k) => {
     const i = argv.indexOf(`--${k}`);
     return i > 0 ? argv[i + 1] : undefined;
   };
   const draft = argv.includes("--draft");
-  return {
+  const opts = {
     film: resolve(film),
     root: get("root"),
     format: get("format") ?? "9x16",
@@ -40,8 +45,18 @@ function parseArgs(argv) {
     stills: get("stills"),
     fps: Number(get("fps") ?? (draft ? 30 : 60)),
     sub: Number(get("sub") ?? (draft ? 1 : 4)),
-    scale: draft ? 0.5 : 1,
+    width: get("width") !== undefined ? Number(get("width")) : undefined,
+    throughHouse: argv.includes("--through-house"),
+    out: get("out") ? resolve(get("out")) : undefined,
+    tag: get("tag"),
   };
+  // One file cannot hold every format, and a tag becomes part of a directory name.
+  if (opts.out && opts.format === "all") usage("--out writes one file: it cannot be combined with --format all");
+  if (opts.width !== undefined && !(Number.isFinite(opts.width) && opts.width > 0))
+    usage("--width must be a positive number of pixels");
+  if (opts.tag !== undefined && !/^[A-Za-z0-9._-]+$/.test(opts.tag))
+    usage("--tag may only contain letters, digits, '.', '_' and '-'");
+  return opts;
 }
 
 async function openFilm(browser, server, film, format) {
@@ -166,7 +181,8 @@ function stillTimes(spec, film, dur) {
 async function renderStills(film, opts, format) {
   const { info, frame } = film;
   const times = stillTimes(opts.stills, opts.film, info.dur);
-  const dir = join(opts.film, "out", `stills-${format}`);
+  const stem = opts.tag ? `stills-${format}-${opts.tag}` : `stills-${format}`;
+  const dir = join(opts.film, "out", stem);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   const cells = [];
@@ -178,7 +194,7 @@ async function renderStills(film, opts, format) {
     writeFileSync(file, await frame(t, { scale: 1, type: "png" }));
     cells.push({ file, label: `${t.toFixed(2)}s` });
   }
-  const sheet = join(opts.film, "out", `stills-${format}.png`);
+  const sheet = join(opts.film, "out", `${stem}.png`);
   await makeSheet(cells, sheet, {
     title: `${format} · ${opts.stills} · ${cells.length} stills`,
   });
@@ -188,18 +204,21 @@ async function renderStills(film, opts, format) {
 async function renderVideo(film, opts, format) {
   const { info, frame } = film;
   const from = opts.from ?? 0;
-  const to = Math.min(opts.to ?? info.dur, info.dur);
+  const house = Array.isArray(info.house) && info.house.every(Number.isFinite) ? info.house : null;
+  const wanted = opts.throughHouse && house ? house[1] : (opts.to ?? info.dur);
+  const to = Math.min(wanted, info.dur);
   const kind = opts.draft ? "draft" : "silent";
+  const scale = opts.width ? opts.width / film.L.W : opts.draft ? 0.5 : 1;
   const range =
     opts.from !== undefined || opts.to !== undefined ? `-${from}-${to}` : "";
-  const out = join(opts.film, "out", `${kind}-${format}${range}.mp4`);
+  const out = opts.out ?? join(opts.film, "out", `${kind}-${format}${range}.mp4`);
   const type = opts.draft ? "jpeg" : "png";
   const enc = ffmpegEncoder({ out, fps: opts.fps, sub: opts.sub, type });
   const rate = opts.fps * opts.sub;
   const total = Math.round((to - from) * rate);
   const started = Date.now();
   for (let i = 0; i < total; i++) {
-    await enc.write(await frame(from + i / rate, { scale: opts.scale, type }));
+    await enc.write(await frame(from + i / rate, { scale, type }));
     if ((i + 1) % rate === 0 || i === total - 1) {
       const done = (i + 1) / total;
       const eta =

@@ -29,12 +29,6 @@
   "highpass": 100,
   "len": 1.5
  },
- "paper-crumple-2": {
-  "url": "https://assets.mixkit.co/active_storage/sfx/2996/2996-preview.mp3",
-  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
-  "highpass": 100,
-  "len": 1.31
- },
  "paper-rustle": {
   "url": "https://assets.mixkit.co/active_storage/sfx/2380/2380-preview.mp3",
   "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
@@ -217,20 +211,6 @@
   "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
   "highpass": 100,
   "len": 2.2
- },
- "paper-crumple-3": {
-  "url": "https://assets.mixkit.co/active_storage/sfx/2389/2389-preview.mp3",
-  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
-  "highpass": 100,
-  "len": 1.02,
-  "drive": true
- },
- "paper-crumple-4": {
-  "url": "https://assets.mixkit.co/active_storage/sfx/2385/2385-preview.mp3",
-  "licence": "Mixkit Sound Effects Free License (https://mixkit.co/license/#sfxFree)",
-  "highpass": 100,
-  "len": 1.78,
-  "drive": true
  },
  "match-flame": {
   "url": "https://assets.mixkit.co/active_storage/sfx/1345/1345-preview.mp3",

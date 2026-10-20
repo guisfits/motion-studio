@@ -11,10 +11,24 @@
 
 import { spring, SPRINGS, progress, rng } from "./motion.js";
 import { theme } from "./theme.js";
+import { NORMS } from "../checks/norms.mjs";
 const C = () => theme().colors;
 const F = () => theme().families;
 
 const css = (s) => s.replaceAll('"', "'");
+
+// The font size whose cap height is NORMS.caption.capHeight[0] of the frame in the body face,
+// measured on the loaded face ("H" ascent per px); 0.7 when the face cannot be measured.
+function capFloor(H) {
+  let ratio = 0.7;
+  try {
+    const g = document.createElement("canvas").getContext("2d");
+    g.font = `400 100px ${css(F().body)}`;
+    const a = g.measureText("H").actualBoundingBoxAscent / 100;
+    if (a > 0.3 && a < 1) ratio = a;
+  } catch {}
+  return (NORMS.caption.capHeight[0] * H) / ratio;
+}
 const norm = (s) =>
   s
     .normalize("NFC")
@@ -117,8 +131,9 @@ export function say(
     lineHeight: "1.02",
   });
   const ratio = leadScale ?? (screen ? 0.55 : 0.46);
-  // The floor only binds when the caller asked for the new legibility (screen or leadScale).
-  const floor = screen || leadScale != null ? (60 * stage.W) / 1080 : 0;
+  // The floor only binds when the caller asked for the new legibility (screen or leadScale): lead
+  // words never go under 60 px at 1080 wide, nor under the caption cap-height norm (T10).
+  const floor = screen || leadScale != null ? Math.max((60 * stage.W) / 1080, capFloor(stage.H)) : 0;
   const smallOf = (sz) => Math.max(sz * ratio, floor);
   const spans = words.map((wd) => {
     const s = document.createElement("span");

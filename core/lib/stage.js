@@ -6,19 +6,14 @@
 // transitions or animations, no timers, no state carried between calls, no Math.random.
 
 import { layout } from "./layout.js";
-import { theme } from "./theme.js";
+import { theme, fontFaceCss, fontLoadSpecs } from "./theme.js";
 
 const params = new URLSearchParams(location.search);
 const rendering = navigator.webdriver || params.has("render");
 
 function injectFontFaces() {
-  const css = theme().fonts.map(
-    (f) =>
-      `@font-face{font-family:"${f.family}";font-style:${f.style};font-weight:400;` +
-      `src:url(${f.url});${f.range ? `unicode-range:${f.range};` : ""}}`,
-  ).join("\n");
   const style = document.createElement("style");
-  style.textContent = css;
+  style.textContent = fontFaceCss(theme().fonts);
   document.head.append(style);
 }
 
@@ -26,9 +21,7 @@ async function loadFonts() {
   // document.fonts.load only fetches faces some text needs; ask for each family/style
   // explicitly (with a Greek sample) so canvas text never falls back on frame 0.
   await Promise.all(
-    theme().fonts.map((f) =>
-      document.fonts.load(`${f.style} 400 32px "${f.family}"`, "Aaλ"),
-    ),
+    fontLoadSpecs(theme().fonts).map((spec) => document.fonts.load(spec, "Aaλ")),
   );
   await document.fonts.ready;
 }

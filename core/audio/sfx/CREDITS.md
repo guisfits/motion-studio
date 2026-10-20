@@ -2,7 +2,7 @@
 
 Action names live in `../sfx-library.json`. File ids are short descriptive English names; the action names are what films use.
 
-Freesound licences re-verified online on 2026-10-10 (46 recordings, all CC0 1.0).
+Freesound licences re-verified online on 2026-10-10 (51 files, all CC0 1.0); the 9 files cut on 2026-10-14 (paper-fold, scissors-cut, glue-stick, push-pin, paper-crumple-5..7) were checked on their Freesound pages the same day; glue-stick was recut from "Adhesive tape" on 2026-10-14 after the first cut proved to carry a spoken word (CC0 1.0 re-read on its page).
 
 ## Committed files: Freesound, CC0 1.0
 
@@ -64,6 +64,15 @@ redistribute a raw file elsewhere. Some ids share one recording (a different cut
 | organ-chord | https://freesound.org/s/808245/ | CC0 1.0 |
 | choir-ah | https://freesound.org/s/444491/ | CC0 1.0 |
 | sticker-peel-2 | https://freesound.org/s/137246/ | CC0 1.0 |
+| paper-fold-1 | https://freesound.org/s/367683/ | CC0 1.0 |
+| paper-fold-2 | https://freesound.org/s/68224/ | CC0 1.0 |
+| scissors-cut-1 | https://freesound.org/s/426826/ | CC0 1.0 |
+| scissors-cut-2 | https://freesound.org/s/496295/ | CC0 1.0 |
+| glue-stick | https://freesound.org/s/852199/ | CC0 1.0 |
+| push-pin | https://freesound.org/s/446634/ | CC0 1.0 |
+| paper-crumple-5 | https://freesound.org/s/151231/ | CC0 1.0 |
+| paper-crumple-6 | https://freesound.org/s/153342/ | CC0 1.0 |
+| paper-crumple-7 | https://freesound.org/s/334200/ | CC0 1.0 |
 
 ## Fetched files: Mixkit (never committed)
 
@@ -82,7 +91,6 @@ layer alone. Until they are fetched, their actions fall back to synthesized voic
 | page-turn | https://assets.mixkit.co/active_storage/sfx/1104/1104-preview.mp3 |
 | page-turn-large | https://assets.mixkit.co/active_storage/sfx/1105/1105-preview.mp3 |
 | book-flip | https://assets.mixkit.co/active_storage/sfx/1101/1101-preview.mp3 |
-| paper-crumple-2 | https://assets.mixkit.co/active_storage/sfx/2996/2996-preview.mp3 |
 | paper-rustle | https://assets.mixkit.co/active_storage/sfx/2380/2380-preview.mp3 |
 | paper-wind | https://assets.mixkit.co/active_storage/sfx/2653/2653-preview.mp3 |
 | pen-scratch | https://assets.mixkit.co/active_storage/sfx/2367/2367-preview.mp3 |
@@ -113,8 +121,6 @@ layer alone. Until they are fetched, their actions fall back to synthesized voic
 | typewriter-key-4 | https://assets.mixkit.co/active_storage/sfx/1380/1380-preview.mp3 |
 | typewriter-carriage-bell-2 | https://assets.mixkit.co/active_storage/sfx/1383/1383-preview.mp3 |
 | paper-flip-fast | https://assets.mixkit.co/active_storage/sfx/1100/1100-preview.mp3 |
-| paper-crumple-3 | https://assets.mixkit.co/active_storage/sfx/2389/2389-preview.mp3 |
-| paper-crumple-4 | https://assets.mixkit.co/active_storage/sfx/2385/2385-preview.mp3 |
 | match-flame | https://assets.mixkit.co/active_storage/sfx/1345/1345-preview.mp3 |
 | flame-whoosh | https://assets.mixkit.co/active_storage/sfx/1348/1348-preview.mp3 |
 | camera-whoosh-low | https://assets.mixkit.co/active_storage/sfx/2615/2615-preview.mp3 |
@@ -130,7 +136,7 @@ layer alone. Until they are fetched, their actions fall back to synthesized voic
 High-pass at 100 Hz (60 Hz for the deep bell, boom and deep whoosh) to drop handling rumble, mono
 48 kHz, leading silence trimmed to 6 ms before the onset (-32 dB below the clip's peak), length
 capped (hits 0.1-1.5 s, beds and bells up to 4.5 s) with a fade-out, peak-normalised to -3 dBFS,
-mp3 96 kbps. Quiet crinkles (paper-crumple-3/4, typewriter-key-4) get a soft tanh drive before
+mp3 96 kbps. Quiet crinkles (typewriter-key-4) get a soft tanh drive before
 normalising so the body is not buried under the spikes.
 
 ## Sampler

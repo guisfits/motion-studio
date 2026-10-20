@@ -51,6 +51,70 @@ swift <E>/core/reference/cutout.swift <in> <F>/assets/cut/<name>.png --border 12
 Open every cut on a ground before using it: a missing hand, a halo of old background or a cut
 through the subject means re-cut (other mode, or crop the source tighter first with ffmpeg).
 
+## Rigs
+
+A piece that must act (nod, point, swing a hammer) is cut into hinged paper parts, Monty-Python
+style: a root plus children that turn about pivots, each in its parent's frame.
+
+```bash
+node <E>/core/reference/rig.mjs <picture> <F>/assets/rigs/<name>/spec.json --out <F>/assets/rigs/<name> [--swing 20]
+```
+
+```json
+{ "subject": "birefnet",
+  "parts": [
+    { "name": "body",    "pivot": [0.47, 0.55], "parent": null,       "z": 0, "poly": [[x, y], ...] },
+    { "name": "forearm", "pivot": [0.29, 0.36], "parent": "upperarm", "z": 2, "poly": [[x, y], ...], "fill": "copy" } ] }
+```
+
+- Points are 0..1 of the upright picture. A parent is listed before its children; where polygons
+  overlap the later part wins. The root's `poly` is optional (a rough fence around the figure when
+  the matte lifts the neighbours too).
+- `subject`: `none` (the polygons alone), `alpha` (a picture that is already a cut-out PNG: its own
+  transparency is the matte, with `"shrink": 0`), `subject` (Vision, fast, blocky edge with a light halo)
+  or `birefnet` (clean edge, ~15 s, the model is cached in `~/.u2net`). A pale line along an edge
+  means more `shrink` (px, default 2) or the other matte.
+- Each child reaches `overlap` (3% of its size) behind its pivot into its parent, and the parent
+  keeps a patch of radius `reach` (30% of the child's size) around the pivot: `fill: "copy"` reuses
+  the child's own pixels (one cloth: a sleeve), `"inpaint"` (default) invents them from the
+  parent's pixels with OpenCV TELEA through `uv`, `"texture"` keeps the `copy` patch at the joint
+  and rebuilds the rest of what the child covered *inside the parent's own `poly`* by exemplar
+  synthesis from the parent's nearby pixels (hatching and grain carry on; TELEA leaves a flat
+  blob). Use `texture` when a limb crosses a torso (an engraving's forearm over the belly), give
+  the parent a `poly` that says how far it reaches under the limb, and keep `reach` small (the
+  patch is a duplicate of the child's own pixels: a long one shows as a ghost limb). Raise
+  `reach` when a gap opens at wide angles.
+- `underlay`: a part's own field, `"underlay": "cap-hair.png"`: a PNG in the output folder, the size of
+  the source, painted by hand or script, that replaces the parent's pixels wherever the part lay over
+  the parent's polygon. For when synthesis cannot be trusted (hair under a cap, where `texture`
+  borrows skin): give the parent a `poly` that says how far it reaches under the part.
+- `extras`: finished overlay pictures that are not cut from the source, for a blink or a mouth:
+  `{ "name": "eyelids", "file": "eyes-closed.png", "x": 812, "y": 760, "parent": "body", "z": 3 }`
+  (the PNG sits in the output folder, `x, y` is its top-left in source px). They go in `rig.json`
+  with `hidden: true`; `drawRig` skips them unless the pose lists their name in `show: ["eyelids"]`.
+  A blink: paint the lids from the skin around the eyes at the same size, show them 2-3 frames.
+  `preview`: `{ "seconds": 3, "fps": 24, "ease": "inOut", "keys": [{ "t": 0.4, "angles": { "beret": 14 },
+  "show": ["eyelids"] }] }` scripts `preview.mp4` instead of the swing (angles travel, `show` holds).
+- Pivot at the middle of the joint's cut edge; cut through plain cloth or shadow, not through a
+  face or a hand. Output: `<name>.png` per part, `rig.json`, and `preview.mp4` (every child swings
+  ±`swing`° over 2 s, all parts together, so judge each joint at a third of the peak too).
+  Commit `spec.json` and `rig.json`; the PNGs go to R2 with the other assets.
+
+On the film page (`core/lib/rig.js`, pure maths: the same angles always give the same pose):
+
+```js
+import { loadRig, drawRig, stepPose } from "<E>/core/lib/rig.js";
+const rig = await loadRig("assets/rigs/pauwels-teses/rig.json", stage);  // queued in stage.pending
+const KEYS = [{ t: 0, angles: { forearm: 0 } }, { t: 0.5, angles: { forearm: -18 } }, { t: 0.7, angles: { forearm: 0 } }];
+// in draw(t): angles are degrees, clockwise, relative to the part's parent
+drawRig(host, rig, { angles: stepPose(t, KEYS, 12), x: 540, y: 1200, scale: 1.4, origin: [400, 560] });
+```
+
+`drawRig` takes a DOM container (the parts are created once and moved after) or a canvas context.
+`origin` is the source px point that lands on `x, y` after `scale`. `stepPose(t, keys, fps = 12,
+{ ease })` holds each key until the next on an `fps` grid (the pose-swap feel of hand-moved paper);
+`ease: "linear" | "in" | "out" | "inOut" | fn` travels between keys instead, still in steps.
+
 ## Sources and licences
 
 - Prefer public-domain and CC0 collections: museum open-access programmes, national libraries,
@@ -58,14 +122,26 @@ through the subject means re-cut (other mode, or crop the source tighter first w
   licence allows reuse. CC BY only when attribution on screen or in the description is acceptable
   to the project.
 - Record the licence and source of every file in the catalog (and of every SFX in its credits).
-- Never pass a generated image off as a real person, place, object or document. Generated images
-  may be atmosphere (`mood-only` tag), never evidence.
+- Generated images are allowed when a search costs more than it gives (the archivist's image
+  request: the client generates from a written prompt and returns the files). Never as a document
+  or clipping, never with legible text, a real person only from a real portrait passed as
+  reference; record `licence: "generated"` and the tool in `source`.
 - Evidence must be the right one: the right century, language, person, edition. A picture that
   merely fits the mood under a factual line is decoration, and a critic fails it.
 
 ## Finding pieces fast
 
-- Search Openverse first: `https://api.openverse.org/v1/images/?q=<terms>&license=cc0,pdm`
+- One command searches the open collections and shows the candidates on a numbered sheet:
+  `node core/reference/find.mjs search "<terms>" --out <dir> [--min-w px]` (Openverse, Commons,
+  AIC, Cleveland, Met; public domain and CC0 only). `find.mjs add <dir>/candidates.json <n> --kit
+  <kit> --id <id> --kind <kind> --cut <cut>` writes the catalog row with `url`, `source` (the
+  object's page), `license`, `author`, `date`; then `kit.mjs fetch --only <id>` and `build`.
+- `build` cuts in parallel with a compiled cutter; the recipe (`cut`, `border`, `matte`) is
+  hashed into the manifest, so editing it re-cuts. `matte: "birefnet"` mattes with BiRefNet
+  (local, `core/reference/matte.py`, via `uv`; first run downloads ~1 GB) where Vision leaves a
+  halo on hair or misses a figure in a busy plate. When Vision finds no subject at all, the
+  source is a ground or a page: `cut: none` or `paper` (BiRefNet guesses wrong there).
+- By hand, Openverse: `https://api.openverse.org/v1/images/?q=<terms>&license=cc0,pdm`
   (add `&source=wikimedia|rawpixel|flickr` to narrow). It returns the file URL, licence and the
   landing page to record. Museum open access (Walters, Met, Cleveland, British Library) is there.
 - Wikimedia and Flickr may rate-limit or block originals (HTTP 429): take the large preview the

@@ -1,0 +1,53 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture texture</title>
+<!-- Used by tests/texture.test.mjs and as the visual check of lib/texture.js.
+       ?tex=<json>   a list of texture option objects (srcs relative to this folder); a layer with
+                     target: "sheet" is laid over the sheet below instead of the frame
+       ?bg=<css>     the colour under the layers (default white)
+       ?sheet=1      adds a rotated 400x500 sheet (its own stacking context) at 200,300
+       ?demo=1       a collage: table, a page, a cut-out; ground built before the layers
+       ?finish=1     K.finish over the lot, after the layers (the layer order the docs promise)
+       ?pxpcm=<n>    the film's pixels per centimetre (stage.pxPerCm)
+     window.TEX is the list of built layers. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeTable } from "../../core/lib/table.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  const q = new URLSearchParams(location.search);
+  const P = "../.assets";
+  const stage = await createStage({
+    dur: 4,
+    background: q.get("bg") ?? "#ffffff",
+    images: { page: `${P}/page-a.jpg`, portrait: `${P}/portrait-1.png` },
+  });
+  const { W, H } = stage;
+  if (q.has("pxpcm")) stage.pxPerCm = Number(q.get("pxpcm"));
+  let table = null;
+  let sheet = null;
+  if (q.has("demo")) {
+    table = makeTable(stage, { breathe: 0 });
+    table.surface({ x: -400, y: -400, w: W + 800, h: H + 800, color: "#8b7d68", shadow: false });
+    table.surface({ x: 90, y: 260, w: 900, h: 1300, src: `${P}/page-a.jpg`, rot: -2, torn: { seed: 9 } });
+    table.add(() => [K.piece(stage, { img: stage.img.portrait, w: 640, x: 540, y: 980, tIn: -1, edge: "torn" })]);
+    table.camera([[0, { x: W / 2, y: H / 2 }]]);
+  }
+  if (q.has("sheet")) {
+    sheet = document.createElement("div");
+    Object.assign(sheet.style, { position: "absolute", left: "200px", top: "300px", width: "400px", height: "500px", background: "#fff", transform: "rotate(4deg)" });
+    stage.dom.append(sheet);
+  }
+  const spec = JSON.parse(q.get("tex") ?? "[]");
+  const layers = spec.map((o) => K.texture(stage, { ...o, target: o.target === "sheet" ? sheet : o.target }));
+  const fin = q.has("finish") ? K.finish(stage, { grain: 0.06 }) : null;
+  window.STAGE = stage;
+  window.TEX = layers;
+  window.FIN = fin;
+  window.TABLE = table;
+  stage.run((t) => {
+    table?.draw(t);
+    layers.forEach((l) => l.draw(t));
+    fin?.draw(t);
+  });
+</script>

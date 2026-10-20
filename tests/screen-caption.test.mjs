@@ -30,6 +30,12 @@ async function rects(times) {
           clips: spans(window.PINNED).map((s) => s.style.clipPath),
           visible: window.PINNED.box.style.visibility,
           fonts: spans(window.PINNED).map((s) => parseFloat(s.style.font.match(/(\d+(\.\d+)?)px/)[1])),
+          // Cap height as drawn: the ascent of "H" in each span's own font.
+          caps: spans(window.SMALL).map((s) => {
+            const g = document.createElement("canvas").getContext("2d");
+            g.font = s.style.font;
+            return g.measureText("H").actualBoundingBoxAscent;
+          }),
           parent: window.PINNED.box.parentElement === document.querySelector("#stage > div:last-child"),
         };
       }
@@ -61,4 +67,12 @@ test("screen captions are still written on their spoken frames, lead words ≥ 6
   assert.match(r[0.8].clips[1], /inset\(-30% 100% -30% 0(px)?\)/);
   const [lead, key] = r[1.2].fonts;
   assert.ok(lead >= 60 && lead >= key * 0.55 - 0.01, `lead ${lead} px, key ${key} px`);
+});
+
+test("a shrunk lead word never falls under the caption cap-height norm (T10)", { timeout: 120_000 }, async () => {
+  const { NORMS } = await import("../core/checks/norms.mjs");
+  const r = await rects([1.2]);
+  // SMALL's key size is 100 px: 0.55 x 100 is under the floor, so the floor sets the lead words.
+  const min = Math.min(...r[1.2].caps);
+  assert.ok(min >= NORMS.caption.capHeight[0] * 1920 - 0.5, `cap height ${min.toFixed(1)} px of 1920`);
 });

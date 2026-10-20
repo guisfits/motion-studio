@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readdirSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -58,4 +58,19 @@ test("a new film from the template previews and renders stills on its beat grid"
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("bad options are a usage error before anything renders", () => {
+  const bad = (re, ...args) => {
+    const r = spawnSync("node", [`${studio}/core/render.mjs`, film, ...args], { encoding: "utf8" });
+    assert.equal(r.status, 2, `${args.join(" ")}: exit ${r.status} ${r.stderr}`);
+    assert.match(r.stderr, re);
+  };
+  bad(/--out.*--format all|--format all.*--out/, "--format", "all", "--out", "x.mp4");
+  bad(/--width/, "--width", "abc");
+  bad(/--width/, "--width", "0");
+  bad(/--width/, "--width", "-540");
+  bad(/--width/, "--width", "Infinity");
+  bad(/--tag/, "--stills", "0.1", "--tag", "../x");
+  bad(/--tag/, "--stills", "0.1", "--tag", "a b");
 });

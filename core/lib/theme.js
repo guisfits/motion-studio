@@ -44,7 +44,7 @@ const DEFAULT = Object.freeze({
     script: '"Pinyon Script", Georgia, serif',
     hand: '"Homemade Apple", Georgia, serif',
   },
-  // Faces stage.js declares and waits for: { family, style, url, range? }.
+  // Faces stage.js declares and waits for: { family, style, weight? (400), url, range? }.
   fonts: [
     { family: "Special Elite", style: "normal", url: font("SpecialElite-Regular.ttf") },
     { family: "Pinyon Script", style: "normal", url: font("PinyonScript-Regular.ttf") },
@@ -79,4 +79,20 @@ export function setTheme(partial) {
 export function resetTheme() {
   current = merge(DEFAULT, {});
   return current;
+}
+
+// The @font-face rules for a font list; stage.js injects them before the first frame.
+export function fontFaceCss(fonts) {
+  return fonts
+    .map(
+      (f) =>
+        `@font-face{font-family:"${f.family}";font-style:${f.style};font-weight:${f.weight ?? 400};` +
+        `src:url(${f.url});${f.range ? `unicode-range:${f.range};` : ""}}`,
+    )
+    .join("\n");
+}
+
+// One document.fonts.load() spec per face, so each cut is fetched before frame 0.
+export function fontLoadSpecs(fonts) {
+  return fonts.map((f) => `${f.style} ${f.weight ?? 400} 32px "${f.family}"`);
 }

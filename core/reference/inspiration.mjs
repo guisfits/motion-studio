@@ -4,7 +4,8 @@
 //
 //   node core/reference/inspiration.mjs <id> <url> [--fps 2] [--out DIR]
 //   → <out>/media/<id>.mp4, <out>/frames/<id>/*.png, <out>/frames/<id>.png (sheet)
-//   <out>: --out, else $MOTION_INSPIRATIONS, else ./inspirations
+//   <out>: --out, else $MOTION_INSPIRATIONS, else ./inspirations; pass the register folder
+//   (inspirations/vox-collage or inspirations/motion-graphics) so the cache sits beside its notes
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";

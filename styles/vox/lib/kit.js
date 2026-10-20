@@ -10,8 +10,9 @@
 // being placed (lift → land, stepped like paper moved by hand) and leave by being lifted
 // away; type rises out of a mask and sinks back. Nothing fades in from nothing.
 
-import { spring, springReach, SPRINGS, stepped, progress, rng, clamp } from "../../../core/lib/motion.js";
+import { spring, springReach, revealProgress, SPRINGS, stepped, progress, rng, clamp, fbm } from "../../../core/lib/motion.js";
 import { theme } from "../../../core/lib/theme.js";
+import { tornClip } from "../../../core/lib/torn.js";
 const C = () => theme().colors;
 const F = () => theme().families;
 
@@ -298,17 +299,10 @@ export function rubric(
 
 // ── Paper ─────────────────────────────────────────────────────────────────────────────────
 
-// A torn paper edge on all four sides (seeded, fixed): a clip-path polygon. depth: % of the side.
-export function tornClip(seed, n = 16, depth = 3.5) {
-  const r = rng(seed);
-  const j = () => r() * depth;
-  const pts = [];
-  for (let i = 0; i <= n; i++) pts.push(`${(i / n) * 100}% ${j()}%`);
-  for (let i = 1; i <= n / 2; i++) pts.push(`${100 - j() * 0.6}% ${(i / (n / 2)) * 100}%`);
-  for (let i = n - 1; i >= 0; i--) pts.push(`${(i / n) * 100}% ${100 - j()}%`);
-  for (let i = n / 2 - 1; i >= 1; i--) pts.push(`${j() * 0.6}% ${(i / (n / 2)) * 100}%`);
-  return `polygon(${pts.join(",")})`;
-}
+// A torn paper edge on all four sides lives in the engine (core/lib/torn.js); kept importable from here.
+export { tornClip };
+// Real-scan texture layers over the table, before finish() (see core/lib/texture.js).
+export { texture, textureFrame, PX_PER_CM } from "../../../core/lib/texture.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 // One hidden <svg> per stage holding the shared filters (referenced by url(#id) from CSS).
@@ -547,8 +541,11 @@ export function ripple(
   };
 }
 
-// Film grain over the whole frame (seeded per frame, never Math.random).
-export function grain(stage, { strength = 0.08 } = {}) {
+// Film grain over the whole frame (seeded per frame, never Math.random). After finish() it
+// lands in the finish overlay, above the softened composite (grain is the last step), unless
+// stage.dom has been swapped for a layer of its own (the house outro does, for its own grain):
+// then it stays on that layer. `parent` overrides where it goes.
+export function grain(stage, { strength = 0.08, parent } = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", stage.W);
   svg.setAttribute("height", stage.H);
@@ -561,11 +558,174 @@ export function grain(stage, { strength = 0.08 } = {}) {
   });
   svg.innerHTML = `<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="1"/>
     <feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#grain)"/>`;
-  stage.dom.append(svg);
+  (parent ?? (stage.overlay && stage.dom === stage.overlayDom ? stage.overlay : stage.dom)).append(svg);
   const turb = svg.querySelector("feTurbulence");
   return {
     draw(t) {
       turb.setAttribute("seed", String(Math.floor(t * 24)));
+    },
+  };
+}
+
+// ── Finishing pass ────────────────────────────────────────────────────────────────────────
+
+// A step's amount: `false`, 0 or null switch it off; anything else must be a positive number.
+function amount(name, v) {
+  if (v === false || v == null || v === 0) return 0;
+  if (typeof v !== "number" || !Number.isFinite(v) || v < 0)
+    throw new Error(`finish: ${name} must be a positive number or false, got ${v}`);
+  return v;
+}
+
+// The frame's random draw: flicker gain (x2 per stop) and gate-weave offset in px. Pure in the
+// frame index floor(t * fps), so any t inside a frame repaints it identically and a seek or a
+// re-render lands on the same numbers. A step that is off returns the neutral value but still
+// consumes its draw, so switching one step never reshuffles the others.
+export function finishFrame(t, { fps = 24, seed = 1, flicker = 0.03, weave = 1 } = {}) {
+  const stops = amount("flicker", flicker);
+  const px = amount("weave", weave);
+  const frame = Math.floor(t * fps + 1e-6);
+  const r = rng(Math.imul(frame + 1, 0x9e3779b1) ^ Math.imul(seed | 0, 0x85ebca6b));
+  r();
+  const [g, x, y] = [r() * 2 - 1, r() * 2 - 1, r() * 2 - 1];
+  return { gain: stops ? 2 ** (g * stops) : 1, dx: px ? x * px : 0, dy: px ? y * px : 0 };
+}
+
+let finishes = 0;
+
+// One finishing chain over the whole frame (Chris Moran: "a stack of small imperfections applied
+// the same way to everything"; values in references/craft-chrismoran.md §1). Call it ONCE, last,
+// after the table, pieces and captions are built: everything already on the stage is moved under
+// one wrapper, so the camera and the pieces are never touched, only the finished composite.
+//
+//   const fin = K.finish(stage, { grain: 0.07 });
+//   stage.run((t) => { table.draw(t); ...; fin.draw(t); });
+//
+// Per frame (`fps`, default 24, independent of the render rate; a frame holds its values):
+//   flicker   exposure gain 2^(+-flicker) stops, new each frame            default 0.03  (false = off)
+//   weave     stepped translate of +-weave px                              default 1
+//   scale     zoom of the wrapper so the weave and the filters never show the edge, default 1.02;
+//             applied while weave, fringe or scan is on
+// Constant:
+//   fringe    red -fringe px, blue +fringe px, global                      default 1.5
+//   scan      Gaussian blur of `scan` px, then an unsharp mask (`radius` 5 px, `sharpen` 0.6) so
+//             vector edges lose their digital tell                         default 2
+//   vignette  multiply, darkening the frame's edges by this fraction       default 0.35
+//   grain     strength of K.grain, placed last above everything            default false (a film
+//             that already calls K.grain keeps it; after finish() it lands above the softening too)
+// Texture layers (texture(), core/lib/texture.js) go under it: table -> textures -> finish -> grain.
+// Everything on stage.dom lands under the wrapper, and so does whatever is built on stage.dom
+// afterwards: a layer that must stay clean (an end card) goes on a div of its own appended to
+// stage.root after finish(), with stage.dom swapped to it while it is built.
+// Every step is off with `false` (or 0); with all off nothing is touched. Returns
+// { draw(t), wrap, overlay }: `wrap` holds the composite, `overlay` the vignette and grain.
+export function finish(
+  stage,
+  {
+    fps = 24,
+    seed = 1,
+    flicker = 0.03,
+    weave = 1,
+    scale = 1.02,
+    fringe = 1.5,
+    scan = 2,
+    sharpen = 0.6,
+    radius = 5,
+    vignette = 0.35,
+    grain: grainStrength = false,
+  } = {},
+) {
+  const o = {
+    fps,
+    seed,
+    flicker: amount("flicker", flicker),
+    weave: amount("weave", weave),
+    fringe: amount("fringe", fringe),
+    scan: amount("scan", scan),
+    vignette: amount("vignette", vignette),
+    grain: amount("grain", grainStrength),
+  };
+  if (o.vignette >= 1) throw new Error(`finish: vignette must be below 1, got ${vignette}`);
+  if (!(scale >= 1)) throw new Error(`finish: scale must be at least 1, got ${scale}`);
+  if (![o.flicker, o.weave, o.fringe, o.scan, o.vignette, o.grain].some(Boolean)) return { draw() {}, wrap: null, overlay: null };
+
+  const n = ++finishes;
+  const { root } = stage;
+  const wrap = document.createElement("div");
+  Object.assign(wrap.style, {
+    position: "absolute",
+    left: "0",
+    top: "0",
+    width: `${stage.W}px`,
+    height: `${stage.H}px`,
+    transformOrigin: "50% 50%",
+    background: root.style.background,
+  });
+  wrap.append(...root.childNodes);
+  const overlay = document.createElement("div");
+  Object.assign(overlay.style, { position: "absolute", left: "0", top: "0", width: `${stage.W}px`, height: `${stage.H}px`, pointerEvents: "none" });
+  root.append(wrap, overlay);
+  stage.overlay = overlay;
+  stage.overlayDom = stage.dom; // the layer the finish wrapped: only a grain built on it goes to the overlay
+
+  // The filter: scan softening first, then the channel fringe on the softened picture.
+  let prims = "";
+  let last = "SourceGraphic";
+  if (o.scan) {
+    prims += `<feGaussianBlur in="${last}" stdDeviation="${o.scan}" result="soft"/>`;
+    last = "soft";
+    if (sharpen) {
+      const k = amount("sharpen", sharpen);
+      prims += `<feGaussianBlur in="soft" stdDeviation="${amount("radius", radius)}" result="veil"/>
+        <feComposite in="soft" in2="veil" operator="arithmetic" k1="0" k2="${1 + k}" k3="${-k}" k4="0" result="scanned"/>`;
+      last = "scanned";
+    }
+  }
+  if (o.fringe) {
+    // Each channel on its own, red pulled left and blue pushed right, then screened back together.
+    const only = (m, result) => `<feColorMatrix in="${last}" type="matrix" values="${m}" result="${result}"/>`;
+    prims += `${only("1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0", "r0")}
+      ${only("0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0", "g0")}
+      ${only("0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0", "b0")}
+      <feOffset in="r0" dx="${-o.fringe}" dy="0" result="r1"/>
+      <feOffset in="b0" dx="${o.fringe}" dy="0" result="b1"/>
+      <feBlend in="r1" in2="g0" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="b1" mode="screen"/>`;
+  }
+  const fid = `finish${n}`;
+  if (prims) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    Object.assign(svg.style, { position: "absolute", width: "0", height: "0" });
+    svg.innerHTML = `<filter id="${fid}" color-interpolation-filters="sRGB">${prims}</filter>`;
+    overlay.append(svg);
+  }
+  const zoom = o.weave || o.fringe || o.scan ? scale : 1;
+
+  if (o.vignette) {
+    // Multiply by grey: 1 - strength where the frame's edges meet its axes (71% of the way to the
+    // corner), a little more in the corners; clear inside the middle third. The 100% mark is the corner.
+    const g = (k) => Math.round(255 * (1 - o.vignette * k));
+    const stop = (k, at) => `rgb(${g(k)} ${g(k)} ${g(k)}) ${at}%`;
+    const v = document.createElement("div");
+    Object.assign(v.style, {
+      position: "absolute",
+      inset: "0",
+      mixBlendMode: "multiply",
+      background: `radial-gradient(ellipse farthest-corner at 50% 50%, #fff 30%, ${stop(0.2, 52)}, ${stop(1, 71)}, ${stop(1.6, 100)})`,
+    });
+    overlay.append(v);
+  }
+  const film = o.grain ? grain(stage, { strength: o.grain, parent: overlay }) : null;
+
+  return {
+    wrap,
+    overlay,
+    draw(t) {
+      const f = finishFrame(t, o);
+      if (zoom !== 1 || o.weave) wrap.style.transform = `translate(${f.dx}px, ${f.dy}px) scale(${zoom})`;
+      const fx = [prims && `url(#${fid})`, o.flicker && `brightness(${f.gain})`].filter(Boolean);
+      if (fx.length) wrap.style.filter = fx.join(" ");
+      film?.draw(t);
     },
   };
 }
@@ -661,14 +821,30 @@ export function caption(stage, { lead = "", key, x, y, size = 150, accent = fals
 // Ink poured onto the table (poured, never stamped): a drop falls from `from`
 // (default: above the frame), lands at (x, y) at tIn, flings droplets around and spreads into a
 // blot with a living edge. Create it BEFORE the piece it sits behind. r = final radius.
-export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
+//
+// As a transition (frame px; build it on stage.dom, over the outgoing shot):
+//   cover: true    the blot spreads until it fills the whole frame (r is worked out); `done` =
+//                  the moment no corner is left
+//   reveal: el     the ink carries the next shot: `el` (a full-frame shot built ABOVE the
+//                  outgoing one) shows inside the spreading blot, a band of ink running ahead of
+//                  it, its edge a seeded fbm outline that changes as it soaks out
+//   matte: { clip, at }  real ink footage (a makeClip of black ink on white, e.g. a splatter
+//                  landing) multiplied over the frame, its frame `at` s on the drop's contact;
+//                  shown until the frame is covered (or tOut). The procedural blot stays under it.
+//   out: el        the outgoing shot, hidden once the frame is covered (it lies under `reveal`)
+export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from, cover = false, reveal, out, matte, ring = 64 }) {
   const id = `blot${seed}${Math.round(x)}${Math.round(y)}`;
+  const { W, H } = stage;
+  const WOB = 0.22; // how far the fbm edge strays from the circle, as a share of the radius
+  const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([cx, cy]) => Math.hypot(cx - x, cy - y)));
+  // Big enough that the edge's deepest bay still clears the farthest corner.
+  const R = cover || reveal ? (far + ring) / (1 - WOB) + 8 : r;
   const src = from ?? { x: x + 60, y: y - 1400 };
   const fall = 0.32;
   const rr = rng(seed);
   const drops = Array.from({ length: 9 }, () => {
     const a = rr() * Math.PI * 2;
-    return { a, d: r * (0.75 + rr() * 0.7), s: 7 + rr() * 20 };
+    return { a, d: Math.min(R, r) * (0.75 + rr() * 0.7), s: 7 + rr() * 20 };
   });
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("width", "1");
@@ -679,14 +855,42 @@ export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
       <feDisplacementMap in="SourceGraphic" scale="64" xChannelSelector="R" yChannelSelector="G"/></filter>
     <g fill="${C().accent}">
       <ellipse class="drop" rx="16" ry="30"/>
-      <g filter="url(#${id})"><circle class="blot" cx="${x}" cy="${y}" r="0"/>
+      <g filter="url(#${id})">${reveal ? `<polygon class="blot"/>` : `<circle class="blot" cx="${x}" cy="${y}" r="0"/>`}
       ${drops.map(() => `<circle class="spl" r="0"/>`).join("")}</g>
     </g>`;
-  stage.dom.append(svg);
+  if (reveal) reveal.before(svg);
+  else stage.dom.append(svg);
   const drop = svg.querySelector(".drop");
   const blot = svg.querySelector(".blot");
   const spl = [...svg.querySelectorAll(".spl")];
+  // The soaked outline: radius at angle a when the spread is at e (0..1), the edge wandering
+  // as it goes (the same fbm field sampled further on, never re-rolled).
+  const edge = fbm(seed, { octaves: 4, periodX: 8 });
+  const N = 96;
+  const outline = (rad, e, inset = 0) =>
+    Array.from({ length: N }, (_, i) => {
+      const a = (i / N) * Math.PI * 2;
+      const k = Math.max(0, rad * e * (1 + WOB * edge((i / N) * 8, e * 1.5)) - inset);
+      return [x + Math.cos(a) * k, y + Math.sin(a) * k];
+    });
+  const spread = (t) => spring(t - tIn, 70, 16);
+  // The spread at which the edge's nearest point (minus the ink band) clears the farthest corner.
+  const coverAt = (() => {
+    if (!(cover || reveal)) return null;
+    for (let u = 0.001; u < 8; u += 0.001) {
+      const e = spread(tIn + u);
+      if (outline(R, e, reveal ? ring : 0).every(([px, py]) => Math.hypot(px - x, py - y) >= far)) return tIn + u;
+    }
+    return null;
+  })();
+  const shownUntil = coverAt ?? tOut;
+  if (matte) {
+    Object.assign(matte.clip.el.style, { width: `${W}px`, height: `${H}px`, objectFit: "cover", mixBlendMode: "multiply", pointerEvents: "none" });
+    (reveal ?? svg).after(matte.clip.el);
+  }
   return {
+    // The frame is all ink (cover) or all next shot (reveal) from here on.
+    done: coverAt,
     cues: () => [{ t: tIn, type: "drip" }, { t: tIn + 0.02, type: "splash", gain: 0.5 }],
     draw(t) {
       const l = leave(t, tOut);
@@ -696,8 +900,13 @@ export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
       drop.setAttribute("cy", String(src.y + (y - src.y) * f * f));
       drop.style.visibility = f > 0 && f < 1 ? "visible" : "hidden";
       // The impact: a fast spread that slows, like ink soaking into paper.
-      const e = spring(t - tIn, 70, 16);
-      blot.setAttribute("r", String(Math.max(0, r * e * (1 - l))));
+      const e = spread(t);
+      if (reveal) {
+        const pts = (inset) => outline(R, e, inset).map(([px, py]) => `${px.toFixed(1)}px ${py.toFixed(1)}px`);
+        blot.setAttribute("points", outline(R, e).map((p) => p.join(",")).join(" "));
+        const covered = coverAt != null && t >= coverAt;
+        reveal.style.clipPath = covered ? "" : t < tIn ? "polygon(0 0, 0 0, 0 0)" : `polygon(${pts(ring).join(",")})`;
+      } else blot.setAttribute("r", String(Math.max(0, R * e * (1 - l))));
       const p = spring(t - tIn, 140, 18);
       spl.forEach((c, i) => {
         const d = drops[i];
@@ -705,7 +914,14 @@ export function inkBlot(stage, { x, y, r = 300, tIn, tOut, seed = 11, from }) {
         c.setAttribute("cy", String(y + Math.sin(d.a) * d.d * p));
         c.setAttribute("r", String(t >= tIn ? d.s * Math.min(1, (t - tIn) * 8) * (1 - l) : 0));
       });
-      show(svg, t >= tIn - fall);
+      const gone = coverAt != null && t >= coverAt;
+      show(svg, t >= tIn - fall && !(reveal && gone));
+      if (out) out.style.display = gone ? "none" : ""; // not visibility: its pieces set their own
+      if (matte) {
+        const on = t >= tIn && (shownUntil == null || t < shownUntil);
+        show(matte.clip.el, on);
+        if (on) matte.clip.at((matte.at ?? 0) + (t - tIn));
+      }
     },
   };
 }
@@ -748,6 +964,30 @@ export function handwrite(stage, { text, x, y, size = 72, tIn, dur = 1.6, tOut, 
       const p = progress(t, tIn, tIn + dur);
       el.style.clipPath = `inset(-20% ${100 - p * 100}% -20% 0)`;
       el.style.opacity = String(1 - leave(t, tOut));
+      show(el, t >= tIn);
+    },
+  };
+}
+
+// A line written by hand: revealed left to right at the pen's pace (a spring, finished on time:
+// revealProgress), the last glyph fully shown at tIn + dur. `parent` puts it on a piece
+// (a clipping's .el) instead of the stage. dur defaults to when the spring has visibly arrived.
+export function handText(
+  stage,
+  { text, x = 0, y = 0, size = 56, face = F().script ?? F().serif, color = C().ink, tIn, k = 40, d = 12.6, dur, gain = 0.55, parent = stage.dom },
+) {
+  const span = dur ?? springReach(k, d, 0.97) ?? 1;
+  const el = div(stage, {
+    font: `400 ${size}px/1.2 ${css(face)}`, color, whiteSpace: "nowrap", transform: `translate(${x}px, ${y}px)`,
+  }, text, parent);
+  return {
+    el,
+    end: tIn + span,
+    cues: () => [{ t: tIn, type: "pen", gain, len: Math.min(span, 1.5) }],
+    draw(t) {
+      const p = revealProgress(t, tIn, { k, d, dur: span });
+      // Once written there is no clip at all: it would crop the last glyph's overhang.
+      el.style.clipPath = p >= 1 ? "none" : `inset(-30% ${100 - p * 100}% -30% -5%)`;
       show(el, t >= tIn);
     },
   };
@@ -868,3 +1108,9 @@ export function inkSpill(stage, {
 
 // Editorial moves built on these components (heroWord, counter, docZoom, route, split).
 export * from "./moves.js";
+
+export * from "./choreo.js";
+export * from "./paper.js";
+export * from "./outline.js";
+// Paper transitions (tearReveal, pageTurn, zoomThrough) and tapeOn.
+export * from "./transitions.js";

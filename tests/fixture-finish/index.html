@@ -1,0 +1,32 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>fixture finish</title>
+<!-- Used by tests/finish.test.mjs. A cream sheet on a table with a dark band and a white bar in the
+     middle (a hard edge for the fringe), a camera that travels, and K.finish over the lot.
+     ?finish=<json> sets the finish options; ?finish=none builds the same film without it. -->
+<script type="module">
+  import { createStage } from "../../core/lib/stage.js";
+  import { makeTable } from "../../core/lib/table.js";
+  import * as K from "../../styles/vox/lib/kit.js";
+
+  const stage = await createStage({ dur: 4 });
+  const { W, H } = stage;
+  const table = makeTable(stage, { breathe: 0 });
+  table.surface({ x: -400, y: -400, w: W + 800, h: H + 800, color: "#d8d2c0", shadow: false });
+  table.surface({ x: 0, y: 700, w: W, h: 520, color: "#101010", shadow: false });
+  table.surface({ x: 520, y: 760, w: 40, h: 400, color: "#ffffff", shadow: false });
+  table.camera([
+    [0, { x: W / 2, y: H / 2 }],
+    [1.5, { x: W / 2 + 300, y: H / 2 + 200 }],
+  ]);
+  const q = new URLSearchParams(location.search).get("finish");
+  const fin = q === "none" ? null : K.finish(stage, q ? JSON.parse(q) : {});
+  window.STAGE = stage;
+  window.FIN = fin;
+  window.TABLE = table;
+  window.K = K;
+  stage.run((t) => {
+    table.draw(t);
+    fin?.draw(t);
+  });
+</script>

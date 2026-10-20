@@ -8,8 +8,9 @@
 // `t` is when the sound is HEARD: a landing's contact, the middle of a camera travel, the start of
 // a stroke. The renderer places each recording so its own anchor (library field `anchor`) falls on
 // `t`. Cues are thinned first (thin.mjs); `len` is how long the sound lasts after its anchor.
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { SR, writeWav, noiseSource } from "./wav.mjs";
@@ -269,7 +270,7 @@ export function sampleMeta(id) {
 // and the cue's gain, so a thud (-5 dB) and a key (-20 dB) differ by the numbers in the library,
 // not by how loudly each file was recorded. Beds keep their authored level.
 export const REF_DB = -16;
-const MAX_PRE = { contact: 0.25, peak: 0.45 };
+export const MAX_PRE = { contact: 0.25, peak: 0.45 };
 export const ONE_SHOT_TAIL = 0.6;
 
 // Adds a recording at `start` (samples). `rate` ≠ 1 resamples by linear interpolation. The region
@@ -298,6 +299,28 @@ function softLimit(buf) {
     if (a > 0.8) buf[i] = Math.sign(buf[i]) * (0.8 + 0.19 * Math.tanh((a - 0.8) / 0.19));
   }
 }
+
+// How long before a cue's `t` its recording starts sounding (its lead-in, as renderSfx places it);
+// the longest over the action's variants, 0 for a synthesized voice. The cue gate widens by it.
+export function cuePre(type) {
+  const action = loadLibrary()[type];
+  if (!action) return 0;
+  const kind = action.anchor ?? "start";
+  return Math.max(
+    0,
+    ...action.files.filter(sampleFile).map((id) => {
+      const m = sampleMeta(id);
+      return Math.min(kind === "peak" ? m.peak : kind === "contact" ? m.attack : 0, MAX_PRE[kind] ?? 0);
+    }),
+  );
+}
+
+// The record written beside a rendered stem: where the cue file was, its hash, the cues mixed.
+export const cueSidecar = (cuesPath, bytes, cues) => ({
+  source: relative(process.cwd(), resolve(cuesPath)),
+  sha256: createHash("sha256").update(bytes).digest("hex"),
+  cues,
+});
 
 // cues: [{ t, type, gain?, len? }]. thin: false renders the list as given.
 export function renderSfx(cues, dur, { thin = true } = {}) {
@@ -373,7 +396,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   for (let k = 0; k < process.argv.length; k++)
     if (process.argv[k] === "--library") addLibrary(process.argv[k + 1]);
-  const cues = JSON.parse(readFileSync(cuesPath, "utf8"));
+  const cueBytes = readFileSync(cuesPath);
+  const cues = JSON.parse(cueBytes.toString("utf8"));
   const thin = !process.argv.includes("--no-thin");
   const i = process.argv.indexOf("--dur");
   const dur =
@@ -383,6 +407,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   try {
     if (thin) console.log(`sfx thinning: ${summary(cues.length, thinCues(cues))}`);
     writeWav(out, [renderSfx(cues, dur, { thin })]);
+    // What the stem was rendered from, for the cue gate (checks/cues.mjs M4-M6): the cue file's
+    // hash and the list that survived thinning.
+    writeFileSync(`${out}.cues.json`, JSON.stringify(cueSidecar(cuesPath, cueBytes, thin ? thinCues(cues).kept : cues), null, 1));
   } catch (e) {
     console.error(e.message);
     process.exit(1);

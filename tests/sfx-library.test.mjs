@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SR } from "../core/audio/wav.mjs";
-import { VOICES, ALIASES, decodeSample, loadLibrary, renderSfx, sampleFile } from "../core/audio/sfx.mjs";
+import { VOICES, ALIASES, decodeSample, loadLibrary, renderSfx, sampleFile, sampleMeta } from "../core/audio/sfx.mjs";
 
 const audio = fileURLToPath(new URL("../core/audio/", import.meta.url));
 const engine = fileURLToPath(new URL("../", import.meta.url));
@@ -127,6 +127,24 @@ test("a contact cue lands on its time: silent before the pre-roll, loudest attac
   assert.ok(after > 0.02, `peak after the cue ${after}`);
 });
 
+// A start-anchored action plays its file from the first sample: a file whose hit comes later
+// (scissors-cut-1's 0.56 s, quill-write's 0.54 s) is heard late, or not at all when the cue's len
+// is short. Builds (risers, reverse cymbals) are exempt: their rise is the sound and they are
+// placed to end on the hit; beds have no hit.
+const LEAD_IN_MAX_S = 0.15;
+const BUILDS = new Set(["riser", "riser-soft", "reverse-cymbal"]);
+test("an action whose recording has a lead-in anchors on its contact or peak", () => {
+  const late = [];
+  for (const [name, a] of Object.entries(lib)) {
+    if (declared[name]?.alias || a.anchor || a.ambient || a.signature || BUILDS.has(name)) continue;
+    for (const id of a.files) {
+      const { attack } = sampleMeta(id);
+      if (attack > LEAD_IN_MAX_S) late.push(`${name}: ${id} hits at ${attack.toFixed(2)} s`);
+    }
+  }
+  assert.deepEqual(late, []);
+});
+
 test("repeated cues alternate variants, deterministically", () => {
   const n = lib.tear.files.length;
   assert.ok(n >= 2);
@@ -209,4 +227,25 @@ test("credits list every committed file as CC0 and every fetched one with its so
   const credits = readFileSync(join(audio, "sfx", "CREDITS.md"), "utf8");
   for (const id of committed) assert.match(credits, new RegExp(`\\| ${id} \\| https://freesound\\.org/s/\\d+/ \\| CC0 1\\.0 \\|`), `${id} has no CC0 row`);
   for (const id of Object.keys(sources)) assert.ok(credits.includes(`| ${id} | ${sources[id].url} |`), `${id} has no source row`);
+});
+
+const onDisk = (id) => committed.includes(id) || existsSync(join(audio, "sfx/fetched", `${id}.mp3`));
+
+test("paper foley (fold, scissors, glue, pin, crumple) is committed, so a clean checkout has it", () => {
+  for (const t of ["fold", "scissors", "glue", "pin"]) {
+    assert.ok(declared[t], `library has "${t}"`);
+    for (const f of declared[t].files) assert.ok(committed.includes(f), `${t}: ${f} is committed in sfx/`);
+  }
+  assert.ok(declared.crumple.files.filter((f) => committed.includes(f)).length >= 3, "crumple has 3+ committed files");
+});
+
+test("every choreo contact type has a sound with its files on disk", { skip: NOT_FETCHED }, async () => {
+  const { contacts, MOVES } = await import("../styles/vox/lib/choreo.js");
+  const types = new Set(
+    Object.keys(MOVES).flatMap((k) => contacts([{ kind: k, at: 0, by: [0, 0] }]).map((c) => c.type)),
+  );
+  for (const t of [...types, "tape"]) {
+    assert.ok(declared[t], `library has "${t}"`);
+    for (const f of resolved(t).files) assert.ok(onDisk(f), `${t}: ${f} is on disk`);
+  }
 });

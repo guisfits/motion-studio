@@ -1,0 +1,60 @@
+# Devices: captions, lettering, type, life, data
+
+Device -> when -> how in this engine -> measured range -> tell and fix. `grammar §n` = `research/editing-grammar.md`; `craft §n` = `research/craft.md`; ids are pieces measured there; `moran/<reel>` = a lesson in `moran.md`; `[eng]` = engine code read; `~` = inference. Gate thresholds are `NORMS` keys. Size, face, plate and colour of every kind of type are the art director's (style bible); you own timing, motion and the trace.
+
+## 1. Captions (caption as the motion, in detail)
+
+The register-A caption is 2-4 words of narration in a small high-contrast serif, often italic, replaced in place at a fixed position (grammar §7, §1).
+- Measured A: cap height 2.5-3.5 % of frame height (`NORMS.caption.capHeight` = [0.025, 0.045]; `hex/Dbc-vIXCCqe` 3.5, `hex/Dd0qOzpqoYf` 3, `hex/Da0NQ7eCAnr` 2.5); chunks of 1-3, 2-4, 2-5 words (`hex/DU3hTiOk2-M`, `hex/DbnDiSLCtax`, `hex/DY_8VpvCpeO`); swaps in place at one position across cuts (`hex/DP6L1BqCc0g`, `hex/DbnDiSLCtax`). Caption cap height >= 4 % in craft §2.5 is superseded by the measured range (grammar §12, last paragraph).
+- Chunking (yours): from `words.json`, in order, at most `NORMS.caption.maxWords` words, never across a sentence break, text exactly as spoken (case and accents kept). A chunk starts at its first word's start. Never one chip per word typed in as it is said, never a chunk swapped mid-phrase (postmortem C2).
+- Reading time: plateau = max(`NORMS.caption.minLegibleS`, characters / `NORMS.caption.maxCps`); plan ~15 cps on a busy picture, add ~0.25 s to one- and two-word chunks, more for caps, italic and script (craft §2.5, `~`). T1 and T2 count only frames at alpha >= `NORMS.caption.legibleAlpha`.
+- Timing in practice: a chunk ends at the earlier of its plateau and 0.05 s before the next chunk starts. The measured swap is a hard replacement in place, so fades are for the first chunk after a gap and the last before one (6-10 frames in, 4-6 frames out, craft §2.5); inside a run, swap with no fade, otherwise the fades eat the legible time. Worked check: a 3-word chunk spans ~1.0 s of speech at 3.0 words/s; with 0.2 s of fade-in and 0.13 s of fade-out it is legible 0.62 s and T2 fires. If the voice is too fast for the plateau, do not shrink the hold and do not re-chunk past the word limit: route the line to the writer.
+- Placement: screen space above the table (never moved by the camera, never on twos, never blurred); inside `stage.box`; on sky, water, wall, chest or dark mid-tones, never on faces or across eyes and mouth (`hex/DcF_qVxqsaA`, `hex/DOOCNSVCexy`); white with a soft glow on footage, black on paper (`hex/DbnDiSLCtax`). T11 reads the pixels behind the text, so the caption sits on the quiet area the art director made for it. The caption does not cover a beat's zoom target: move the target (framing) before moving the caption into the platform zones.
+- Emphasis: the key word may take the style bible's single emphasis (italic in the same size, `hex/Dbc-vIXCCqe`; or the size jump, the art director's). A size jump above `NORMS.caption.capHeight` is emphasis lettering, not a caption: register it as `lettering` and keep the caption running under it (grammar §12.5).
+- One id per chunk (`cap-<n>`), `text` as displayed; a reused id merges legible time across different words and hides T1 and T2.
+- Tell: tiny low-contrast caption over a moving face or bright sky (grammar §11 #3). Fix: quiet area, band or glow, below the chin.
+
+## 2. Draw-on markup and lettering
+
+**Draw-on markup.** Circles, arrows, underlines, routes draw themselves on the word (grammar §5).
+- Measured: 3-6 frames for a quick mark (`pin/349988`, `ee/DY9SS5YOhS8` 6 frames for a marker ellipse); 0.3-0.5 s for scribbles (`ee/DeB2BnjOvHp`); ~0.6 s arc (`hex/DapVrzSiKJR`); ~0.8 s map circle (`hex/DXoOsJdiSeU`); ~1 s loop round a figure (`hex/Dae8G-ZiP7P`); 1.2-1.5 s route (`hex/DVL9nizj2HD`, `hex/DYMUSnRiNbV`); script written in ~1.5-2 s as a second voice (`hex/DYOyiPDI666`, `hex/DYZBoYQiQBA`).
+- When: pick a person out of a group photo (`hex/DdqZ3qKKe7f`); trace a route (`hex/DcS2NcaCHBM`); circle the paradox word (`hex/DNDJyk8pizL`).
+- How: the text and its word come from the sheet's `lettering[]`: `text` is displayed, `says` (else `text`) is the spoken word, `lands` is that word's start; draw nothing the narrator does not say, never retype a time. The write-on starts within `NORMS.sync.letteringToleranceFrames` of `lands`, never later; for a narrated mark it runs 0.3-0.6 s (the word's own length clamped; a mark of 3-6 frames is the fast variant, a route the long one). Use `revealProgress(t, tIn, { dur })` (exactly 1 from `tIn + dur`, so the last glyph is never cropped), left to right; step the pen on twos or threes with slight width jitter. `K.rubric` (underline or circle), `K.highlight` (marker box, multiply), the voice's hand marks (`core/lib/voice.js` `say`: circle, underline, highlight, strike), `K.handwrite`, `K.route` (point to point, with a tip for the camera to follow), `K.docZoom` (highlighter sweeping the word on a scan).
+- Hand-made, not vector: Trim Paths with a tapered end (`moran/DLShlJxRXZe`, `moran/DT2_SIMgBfI`), roughen edges and boil on 12 fps (`moran/DMixnWEpuhj`, `moran/DZdCD2YNk4d`); underline ~12-14 px at 1080 wide, three passes, rough ends; a highlighter behind the word at alpha ~0.6 (craft §2.6). A flat perfect line reads as UI.
+- Pacing: one mark at a time; at most `NORMS.sync.maxMarksPerSecond` per second across a beat border (S6 on the sheet); mark only the word that carries the claim. The highlighter bar is half a line high so letters overlap it (`hex/DbXtTeqifQw`); reveals left to right in ~0.4-0.6 s.
+- Retire before the camera leaves the station, about 0.4 s before the beat ends and before the next caption lands; while registered it must not cross a frame edge (T4) (`~`: craft §2.6 asks the annotation to remove itself within 8 frames of the next caption).
+- Floating labels (grammar §11 #10): a label needs a leader line or arrow to its object (`hex/DNfiewopHaL`, `hex/DZE-78dC_Xr`); the leader draws on with the label.
+- Stage 1 draws it written from `lands`; stage 2 adds the write-on (SKILL step 3 and 9).
+- Tell: lettering that lands on a different word, a mark fully drawn with no write-on, thin uniform red ovals (postmortem K5, K6). Fix: `lands` from the sheet, write-on from the word's onset, rough stroke.
+
+## 3. Type interleaved with the subject; echo stack
+
+**Type interleaved with the subject.** A headline behind the subject, a numeral behind the shoulders, letters around a prop (grammar §6; 19 pieces).
+- Measured: sky / text / hero / grass layers (`ee/DZuVqDpO0Um`); title behind and in front of the car (`hex/DXoOsJdiSeU`); "2008" behind the person (`ee/DaAV2R5IuSi`); "$8 Billion" behind the head (`ee/Ddn42dGOwnB`); a word behind a row of robots (`hex/DWvkgUhAqJb`); a knocked-out word so the subject shows through (`ee/DSxDRZRDKVT`).
+- How: build the subject after the word so the word sits under it in the DOM. `K.heroWord(stage, { text, behind, bleed, ... })` slams or slides a huge display word in behind a cut-out and bleeds it off one edge; the word enters on its spoken word like any lettering. The registered box is the visible part (`registration.md` 3.6). Size the image like type (rebus, `moran/DdoVHX5gfP-`).
+- Tell: the numeral across a logo or the face (`hex/DPBpZK4CbYi`). Fix: bare paper or the dark part.
+
+**Echo stack.** The same line 3-5 times, the centre line solid, the rest fading: 5 lines at 100/45/20 % opacity (`hex/DTC-mtEiT3S`); 3 lines (`hex/DT5DKMnCSPl`, `hex/DTnEO5KCawE`); a wall of 8 faded copies for "replicate" (`ee/DWYdcYwIc5K`) (grammar §7).
+- When: repetition, echo, stealth. How: copies offset slightly in time so they stack rather than move in lockstep (`moran/DVRV9hiCX4F`: slide each copy a few frames), the centre line is the spoken word and the only one registered as `lettering`.
+
+## 4. Idle life, pose swap, shape morph
+
+**Idle life on a held image.** One small loop while text builds, on any hold of >= 1.5 s (grammar §5; `ee/Dacjr7jNsbG`).
+- Measured: a hazard sign, mousetrap or sunburst idling at ~10 deg/s (`ee/Dacjr7jNsbG`); a painting swinging ~15 deg and settling in 4 frames (`ee/Dd08TpPONpx`); props swaying on a cable (`ee/DWYdcYwIc5K`); a bobbing floating island (`ee/DcszHOXuFU6`); a slow-rotating sunburst (`hex/DWlRxTpAkLW`).
+- How: seeded jitter, never `Math.random`: 2-4 px on threes (8 Hz, craft §2.3) or Moran's snap of 6 px at 2 moves/s (`moran/DQsNA9RCcs_`, seeded by the floor of the clock, not by raw time); edge boil on 12 fps with `boilStep` for torn paper. One primary mover at a time: the hero is loud, the rest drifts under ~0.5 % per second `~`. With the camera's drift this is what keeps a 4 s window from freezing (M1).
+
+**Pose-swap puppet.** Figures change pose by swapping drawings, not by warping (grammar §5): limbs re-posed every 0.5 s (`pin/350166`); a 4-pose typing loop (`pin/349999`); a 2-pose walk (`ee/DafS1lPu18x`); a walk loop is fine for <= 1.5 s (`ee/Dc0KeKyOQZE`). How: the archivist supplies the variants; swap at a frame boundary on the film's clock, same anchor, same registered id. No squash, stretch or morph of a cut-out; no turning away from the camera without a new piece (craft §2.3).
+
+**Shape morph.** A vector shape becomes the next shape (grammar §5): a progress bar becomes a ribbon becomes the next word, 6 steps in 3 s (`hex/DV36JADibx8`); sun rays become a clock (`ee/DaAV2R5IuSi`); two dots carry a whole film with one 18 s shot (`hex/DW_DhQ6AmZ1`). How: interpolate paths with the same point count as a pure function of `T(t)`, in steps if the film is stepped. Only for drawn shapes, never for a paper cut-out.
+
+## 5. Data that performs
+
+The number is shown as a quantity (grammar §5; 19 pieces).
+- Measured: bars made of the product itself (`ee/DbagmfuIKyH`); two bars with cars riding on top, 5 events in 2.5 s (`hex/DVL9nizj2HD`); a line chart drawing in ~2.5 s (`hex/DW0u-HTguVA`); a ring 66 -> 80 % (`ee/DU-zVUXCD-r`); countries tinted one at a time (`hex/Dc-vZs9CkUT`); one map, 5 beats, only overlays change (`hex/DaaSLUAidHC`); a dot grid filling red over ~2 s (`pin/350010`).
+- When: a claim that carries a number. The number itself steps (`devices-rhythm-camera.md` 1, count in steps); the quantity underneath it performs.
+- How: bars scale from a baseline with `spring`; a line draws by stroke-dash progress through `revealProgress`; a grid fills at a fixed cadence; a region tints on the word that names it (the tint is the art director's colour, you time it). `K.counter` for the digits, `K.route` for a journey. Maps: desaturate the base and colour the regions in Overlay (`moran/DcTljpCgNNJ`); maps steer attention (`moran/DLShlJxRXZe`). Real captured pages treated as evidence (`moran/DLQw7mqJzRp`).
+- Tell: a number said and shown as text alone while the sheet gives an object for it. Fix: the object or the graphic, then the count.
+
+## 6. Tint wash timing
+
+The wash on the story object at the moment the line names it is the art director's device (grammar §5); you land it: red 40 % on "something is wrong" (`hex/Da9wmeYi1ZG`); map tint on the named region (`hex/Dbc-vIXCCqe`); a prop recoloured on the money line (`ee/DbVMvRvMboX`). It starts on the word's onset, as a ramp of a few frames, not a fade of the whole frame.

@@ -1,0 +1,61 @@
+{
+  "lang": "en",
+  "board": "Board",
+  "updated": "Updated",
+  "skip": "Skip to content",
+  "now": {
+    "title": "Now",
+    "none": "Nothing needs you right now.",
+    "next": "Next"
+  },
+  "scenes": {
+    "title": "Scenes",
+    "scene": "Scene",
+    "empty": "No scenes yet.",
+    "world": "World",
+    "worlds": {
+      "A": "red",
+      "C": "newsprint"
+    },
+    "status": {
+      "approved": "Approved",
+      "waiting": "Waiting for a note",
+      "todo": "To do"
+    }
+  },
+  "feed": {
+    "title": "Updates, newest first",
+    "empty": "Nothing published yet.",
+    "waiting": "Waiting for you",
+    "tooBig": "left out of the page (file too big)",
+    "noMedia": "did not fit on the page",
+    "noVideo": "Your browser cannot play this video.",
+    "noAudio": "Your browser cannot play this audio."
+  },
+  "readError": "could not be read",
+  "approvals": {
+    "approve": "Approve",
+    "changes": "Ask for changes",
+    "reject": "Reject",
+    "comment": "Comment",
+    "commentHint": "Required to ask for changes or reject.",
+    "needComment": "Write a comment to ask for changes or reject.",
+    "offline": "Open the board on claude.ai to approve.",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "failed": "Could not save. Try again.",
+    "readOnly": "You can see the decision but not decide here.",
+    "decided": {
+      "approve": "Approved",
+      "changes": "Changes asked",
+      "reject": "Rejected"
+    },
+    "by": "by",
+    "you": "you",
+    "someone": "someone",
+    "none": "No decision yet.",
+    "closed": "Closed",
+    "judge": "What to judge"
+  },
+  "comment": "Comment"
+}

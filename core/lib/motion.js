@@ -46,6 +46,18 @@ export function springReach(k, d, frac = 0.95, max = 8) {
   return null;
 }
 
+// A reveal (a pen writing a line, a wipe) paced by a spring but finished on time: 0 before tIn,
+// exactly 1 from tIn + dur on. The plain spring only approaches 1, so a revealed line would keep
+// its last glyph cropped through the tail; here the spring is scaled so it reaches 1 at `dur`
+// (default: when the spring has visibly arrived, 97%). Pure in t, monotone, no jump at the end.
+export function revealProgress(t, tIn, { k = 40, d = 12.6, dur } = {}) {
+  const span = dur ?? springReach(k, d, 0.97) ?? 1;
+  const u = t - tIn;
+  if (u <= 0) return 0;
+  if (u >= span) return 1;
+  return clamp(spring(u, k, d) / spring(span, k, d));
+}
+
 // A value that changes target several times: keys = [[time, value], ...] sorted by time.
 // Each change adds its own spring from its own start time instead of restarting one spring,
 // so motion stays continuous through retargets and is still a pure function of t.
@@ -90,3 +102,66 @@ export function rng(seed) {
 // Time held on a stop-motion grid: 12 fps is "on twos" at 24. Cut-out pieces moved on a
 // stepped clock read as paper animated by hand, not as a smooth digital slide.
 export const stepped = (t, fps = 12) => Math.floor(t * fps + 1e-6) / fps;
+
+// When an eased move goes fastest: the time in [t0, t1] where curve(t) changes most per frame.
+// A hard cut lands there (craft: "cut at peak velocity"), so the motion carries across the cut
+// and keeps its direction. curve(t) returns a number or an object of numbers (a camera pose);
+// an object's speed is the length of its change, so pass only the fields that matter, in the
+// units that matter (a zoom-through passes Math.log(z): a zoom reads as change of scale ratio).
+// Sampled every `step` s (default 1/240, a quarter of a 60 fps frame).
+export function cutAtPeak(curve, t0, t1, step = 1 / 240) {
+  const at = (t) => {
+    const v = curve(t);
+    return typeof v === "number" ? [v] : Object.values(v);
+  };
+  let best = t0;
+  let top = -1;
+  for (let t = t0; t <= t1 + 1e-9; t += step) {
+    const a = at(t - step / 2);
+    const b = at(t + step / 2);
+    const speed = Math.hypot(...a.map((v, i) => b[i] - v));
+    if (speed > top + 1e-12) (top = speed), (best = t);
+  }
+  return best;
+}
+
+// Seeded smooth value noise in 2-D, summed over `octaves` (fractal Brownian motion): about −1..1,
+// the same for the same seed and point. For organic edges (a tear front, an ink blot's rim); a
+// fixed field sampled at a moving point changes shape smoothly instead of re-rolling per frame.
+// periodX: wrap x every periodX units (an edge that closes on itself, sampled by angle).
+export function fbm(seed, { octaves = 4, periodX } = {}) {
+  const r = rng(seed);
+  const perm = Array.from({ length: 256 }, (_, i) => i);
+  for (let i = 255; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [perm[i], perm[j]] = [perm[j], perm[i]];
+  }
+  const vals = Array.from({ length: 256 }, () => r() * 2 - 1);
+  const wrap = (i, p) => (p ? ((i % p) + p) % p : i);
+  const lattice = (ix, iy) => vals[perm[(perm[ix & 255] + iy) & 255]];
+  const smooth = (u) => u * u * (3 - 2 * u);
+  const noise = (x, y, p) => {
+    const ix = Math.floor(x);
+    const iy = Math.floor(y);
+    const fx = smooth(x - ix);
+    const fy = smooth(y - iy);
+    const x0 = wrap(ix, p);
+    const x1 = wrap(ix + 1, p);
+    const a = lerp(lattice(x0, iy), lattice(x1, iy), fx);
+    const b = lerp(lattice(x0, iy + 1), lattice(x1, iy + 1), fx);
+    return lerp(a, b, fy);
+  };
+  return (x, y = 0) => {
+    let sum = 0;
+    let amp = 0.5;
+    let f = 1;
+    let norm = 0;
+    for (let o = 0; o < octaves; o++) {
+      sum += amp * noise(x * f, y * f, periodX ? periodX * f : undefined);
+      norm += amp;
+      amp *= 0.5;
+      f *= 2;
+    }
+    return sum / norm;
+  };
+}

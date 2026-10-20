@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8" /><canvas
+  id="c"
+  width="540"
+  height="960"
+></canvas>
+<script>
+  window.FILM = { dur: 3, format: "9x16", formats: ["9x16"], W: 540, H: 960 };
+  const items = (t) =>
+    [
+      t >= 0.5 && t < 0.8
+        ? {
+            id: "cap1",
+            role: "caption",
+            text: "Lutero",
+            box: [170, 760, 200, 60],
+            alpha: 1,
+          }
+        : null,
+      {
+        id: "let1",
+        role: "lettering",
+        text: "Wittenberg",
+        box: [500, 300, 80, 50],
+        alpha: 1,
+      },
+      {
+        id: "hero",
+        role: "hero",
+        box: t < 2.5 ? [90, 200, 360, 500] : [250, 450, 60, 60],
+        alpha: 1,
+      },
+    ].filter(Boolean);
+  window.trace = items;
+  window.camera = (t) => ({ scale: 1 + 0.05 * ((t * t) / 9), x: 0, y: 0 }); // eased, only 5 %
+  window.seek = () => {};
+  window.ready = true;
+</script>

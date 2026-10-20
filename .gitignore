@@ -24,5 +24,8 @@ kit/pieces/
 kit/out/
 
 # Copyrighted reel frames and videos stay local; only the study notes are committed.
-inspirations/frames/
-inspirations/media/
+inspirations/**/frames/
+inspirations/**/media/
+inspirations/**/cache/
+tutorials/*/cache/
+core/reference/ocr

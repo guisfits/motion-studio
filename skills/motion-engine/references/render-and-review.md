@@ -72,5 +72,5 @@ between frames (a counter, `Math.random`, a CSS transition, an image still decod
 permission and from sources you may use for study), extracts frames and builds a labelled sheet.
 Then measure it like your own film: `sheets.mjs`, a cut detector (`ffmpeg -vf
 "select='gt(scene,0.3)',showinfo"`, merge detections < 0.7 s apart), `ebur128`, a word-level
-transcript for words per second. Write what you saw to `inspirations/<id>.md`: grammar only.
+transcript for words per second. Write what you saw to `inspirations/<register>/<id>.md` (`vox-collage` or `motion-graphics`): look and grammar.
 Media and frames stay local, never committed.

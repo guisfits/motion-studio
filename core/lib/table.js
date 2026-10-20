@@ -5,6 +5,9 @@
 //
 //   const table = makeTable(stage);
 //   table.surface({ x: 0, y: 0, w: 2400, h: 3000, src: "assets/wood.jpg" });
+//   const st = table.station({ x: 0, y: 0 });      // a place on the table, in its own frame
+//   st.surface({ x: 80, y: 120, w: 940, h: 1560, src: "assets/page.jpg", rot: -2,
+//                torn: { seed: 4, depth: 2, jag: 24 }, shadow: true });   // → [element]: torn paper on wood
 //   const [figure] = table.add(() => [K.piece(stage, { img, w: 540, x: 600, y: 900, tIn: 1 })]);
 //   table.camera([[0, { x: 540, y: 960, z: 1 }], [T.next, { x: 2200, y: 1300, z: 1.2, r: -3 }]]);
 //   stage.run((t) => { table.draw(t); ... });     // draws the camera and everything added to it
@@ -13,6 +16,7 @@
 
 import { track, rng, spring, springReach, progress, clamp } from "./motion.js";
 import { theme } from "./theme.js";
+import { tornClip } from "./torn.js";
 const C = () => theme().colors;
 
 // A cinematic glide: slower and softer than the UI springs, settles in ~1.2 s.
@@ -43,6 +47,34 @@ export function blurFor(v, gain = 1) {
   const spin = v.spin ?? 0; // px/frame at a typical radius, from roll and zoom
   const s = (px) => Math.min(BLUR_MAX, Math.max(0, px - BLUR_FLOOR) * BLUR_GAIN * gain);
   return { sx: s(along + spin), sy: s(spin * 0.6), angle: (Math.atan2(v.vy, v.vx) * 180) / Math.PI };
+}
+
+// A sheet lying on the table. Plain: a box with a box-shadow. `torn: { seed, depth?, jag? }`: a paper
+// sheet with a ragged edge (depth: how far the tear bites in, % of the side, default 2; jag: points
+// along the long sides, default 24) whose soft drop shadow follows the tear, so it reads as paper
+// lying on wood: the shadow sits on an outer box, the clip on the sheet inside it. Returns the
+// outer element. `filter` grades the sheet itself (the shadow keeps its strength).
+const SHEET_SHADOW = "drop-shadow(0 22px 30px rgba(20,12,4,.6)) drop-shadow(0 3px 5px rgba(20,12,4,.5))";
+function laySurface({ x, y, w, h, src, color, rot = 0, filter = "", shadow = true, torn }, boxShadow) {
+  const bg = src ? `${color} url(${src}) center/cover` : color;
+  const box = document.createElement("div");
+  Object.assign(box.style, { position: "absolute", left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px`, transform: `rotate(${rot}deg)` });
+  if (!torn) {
+    Object.assign(box.style, { background: bg, filter, boxShadow: shadow ? boxShadow : "none" });
+    return box;
+  }
+  if (!Number.isFinite(torn.seed)) throw new Error("surface: torn needs a numeric seed, e.g. torn: { seed: 3 }");
+  const sheet = document.createElement("div");
+  Object.assign(sheet.style, {
+    position: "absolute",
+    inset: "0",
+    background: bg,
+    clipPath: tornClip(torn.seed, 2 * Math.max(2, Math.round((torn.jag ?? 24) / 2)), torn.depth ?? 2),
+    filter,
+  });
+  box.style.filter = shadow ? SHEET_SHADOW : "";
+  box.append(sheet);
+  return box;
 }
 
 export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
@@ -85,17 +117,26 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
   const parts = [];
   let keys = [[0, { x: W / 2, y: H / 2, z: 1, r: 0 }]];
 
-  const at = (t) => {
-    // Each key brings its own spring (its `ease`), so one move can whip and the next glide.
+  // The pose at t. `cutClock` decides which hard cuts have happened (default: t itself); the
+  // velocity reads the frame before t with the cuts of t already taken, so a cut is never a
+  // smear.
+  const pose = (t, cutClock = t) => {
+    // Each key brings its own spring (its `ease`), so one move can whip and the next glide. A
+    // `cut: true` key is an instant jump: from its time the camera is exactly at that key, and
+    // the moves before it are over (no remaining travel carries across); only the keys after
+    // it ease, starting from the cut pose. A cut that skips a field keeps the field of the key
+    // before it.
     const ax = (k) => {
-      let v = keys[0][1][k] ?? (k === "z" ? 1 : 0);
-      let prev = v;
-      for (let i = 1; i < keys.length; i++) {
+      const target = [];
+      for (let i = 0; i < keys.length; i++)
+        target.push(keys[i][1][k] ?? (i === 0 ? (k === "z" ? 1 : 0) : target[i - 1]));
+      let from = 0;
+      for (let i = 1; i < keys.length; i++) if (keys[i][1].cut && cutClock >= keys[i][0]) from = i;
+      let v = target[from];
+      for (let i = from + 1; i < keys.length; i++) {
         const [tt, key] = keys[i];
-        const next = key[k] ?? prev;
         const e = EASE[key.ease ?? "move"] ?? EASE.move;
-        v += (next - prev) * spring(t - tt, e.k, e.d);
-        prev = next;
+        v += (target[i] - target[i - 1]) * (key.cut ? 0 : spring(t - tt, e.k, e.d));
       }
       return v;
     };
@@ -112,10 +153,11 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
       r: r + b * 0.35 * Math.sin(t * 0.27),
     };
   };
+  const at = (t) => pose(t);
 
   const velocity = (t) => {
     const a = at(t);
-    const b = at(t - FRAME);
+    const b = pose(t - FRAME, t);
     // Where the world point now at the centre was on screen one frame ago.
     const rad = (-b.r * Math.PI) / 180;
     const dx = (a.x - b.x) * b.z;
@@ -166,18 +208,11 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
             stage.dom = saved;
           }
         },
-        surface(o) {
-          const el = this.add(() => {
-            const d = document.createElement("div");
-            Object.assign(d.style, {
-              position: "absolute", left: `${o.x}px`, top: `${o.y}px`, width: `${o.w}px`, height: `${o.h}px`,
-              background: o.src ? `${o.color ?? C().ground} url(${o.src}) center/cover` : o.color ?? C().ground,
-              transform: `rotate(${o.rot ?? 0}deg)`, filter: o.filter ?? "", boxShadow: "0 12px 34px -10px rgba(20,12,4,.5)",
-            });
-            g.append(d);
-            return [];
-          });
-          return el;
+        // A surface in the station's own frame (see table.surface for the options); returns [element].
+        surface({ color = C().ground, ...o }) {
+          const el = laySurface({ color, ...o }, "0 12px 34px -10px rgba(20,12,4,.5)");
+          g.append(el);
+          return [el];
         },
         // A camera key looking at local (lx, ly) of this station, upright.
         view(lx, ly, { z = 1, roll = 0, ease } = {}) {
@@ -187,35 +222,17 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
         toWorld,
       };
     },
-    // A surface region lying on the table (wood, paper, a photograph, a painting).
-    surface({
-      x,
-      y,
-      w,
-      h,
-      src,
-      color = C().ground,
-      rot = 0,
-      filter = "",
-      shadow = true,
-    }) {
-      const el = document.createElement("div");
-      Object.assign(el.style, {
-        position: "absolute",
-        left: `${x}px`,
-        top: `${y}px`,
-        width: `${w}px`,
-        height: `${h}px`,
-        background: src ? `${color} url(${src}) center/cover` : color,
-        transform: `rotate(${rot}deg)`,
-        filter,
-        boxShadow: shadow ? "0 10px 30px -10px rgba(20,12,4,.45)" : "none",
-      });
+    // A surface region lying on the table (wood, paper, a photograph, a painting). `torn` tears its
+    // edge (see laySurface); `shadow` (default true) lifts it off what lies under it.
+    surface({ color = C().ground, ...o }) {
+      const el = laySurface({ color, ...o }, "0 10px 30px -10px rgba(20,12,4,.45)");
       world.append(el);
       return el;
     },
     // Camera keys: [[t, { x, y, z, r }], ...] — the world point at the frame's centre, the zoom,
-    // the roll in degrees. Missing fields keep the first key's value.
+    // the roll in degrees. Missing fields keep the first key's value. `ease` picks the spring;
+    // `cut: true` is a hard cut to that pose (instant, silent, never blurred): how a film cuts
+    // between regions of the table. Cut at `cutAtPeak` of a move to keep its direction.
     camera(k) {
       keys = k;
     },
@@ -234,6 +251,8 @@ export function makeTable(stage, { breathe = 1, blur = 1 } = {}) {
       const moves = [];
       for (let i = 1; i < keys.length; i++) {
         const [t, v] = keys[i];
+        // A hard cut is silent: no whoosh, the picture just changes.
+        if (v.cut) continue;
         const p = keys[i - 1][1];
         const e = EASE[v.ease ?? "move"] ?? EASE.move;
         const d =
