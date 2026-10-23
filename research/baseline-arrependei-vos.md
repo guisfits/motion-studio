@@ -1,6 +1,6 @@
 # Baseline: "Arrependei-vos" (owner 10/10, draft v18, 111 s) - acceptance bar for every Remotion demo
 
-Status of evidence: **final mp4 NOT found** (`find` under the film folder: none; `out/`, `voice/words.json`, `voice/voice.wav` are gitignored, pending media-pull). Stills pending media-pull; timestamps below come from `crew/sync-sheet.json` (beat spans), `crew/sfx-cues.json` and the scene files. Duration = last beat end 112.69 s + 0.5 + END_HOLD 2.4 (index.html:36-38) ~ 115.6 s on the current sheet.
+Status of evidence: the final is `releases/ig-reforma-arrependei-vos/ig-reforma-arrependei-vos-final.mp4` in the AdScriptura media bucket (1080x1920, 60 fps, 116.45 s; `make media-pull` in ad-fontes). It is not committed here (AdScriptura material). Reference stills are extracted on demand, never committed: `ffmpeg -ss <t> -i <final.mp4> -frames:v 1 still-<t>.jpg` at the timestamps below (checked 2026-10-23: 3.43 tear, 14.08 tease, 20.30 portrait tear, 40.12 Vulgata align, 48.01 tags, 61.21 Latin column, 88.42 phone). Timestamps come from `crew/sync-sheet.json` (beat spans), `crew/sfx-cues.json` and the scene files.
 
 Paths: `F` = `media/video-short/films/ig-reforma-arrependei-vos`; `S` = `media/video/studio`. Engine v1 files are being moved to `S/archive/engine-v1/` and `S/tools/audio/` (core/audio is gone from `core/`); `core/lib/{motion,table,texture,rig,voice,torn,phone,clip}.js` still exist.
 
