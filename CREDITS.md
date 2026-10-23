@@ -10,6 +10,11 @@ motion-studio's code is MIT (see LICENSE). The third-party material it ships or 
 | Homemade Apple (Font Diner) | Apache License 2.0 | `SpecialElite-HomemadeApple-LICENSE-Apache2.txt` |
 | Pinyon Script (The Pinyon Project Authors) | SIL Open Font License 1.1 | `PinyonScript-OFL.txt` |
 
+## Demo fixtures (`assets/`)
+
+Images, cut-outs and fonts for the technique demos: source and licence of every file in
+`assets/README.md`.
+
 ## Sound effects (`tools/audio/sfx/`)
 
 - Committed recordings: Freesound, CC0 1.0. Per-file sources in `tools/audio/sfx/CREDITS.md`.

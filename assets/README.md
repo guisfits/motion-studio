@@ -12,12 +12,14 @@ Public-domain / CC0 only. No AI images, no brand material. Images are resized (l
 | ortelius-1572-world-map.jpg | https://commons.wikimedia.org/wiki/File:1572_Typus_Orbis_Terrarum_Ortelius.jpg | Abraham Ortelius (1572) | Public domain | The old map; pan / zoom tests |
 | piranesi-campo-vaccino.jpg | https://commons.wikimedia.org/wiki/File:Forum_Romanum_te_Rome_Veduta_di_Campo_Vaccino_(titel_op_object)_Gezichten_op_Rome_(serietitel)_Vedute_di_Roma_disegnate_ed_incise_da_Giambattista_Piranesi_architetto_Ve(nez)iano_(serietitel),_RP-P-OB-39.335.jpg | Giovanni Battista Piranesi (18th c.), scan Rijksmuseum | CC0 | Architecture; wide etching |
 | merian-alsatiae.jpg | https://commons.wikimedia.org/wiki/File:Topographia_Alsatiae_(Merian)_p_013.JPG | Matthäus Merian / Martin Zeiller (1644) | Public domain | Town view / architecture, 1700 px |
-| gutenberg-genesis.jpg | https://commons.wikimedia.org/wiki/File:Gutenberg_Bible_B42_Genesis.JPG | Johannes Gutenberg (printer); scan by Jossi (facsimile of the Berlin copy) | Public domain | Manuscript-style printed page; see doubt below |
+| gutenberg-genesis.jpg | https://commons.wikimedia.org/wiki/File:Gutenberg_Bible_B42_Genesis.JPG | Johannes Gutenberg (printer); scan by Jossi (facsimile of the Berlin copy) | Public domain | Manuscript-style printed page; scan of a facsimile of the 1455 original (Commons tags it public domain, PD-old) |
 | schedel-tiburtine-sibyl.jpg | https://commons.wikimedia.org/wiki/File:Nuremberg_Chronicle_-_Tiburtine_Sibyl_(XCIIIv)_edit.jpg | Michael Wolgemut, Wilhelm Pleydenwurff (1493) | Public domain | Hand-coloured woodcut |
 | costume-archer-bm2848.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2848).jpg | After Cesare Vecellio, *De gli habiti antichi et moderni* (1590); British Museum | Public domain | Source of the puppet; figure on plain paper inside an ornamental border |
 | costume-noble-bm2849.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2849).jpg | same | Public domain | |
 | costume-archer-bm2850.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2850).jpg | same | Public domain | |
 | costume-sultan-bm2853.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2853).jpg | same | Public domain | |
+
+**Open licence point (costume-*.jpg, and the `cut-archer2`, `cut-noble`, `cut-sultan` and `puppet-*` files cut from them).** The Commons pages tag these British Museum scans public domain (PD-scan of a 1590 work), but their Permission field also reads "© The Trustees of the British Museum, released as CC BY-NC-SA 4.0". The two statements conflict; until the owner rules, treat these files as not cleared for redistribution beyond this repo.
 
 ## Cut-outs — `cut/`
 
