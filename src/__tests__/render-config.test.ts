@@ -4,7 +4,11 @@ import { describe, expect, it } from "vitest";
 // Effects need WebGL: a render without the ANGLE renderer silently drops them, so the config
 // must pin it (plan Review Focus).
 describe("remotion.config.ts", () => {
-  const config = readFileSync(new URL("../../remotion.config.ts", import.meta.url), "utf8");
+  // Comments dropped, so a commented-out call cannot satisfy the checks below.
+  const config = readFileSync(new URL("../../remotion.config.ts", import.meta.url), "utf8")
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("//"))
+    .join("\n");
 
   it("pins the ANGLE OpenGL renderer", () => {
     expect(config).toContain('setChromiumOpenGlRenderer("angle")');
