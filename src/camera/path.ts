@@ -1,6 +1,9 @@
 import { DEFAULT_EASE, easeProgress, type CamEase } from "./presets";
 
-/** A camera key in world pixels; `ease` shapes the leg that starts at this key. */
+/**
+ * A camera key in world pixels; `ease` shapes the leg that starts at this key. Keys are expected
+ * in ascending `frame` order; `cameraAt` sorts a copy defensively, so unsorted input is safe.
+ */
 export type CamKey = { frame: number; x: number; y: number; zoom: number; rotate?: number; ease?: CamEase };
 
 export type CamPose = { x: number; y: number; zoom: number; rotate: number };
@@ -40,6 +43,7 @@ function poseAt(keys: CamKey[], frame: number): CamPose {
  * and roll), taken from the pose one frame either side; 0 on a hold and at the clamped ends.
  */
 export function cameraAt(keys: CamKey[], frame: number): CamState {
+  keys = [...keys].sort((a, b) => a.frame - b.frame);
   const pose = poseAt(keys, frame);
   const before = poseAt(keys, frame - 0.5);
   const after = poseAt(keys, frame + 0.5);

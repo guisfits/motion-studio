@@ -67,3 +67,14 @@ describe("cameraAt", () => {
     expect(cameraAt([keys[1]], 10)).toMatchObject({ x: 400, velocity: 0 });
   });
 });
+
+describe("cameraAt key order", () => {
+  it("gives the same result for unsorted keys as for sorted ones, without mutating the input", () => {
+    const shuffled = [keys[2], keys[0], keys[3], keys[1]];
+    const snapshot = [...shuffled];
+    for (const f of [-5, 0, 30, 60, 100, 150, 180, 250]) {
+      expect(cameraAt(shuffled, f)).toEqual(cameraAt(keys, f));
+    }
+    expect(shuffled).toEqual(snapshot);
+  });
+});
