@@ -66,7 +66,10 @@ const PageView: React.FC<{ w: PageWindow; mode: Mode }> = ({ w, mode }) => {
   const { fps } = useVideoConfig();
   const ms = (frame / fps) * 1000;
   const from = (w.fromMs / 1000) * fps;
+  const to = (w.toMs / 1000) * fps;
   const p = interpolate(frame, [from - ENTER_F, from], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: easeOut });
+  // The outgoing page fades over the incoming page's entrance, so a page is never swapped in place.
+  const out = interpolate(frame, [to - ENTER_F, to], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const box = W * mode.boxFrac;
   return (
     <div
@@ -78,7 +81,7 @@ const PageView: React.FC<{ w: PageWindow; mode: Mode }> = ({ w, mode }) => {
         display: "flex",
         justifyContent: "center",
         transform: `translateY(${(1 - p) * 40}px)`,
-        opacity: p,
+        opacity: p * out,
       }}
     >
       <div
@@ -111,14 +114,13 @@ const PageView: React.FC<{ w: PageWindow; mode: Mode }> = ({ w, mode }) => {
 
 type Live = { w: PageWindow; mode: Mode };
 
-// The page on screen at a master-timeline frame (pages hold until the next begins).
-const liveWindow = (frame: number, fps: number): Live | undefined => {
+// The pages on screen at a master-timeline frame: pages hold until the next begins, so during
+// an entrance the outgoing page and the incoming one are both live (the latter last).
+const liveWindows = (frame: number, fps: number): Live[] => {
   const ms = (frame / fps) * 1000;
-  for (const { mode, windows } of segments) {
-    const w = windows.find((x) => ms >= x.fromMs - (ENTER_F / fps) * 1000 && ms < x.toMs);
-    if (w) return { w, mode };
-  }
-  return undefined;
+  return segments.flatMap(({ mode, windows }) =>
+    windows.filter((x) => ms >= x.fromMs - (ENTER_F / fps) * 1000 && ms < x.toMs).map((w) => ({ w, mode })),
+  );
 };
 
 // Per-page reading check: green when CPS and visible time pass, red otherwise.
@@ -144,7 +146,8 @@ export const T09Captions: React.FC = () => {
       .finally(() => continueRender(handle));
   }, [handle]);
   const zoom = interpolate(frame, [0, T09_DURATION], [1.04, 1.12]);
-  const live = liveWindow(frame, fps);
+  const lives = liveWindows(frame, fps);
+  const live = lives.at(-1);
 
   return (
     <AbsoluteFill style={{ background: "#14100b" }}>
@@ -156,7 +159,9 @@ export const T09Captions: React.FC = () => {
           <Html5Audio src={mode.src} playbackRate={RATE} />
         </Sequence>
       ))}
-      {live ? <PageView key={`${live.mode.name}-${live.w.fromMs}`} w={live.w} mode={live.mode} /> : null}
+      {lives.map((l) => (
+        <PageView key={`${l.mode.name}-${l.w.fromMs}`} w={l.w} mode={l.mode} />
+      ))}
       {live ? <Overlay live={live} /> : null}
     </AbsoluteFill>
   );
