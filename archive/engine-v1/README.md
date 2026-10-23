@@ -1,3 +1,5 @@
+> Frozen copy of the engine-v1 README (tag `engine-v1`). Paths are those of the old layout; the audio, kit, checks and critique tools now live in `tools/` (see `archive/README.md`).
+
 # motion-studio
 
 A code-rendered video engine. A film is an HTML page whose `draw(t)` paints the whole frame from
@@ -14,18 +16,18 @@ It ships three layers:
 
 Your project keeps its own identity (colours, fonts, copy, sonic logo, assets) and injects it.
 
-**Making a film** is the film crew's job: eight agent skills (`skills/film-director` first, then writer, storyboard, art director, archivist, animator, sound, reviewer), each with measured gates (`node tools/checks/run.mjs <film> --stage sheet|animatic|draft|final`). Their rules come from measured evidence in `research/` (the editing grammar of 323 finished collage pieces, their sound) and teachers' lessons in `tutorials/`. A project plugs in its taste with one overlay skill named on a `Film style: <skill>` line in its `AGENTS.md`.
+**Making a film** is the film crew's job: eight agent skills (`skills/film-director` first, then writer, storyboard, art director, archivist, animator, sound, reviewer), each with measured gates (`node core/checks/run.mjs <film> --stage sheet|animatic|draft|final`). Their rules come from measured evidence in `research/` (the editing grammar of 323 finished collage pieces, their sound) and teachers' lessons in `tutorials/`. A project plugs in its taste with one overlay skill named on a `Film style: <skill>` line in its `AGENTS.md`.
 
 ## Install
 
 ```bash
 npm install                      # playwright 1.55.0
 npx playwright install chromium  # once, if Playwright has no browser yet
-node tools/audio/fetch-sfx.mjs    # optional: the Mixkit sounds (see Sound)
+node core/audio/fetch-sfx.mjs    # optional: the Mixkit sounds (see Sound)
 ```
 
-Needs Node 20+ and ffmpeg/ffprobe on the PATH. `tools/audio/beats.py` and `sync_check.py` need
-Python with `requirements.txt` (numpy, librosa, soundfile). `tools/kit/reference/cutout.swift` runs on
+Needs Node 20+ and ffmpeg/ffprobe on the PATH. `core/audio/beats.py` and `sync_check.py` need
+Python with `requirements.txt` (numpy, librosa, soundfile). `core/reference/cutout.swift` runs on
 macOS (Vision).
 
 ## Quick start
@@ -57,7 +59,7 @@ stage.run((t) => { /* set EVERYTHING the frame shows from t */ });
   `hero`, `support`, `mark` or `piece`; `alpha` in 0–1, 1 when absent), and
   `window.camera = (t) => ({scale, x, y})`. The `id` of a `hero`, `support` or `piece` item is its
   asset id in `crew/manifest.json`: the gates check that each beat's hero is on screen at its key
-  word and that nothing unlicensed or placeholder is (`tools/checks/picture.mjs`).
+  word and that nothing unlicensed or placeholder is (`core/checks/picture.mjs`).
   `makeTrace()` in `core/lib/trace.js` gives `add(id, role, fn)` and `install()`; `fn(t)` returns
   `{box, alpha, text}` or `null` when off screen. A film that sets `FILM.W`/`FILM.H` has its boxes
   measured against that frame size.
@@ -81,14 +83,14 @@ stage.run((t) => { /* set EVERYTHING the frame shows from t */ });
   - `camera(t).shot`: optional; any value that changes at each hard cut (e.g. the number of
     `cut: true` keys at or before t). R1–R4 count a change as an edit event and T7 does not read
     a cut as a move.
-  - Edit events (R1–R4, `tools/checks/rhythm.mjs`) are read from the trace: the legible hero's
+  - Edit events (R1–R4, `core/checks/rhythm.mjs`) are read from the trace: the legible hero's
     id, the legible caption's id and `shot`; a register whose `rhythm.events` lists `arrival`
     (instructive) also counts each hero, support or piece legible for the first time.
   - `FILM.house = [t0, t1]` (seconds, t1 = the film's end): a film that closes on the project's
     house outro, which puts nothing in the trace, declares its window. T5–T9, R1–R4 and H1 read
     the story only (it ends at t0, so R4's last 5 s are the story's); T1–T4, T10, T11, P1 and the
     media gates keep reading the whole render. A malformed or non-closing window is red T0
-    (`tools/checks/house.mjs`).
+    (`core/checks/house.mjs`).
 
 ## Theme
 
@@ -136,29 +138,29 @@ word by word on its spoken frames (key words big, marks drawn as they are said).
 
 | Tool | Does |
 |------|------|
-| `tools/audio/sfx.mjs cues.json sfx.wav` | Renders a cue list from the recorded library, thinned so it never turns to noise |
-| `tools/audio/score.mjs score.json` | Synthesizes music and its beat grid (`music.wav`, `beats.json`) |
-| `tools/audio/music.mjs plan.json` | ElevenLabs Music, cached per request; reads `ELEVENLABS_API_KEY` from the environment only |
-| `tools/audio/mix.mjs --video ... --out ...` | Balances music, SFX and voice around the speech, -14 LUFS, muxes onto the render |
-| `tools/audio/beats.py`, `sync_check.py` | Beat grid of a supplied track; checks cuts against it |
+| `core/audio/sfx.mjs cues.json sfx.wav` | Renders a cue list from the recorded library, thinned so it never turns to noise |
+| `core/audio/score.mjs score.json` | Synthesizes music and its beat grid (`music.wav`, `beats.json`) |
+| `core/audio/music.mjs plan.json` | ElevenLabs Music, cached per request; reads `ELEVENLABS_API_KEY` from the environment only |
+| `core/audio/mix.mjs --video ... --out ...` | Balances music, SFX and voice around the speech, -14 LUFS, muxes onto the render |
+| `core/audio/beats.py`, `sync_check.py` | Beat grid of a supplied track; checks cuts against it |
 
-The library (`tools/audio/sfx-library.json`) maps actions (`paper-place`, `stamp`, `whoosh`, `key`,
+The library (`core/audio/sfx-library.json`) maps actions (`paper-place`, `stamp`, `whoosh`, `key`,
 ...) to recordings. CC0 Freesound files are committed; Mixkit files are not redistributable, so
-`node tools/audio/fetch-sfx.mjs` downloads and processes them into the gitignored
-`tools/audio/sfx/fetched/`. An action with no file on disk falls back to a synthesized voice, so a
+`node core/audio/fetch-sfx.mjs` downloads and processes them into the gitignored
+`core/audio/sfx/fetched/`. An action with no file on disk falls back to a synthesized voice, so a
 film always renders. Add a project library (its own sounds, its sonic logo as the `logo`
 signature cue) with `--library my/sfx-library.json` or `MOTION_SFX_LIBRARY` (colon-separated);
 its files live in `<json dir>/sfx/`.
 
 ## Tools
 
-- `tools/kit/kit.mjs` builds a collage kit from a `catalog.json` (`--kit DIR`, or `$MOTION_KIT`):
-  fetches sources, cuts pieces with `tools/kit/reference/cutout.swift`, draws contact sheets.
-- `tools/kit/reference/clip.mjs` turns a screen recording into a frame sequence `core/lib/clip.js` plays
+- `core/kit.mjs` builds a collage kit from a `catalog.json` (`--kit DIR`, or `$MOTION_KIT`):
+  fetches sources, cuts pieces with `core/reference/cutout.swift`, draws contact sheets.
+- `core/reference/clip.mjs` turns a screen recording into a frame sequence `core/lib/clip.js` plays
   frame-exactly.
-- `tools/kit/reference/inspiration.mjs` downloads a reference clip into frames and a sheet to study
+- `core/reference/inspiration.mjs` downloads a reference clip into frames and a sheet to study
   (`--out inspirations/<register>`, `vox-collage` or `motion-graphics`; keep the media local).
-- `tools/critique/sheets.mjs video.mp4` draws contact, phone-size, strip and loop sheets, with the
+- `core/critique/sheets.mjs video.mp4` draws contact, phone-size, strip and loop sheets, with the
   Reels safe-zone guides; `--flat` reports stretches of bare ground.
 
 ## Repository
