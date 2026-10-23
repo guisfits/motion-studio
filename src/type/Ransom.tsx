@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { Easing, interpolate, random, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONT_FRAKTUR, FONT_MONO } from "./fonts";
+import { splitTiles } from "./tiles";
 import { type Landing, landingS } from "./timing";
 
 export type RansomProps = Landing & {
@@ -40,7 +41,7 @@ export const Ransom: React.FC<RansomProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const letters = [...text];
+  const letters = splitTiles(text);
   const onset = Math.round(landingS(landing) * fps);
   const start = onset - ENTER - stagger * (letters.length - 1);
   const pick = <T,>(list: T[], k: string) => list[Math.floor(random(`${seed}-${k}`) * list.length)];
