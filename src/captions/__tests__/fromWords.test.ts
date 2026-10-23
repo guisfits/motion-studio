@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createTikTokStyleCaptions } from "@remotion/captions";
 import { fromWords } from "../fromWords";
-import { wordAt } from "../useWordAt";
+import { wordAt, wordStartS } from "../useWordAt";
 
 describe("fromWords", () => {
   it("converts seconds to milliseconds with a leading space per token", () => {
@@ -56,5 +56,27 @@ describe("wordAt", () => {
     expect(wordAt(caps, 10, 30)).toBeNull();
     expect(wordAt(caps, 100, 30)).toBeNull();
     expect(wordAt([], 0, 30)).toBeNull();
+  });
+});
+
+describe("wordStartS", () => {
+  const caps = fromWords({
+    words: [
+      { w: "Go,", s: 0.2, e: 0.5 },
+      { w: "N\u00ednive!", s: 1, e: 1.6 },
+      { w: "go", s: 2, e: 2.3 },
+    ],
+  });
+  it("finds a word ignoring punctuation and case, and picks the nth occurrence", () => {
+    expect(wordStartS(caps, "go")).toBe(0.2);
+    expect(wordStartS(caps, "GO", 1)).toBe(2);
+  });
+  it("is accent-tolerant: composed, decomposed and unaccented spellings all match", () => {
+    expect(wordStartS(caps, "N\u00ednive")).toBe(1);
+    expect(wordStartS(caps, "Ni\u0301nive")).toBe(1);
+    expect(wordStartS(caps, "Ninive")).toBe(1);
+  });
+  it("throws when the word is not narrated", () => {
+    expect(() => wordStartS(caps, "absent")).toThrow(/not in the narration/);
   });
 });

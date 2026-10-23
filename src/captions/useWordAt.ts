@@ -1,7 +1,8 @@
 import type { Caption } from "@remotion/captions";
 import { useCurrentFrame, useVideoConfig } from "remotion";
 
-const norm = (s: string) => s.normalize("NFC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+// Fold case, accents (NFD, marks dropped: composed and decomposed forms agree) and punctuation.
+const norm = (s: string) => s.normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
 
 /** The caption being spoken at `frame`, or null before, between or after words. Pure. */
 export function wordAt(captions: Caption[], frame: number, fps: number): Caption | null {
