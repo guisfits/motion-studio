@@ -29,3 +29,6 @@ inspirations/**/media/
 inspirations/**/cache/
 tutorials/*/cache/
 tools/kit/reference/ocr
+
+# Remotion official skills: no licence, fetched by tools/skills/sync-remotion-skills.sh.
+skills/remotion/*/
