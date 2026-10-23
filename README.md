@@ -29,7 +29,10 @@ copy) and builds its films on top.
 ## Repository
 
 ```
-tools/        audio, kit (+ reference/), checks, critique — each with tests/
+src/          technique library entry (`src/index.ts`); tests in `src/__tests__/`
+studio/       Remotion Studio root and the technique demo compositions
+assets/       public-domain fixtures for the demos (`assets/README.md` lists source and licence)
+tools/        audio, kit (+ reference/), checks, critique (each with tests/); assets/make-vo.sh; skills/sync-remotion-skills.sh
 core/         engine-v1 libraries kept only as porting reference (lib/, fonts/); removed at the end of phase 1
 skills/       the film crew (start at skills/film-director)
 research/     evidence the crew cites (research/README.md) and the technique catalogue
@@ -41,6 +44,8 @@ archive/      engine-v1 (the HTML engine) and retired skills, frozen (archive/RE
 ## Tests
 
 ```bash
+npm test             # vitest over src/
+npm run typecheck    # tsc --noEmit
 npm run test:tools   # node --test over tools/*/tests
 ```
 
