@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { smootherstep, tornWipePose } from "../tornWipe";
+import { smootherstep } from "../../camera";
+import { tornWipePose } from "../tornWipe";
 
 const W = 1920;
 const H = 1080;
