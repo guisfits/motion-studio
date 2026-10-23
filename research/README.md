@@ -10,6 +10,8 @@ Evidence the `skills/film-*` rules cite. The skills quote these files by path; k
 | `research/editing-grammar.md` | The measured editing and composition grammar of 323 finished collage pieces: registers (§0), 78 devices by area (§1–§9), the register-A rhythm model (§10), odd-looking tells ranked (§11), where the evidence contradicts Moran (§12), the role map (§13). Evidence ids `hex/…`, `ee/…`, `pin/…` point into `inspirations/vox-collage/collage-study/findings.jsonl` |
 | `research/sound-grammar.md` | The measured sound of 201 of those pieces: loudness, bed level and swell, cue density and placement, silences; the evidence behind `NORMS.audio` |
 | `research/first-film-postmortem.md` | The defect list of a failed first cut, ids C1-C7 (coarse) and K1-K10 (craft), with the norm each one breaks. The skills cite these ids |
+| `research/technique-catalogue.md` | Professional practice per technique (camera, parallax, cutting, type, captions, diagrams, paper, transitions, texture, rig, 3D, organic FX, sound): parameters at 30 fps with sources, example videos, what each Remotion demo must show |
+| `research/baseline-arrependei-vos.md` | The 10/10 Luther film as the regression bar: every technique it uses with exact parameters and file:line, the postmortem rules, and a "matches baseline" line per plan task |
 
 How to cite: `research/craft.md 2.7` (file and section), `research/first-film-postmortem.md C3` (file and id),
 `research/external-skills.md` (file, optionally the source folder).
