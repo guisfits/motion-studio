@@ -30,7 +30,8 @@ const Planes: React.FC<Omit<MultiplaneProps, "motionBlur">> = ({ camKeys, layers
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const cam = cameraAt(camKeys, frame);
-  const origin = cameraAt(camKeys, camKeys[0]?.frame ?? 0);
+  // The opening pose: the earliest key, whatever order the caller wrote them in.
+  const origin = cameraAt(camKeys, camKeys.length ? Math.min(...camKeys.map((k) => k.frame)) : 0);
   return (
     <AbsoluteFill>
       {layers.map((layer, i) => {
