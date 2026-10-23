@@ -41,5 +41,5 @@ film skills; keep them stable.
 
 ## Where each finding went
 
-Each defect maps to a rule in the film skills (`skills/film-*`) and, where measurable, to a gate in `core/checks/`;
+Each defect maps to a rule in the film skills (`skills/film-*`) and, where measurable, to a gate in `tools/checks/`;
 the sources behind those rules are in `research/craft.md`.

@@ -1,6 +1,6 @@
 # Sound grammar of the editorial-collage film
 
-Date: 2026-10-15. Evidence base: the audio of 201 finished pieces (203 with media minus 2 silent loops), measured by script, not by ear: 165 register A, 18 B, 18 C (registers as in `research/editing-grammar.md` §0). Sources: `hex` (@hex_creatives), `ee` (@earn.edits), `pin` (Pinterest board). This file is the knowledge base the sound role is written from. It states what was measured, how sure the number is, and what the measurement cannot see. It does not change `core/checks/norms.mjs`.
+Date: 2026-10-15. Evidence base: the audio of 201 finished pieces (203 with media minus 2 silent loops), measured by script, not by ear: 165 register A, 18 B, 18 C (registers as in `research/editing-grammar.md` §0). Sources: `hex` (@hex_creatives), `ee` (@earn.edits), `pin` (Pinterest board). This file is the knowledge base the sound role is written from. It states what was measured, how sure the number is, and what the measurement cannot see. It does not change `tools/checks/norms.mjs`.
 
 Citations as in the editing grammar: `hex/DUQRqS2icUB`, `ee/DaAV2R5IuSi`, `pin/350048` = pin `7359867641573` + last 6 digits. `(B)`, `(C)` after an id = not register A. **Measured** = computed from the audio and the shot lists. `~` = inference.
 

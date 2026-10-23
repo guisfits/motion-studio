@@ -4,7 +4,7 @@ Scope: client note 2026-10-17, "go deep on cuts and zoom" and "calm pacing for i
 (60-120 s story + ~30 s app, viewer relaxed, not anxious). Sources: `tutorials/chrismoran/lessons.jsonl`
 (ids are `reel t`, cited as `moran/<reel>`), `recipes.md`, `reels-1..4.md`. Crew side read: `skills/film-animator/SKILL.md`
 (step 7, tell 4), `references/devices-rhythm-camera.md`, `skills/film-director/references/pace-playbook.md`,
-`research/editing-grammar.md` §1, §10, §12, `core/checks/norms.mjs`. Nothing was edited.
+`research/editing-grammar.md` §1, §10, §12, `tools/checks/norms.mjs`. Nothing was edited.
 
 > Superseded scope (client, 2026-10-19): the story is ≤ ~90 s + 15–30 s app with a lively voice, not 60–120 s calm (`research/second-film-postmortem.md` R1). The camera findings below still stand.
 
@@ -149,19 +149,19 @@ Why each value:
 | `restAfterKeyS` | 1.0 | Inferred (no Moran source); a number or definition must be read before the next event. A gate can check: no event inside 1.0 s after a row tagged `device: "hold"` or `key`. |
 | `camera.maxPushRatePerS` | 0.12 | A's ordinary push x1.14 in 1.4 s is ~10 %/s of scale; calm is the same size over >= 1 s. It is the clearest numeric difference from Moran's C6 (111 -> 153 % in ~1 s, spike). |
 | `camera.maxPunches` | 1 | A punch is the one "this matters" beat; in a 100 s film at most one before the close. |
-| `camera.forbidShake` | true | Z9 and the choppy-handheld lesson are the anxious tools. Check: no camera key with `wiggle` field (engine has none today, so cheap to enforce in `core/checks/trace.mjs` by flagging a frame-to-frame camera-position reversal over 3 consecutive frames). |
+| `camera.forbidShake` | true | Z9 and the choppy-handheld lesson are the anxious tools. Check: no camera key with `wiggle` field (engine has none today, so cheap to enforce in `archive/engine-v1/core/checks/trace.mjs` by flagging a frame-to-frame camera-position reversal over 3 consecutive frames). |
 
 Implementation notes (engine side, outside this file's task, listed for the director to schedule):
 
-1. `core/checks/rhythm.mjs` L17 reads `const R = NORMS.rhythm` at import; `picture.mjs` L66-73 and `trace.mjs` L264-279 read `NORMS.camera`; `run.mjs` L80-87 reads `NORMS.film` and `NORMS.appSegment`. To use a register block the checks need a `norms` argument chosen from `sheet.register` (default `"A"`). Without that change the instructive film is graded by A's gates.
+1. `tools/checks/rhythm.mjs` L17 reads `const R = NORMS.rhythm` at import; `picture.mjs` L66-73 and `trace.mjs` L264-279 read `NORMS.camera`; `run.mjs` L80-87 reads `NORMS.film` and `NORMS.appSegment`. To use a register block the checks need a `norms` argument chosen from `sheet.register` (default `"A"`). Without that change the instructive film is graded by A's gates.
 2. A new sheet field `register: "instructive"` (storyboard owns the sheet) drives the choice; the brief line `Register: A-i` (pace-playbook L17 pattern) is the human side.
 3. Gates that stay A-calibrated regardless: H1, S-gates, T9, T10/T11, M0/M1, audio.
 4. Document the new block's source lines as `~ client rule` / `~ own`, as the existing norms comments do, so reviewers see they are not measured.
 
 Files and exact lines to touch when approved (do not edit now):
 
-- `core/checks/norms.mjs` L35-44 (camera), L45-59 (rhythm), L73-78 (film, appSegment) -> add `registers.instructive` block; keep A.
-- `core/checks/rhythm.mjs` L17, L71; `core/checks/picture.mjs` L66-73; `core/checks/run.mjs` L80-87 -> read norms by register.
+- `tools/checks/norms.mjs` L35-44 (camera), L45-59 (rhythm), L73-78 (film, appSegment) -> add `registers.instructive` block; keep A.
+- `tools/checks/rhythm.mjs` L17, L71; `tools/checks/picture.mjs` L66-73; `archive/engine-v1/core/checks/run.mjs` L80-87 -> read norms by register.
 - `skills/film-director/references/pace-playbook.md` L11-15 (register table), L38, L76.
 - `skills/film-animator/SKILL.md` L56 (step 7: add `In the instructive register: bell eases of 1-2 s (NORMS.registers.instructive.camera), one emphasis per beat, no shake`), L79 (add tell 6).
 - `skills/film-animator/references/devices-rhythm-camera.md` after L8, L69, L83, L90.

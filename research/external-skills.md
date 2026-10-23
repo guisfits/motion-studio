@@ -194,7 +194,7 @@ sync and QA by eye.
 2. **Lettering design as narration**: they only ban or bake text. Nobody designs which word gets written, how (underline, stamp, tape label), how long it stays, or caption reading speed (<=17 cps, <=4 words, >=0.83 s). `muapi` caption = 4.5 % of min(W,H), white PNG, no timing logic. (Storyboard, Art director, Animator)
 3. **Archive research and rights**: finding, ranking, licensing and crediting real images; resolution vs planned zoom; hero vs support selection; fallback when no picture exists (no placeholders). (Archivist)
 4. **Visual hierarchy rules**: hero/support/ground, frame fill, centroid in the middle third, one accent, how many pieces. They count objects (3-6) but have no measured layout checks. (Art director, Storyboard)
-5. **Deterministic gates**: placeholders, clipped text, dead frames, easing, LUFS, caption legibility. Their QA is visual only. (Reviewer; scripts in `core/checks/`)
+5. **Deterministic gates**: placeholders, clipped text, dead frames, easing, LUFS, caption legibility. Their QA is visual only. (Reviewer; scripts in `tools/checks/`)
 6. **Animatic stage**: nothing like a cheap stills-on-voice pass the owner approves before render. Their cheapest gate is a generated still. (Animator, Director)
 7. **Zoom as meaning**: nobody says where a push-in goes and why (eyes, the word, the date). Their camera moves are decorative. We specify target + kind + ease + magnitude per key word. (Storyboard, Animator)
 8. **Pt-BR specifics**: reading speed of pt-BR TTS, diacritics in lettering fonts, numbers/ordinals/scripture refs spelled in speech vs digits on screen. (Writer, Art director)
