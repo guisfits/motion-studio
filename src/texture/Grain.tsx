@@ -8,7 +8,7 @@ export type GrainProps = {
   readonly opacity?: number;
   /** Layer seed: give each grain layer its own so two never deal the same noise. */
   readonly seed?: number;
-  /** Noise re-deals per second. Baseline: 24 (the Luther film's grain step). */
+  /** Noise re-deals per second. Baseline: 24 (a film-grain step). */
   readonly stepFps?: number;
   /** CSS blend with what lies below. "overlay" is the film-grain feel. */
   readonly blendMode?: React.CSSProperties["mixBlendMode"];
