@@ -56,7 +56,11 @@ const Planes: React.FC<Omit<MultiplaneProps, "motionBlur">> = ({ camKeys, layers
   );
 };
 
-/** Layers authored in the frame's own pixels (1920x1080 at the opening pose), each following the camera by depth. */
+/**
+ * Layers each following the camera by depth. They are positioned in the same world pixels as
+ * `camKeys`, measured from the first key: with the first key centred on the frame (960, 540 at
+ * 1920x1080, zoom 1) a layer is authored in plain frame pixels.
+ */
 export const Multiplane: React.FC<MultiplaneProps> = ({ motionBlur = false, ...rest }) => {
   const frame = useCurrentFrame();
   const angle = Math.min(BLUR_MAX_ANGLE, cameraAt(rest.camKeys, frame).velocity * BLUR_GAIN);
