@@ -24,6 +24,11 @@ describe("layerOffset", () => {
     expect(f.scale).toBeGreaterThan(1.5);
   });
 
+  it("a plane far enough back freezes on the origin pose instead of moving against the camera", () => {
+    const frozen = layerOffset(5, cam);
+    expect(frozen).toEqual({ x: 0, y: 0, scale: 1 });
+  });
+
   it("is measured from the origin pose, so every plane agrees at the start", () => {
     const origin = { x: 960, y: 540, zoom: 1 };
     for (const d of [-1, 0, 0.5, 1]) {
