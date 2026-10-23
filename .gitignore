@@ -11,12 +11,12 @@ out/
 *.wav
 **/out/
 
-# Mixkit audio is fetched by core/audio/fetch-sfx.mjs; its licence forbids redistribution.
-core/audio/sfx/fetched/
+# Mixkit audio is fetched by tools/audio/fetch-sfx.mjs; its licence forbids redistribution.
+tools/audio/sfx/fetched/
 
 # Test scratch (template films, generated fixture images).
-tests/.tmp-films/
-tests/.assets/
+**/.tmp-films/
+**/.assets/
 
 # Kit working folders and reference captures.
 kit/sources/
@@ -28,4 +28,4 @@ inspirations/**/frames/
 inspirations/**/media/
 inspirations/**/cache/
 tutorials/*/cache/
-core/reference/ocr
+tools/kit/reference/ocr
