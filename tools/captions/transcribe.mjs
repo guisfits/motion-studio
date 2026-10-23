@@ -20,18 +20,32 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WHISPER_DIR = path.join(HERE, ".whisper", "cpp");
 const MODEL_DIR = path.join(HERE, ".whisper", "models");
 
-// whisper.cpp tokens carry a leading space per word; punctuation-only tokens glue to the word before.
+// whisper.cpp tokens carry a leading space per word. Tokens that continue the previous word glue to
+// it: punctuation-only ("," ".") and contraction pieces ("'s", "n't"). Punctuation with no word
+// before it (an opening quote) prefixes the next word instead of becoming one.
+const PUNCT_ONLY = /^[^\p{L}\p{N}]+$/u;
+const CONTRACTION = /^(['\u2019]|n['\u2019]t$)/u;
+
 export function captionsToWords(captions) {
   const words = [];
+  let prefix = "";
+  let prefixStart = 0;
   for (const c of captions) {
     const text = c.text.trim();
     if (!text) continue;
-    if (/^[^\p{L}\p{N}]+$/u.test(text) && words.length) {
-      words[words.length - 1].w += text;
-      words[words.length - 1].e = Math.max(words[words.length - 1].e, c.endMs / 1000);
+    const last = words[words.length - 1];
+    if (last && (PUNCT_ONLY.test(text) || CONTRACTION.test(text))) {
+      last.w += text;
+      last.e = Math.max(last.e, c.endMs / 1000);
       continue;
     }
-    words.push({ w: text, s: c.startMs / 1000, e: c.endMs / 1000 });
+    if (!last && PUNCT_ONLY.test(text)) {
+      if (!prefix) prefixStart = c.startMs / 1000;
+      prefix += text;
+      continue;
+    }
+    words.push({ w: prefix + text, s: prefix ? prefixStart : c.startMs / 1000, e: c.endMs / 1000 });
+    prefix = "";
   }
   return words;
 }
