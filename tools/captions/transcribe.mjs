@@ -3,7 +3,7 @@
 // writes {"words":[{"w","s","e"}]} (seconds). whisper.cpp runs locally; its build and the ggml
 // model live in tools/captions/.whisper/{cpp,models}/ (gitignored) and are fetched on first use.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -71,4 +71,7 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+// Run as a script only: compare real paths, since argv[1] may reach this file through a symlink
+// (or hold characters a file:// URL escapes) and a plain URL comparison would silently do nothing.
+const isScript = process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+if (isScript) await main();
