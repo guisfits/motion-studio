@@ -23,7 +23,7 @@ export type SetDownProps = Partial<Omit<CarryOptions, "delay">> & {
   /** Resting-shadow strength 0..1 (0 = no shadow). */
   shadow?: number;
   /** Absolute placement of the sheet's resting position. */
-  style?: React.CSSProperties;
+  style?: Omit<React.CSSProperties, "transform" | "filter">;
   children: React.ReactNode;
 };
 
@@ -56,12 +56,12 @@ export const SetDown: React.FC<SetDownProps> = ({
     <div
       style={{
         position: "absolute",
+        ...style,
         transform: `translate(${dx * remaining * travel}px, ${dy * remaining * travel}px) rotate(${rotate + tilt}deg)`,
         filter:
           shadow > 0
             ? `drop-shadow(${rest + 14 * lift}px ${rest + 18 * lift}px ${3 + 10 * lift}px rgba(20,12,6,${0.36 * shadow}))`
             : undefined,
-        ...style,
       }}
     >
       {children}

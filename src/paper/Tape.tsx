@@ -1,6 +1,7 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
 import { carryAt } from "./carry";
+import { tapeTravel } from "./tape-travel";
 
 // Zig-zag ends: a torn strip, not a clean rectangle.
 const STRIP_CLIP =
@@ -14,8 +15,10 @@ export type TapeProps = {
   width?: number;
   height?: number;
   color?: string;
-  /** Absolute placement of the strip's resting position. */
-  style?: React.CSSProperties;
+  /** Resting top edge in px; numeric so the off-frame start can be computed from it. */
+  top: number;
+  /** Extra placement (left, etc.); the animated transform and filter are not overridable. */
+  style?: Omit<React.CSSProperties, "transform" | "filter" | "top">;
 };
 
 /**
@@ -28,23 +31,23 @@ export const Tape: React.FC<TapeProps> = ({
   width = 220,
   height = 64,
   color = "#e8dcae",
+  top,
   style,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { remaining, lift } = carryAt(frame, fps, { delay, dur: 0.25, over: 0 });
-  const top = typeof style?.top === "number" ? style.top : 0;
-  // far enough above the frame that even a rotated strip starts fully outside it
-  const travel = top + width;
+  const travel = tapeTravel(top, width, height, rotate);
   return (
     <div
       style={{
         position: "absolute",
+        top,
         width,
         height,
+        ...style,
         transform: `translateY(${-remaining * travel}px) rotate(${rotate}deg)`,
         filter: `drop-shadow(${1 + 6 * lift}px ${2 + 8 * lift}px ${2 + 5 * lift}px rgba(20,12,6,0.3))`,
-        ...style,
       }}
     >
       <div

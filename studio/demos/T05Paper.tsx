@@ -116,12 +116,12 @@ export const T05Paper: React.FC = () => {
             <Sheet src={riders} w={640} h={908} />
           </Boil>
         </SetDown>
-        <Tape delay={1.2} rotate={-38} width={240} style={{ left: 60, top: 80 }} />
+        <Tape delay={1.2} rotate={-38} width={240} top={80} style={{ left: 60 }} />
 
         <SetDown delay={1.8} from="right" rotate={1.5} margin={600} style={{ left: C.x, top: C.y }}>
           <TornSheet />
         </SetDown>
-        <Tape delay={2.7} rotate={30} width={250} style={{ left: 1640, top: 80 }} />
+        <Tape delay={2.7} rotate={30} width={250} top={80} style={{ left: 1640 }} />
 
         {[
           { src: cutMoses, w: 282, h: 560, x: 770, y: 430, delay: 6.0, rot: -3, seed: "c1" },
