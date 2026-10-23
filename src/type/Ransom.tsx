@@ -19,7 +19,8 @@ export type RansomProps = Landing & {
 
 const DEFAULT_PAPERS = ["#f3ead7", "#e2d3b0", "#cfd8d3", "#e8c9b8", "#fbfaf4"];
 const DEFAULT_INKS = ["#1d1a16", "#7a1f18", "#23303a"];
-const DEFAULT_FAMILIES = [FONT_MONO, FONT_FRAKTUR, "Georgia, serif", "Impact, sans-serif"];
+// Bundled faces only: system fonts render differently per machine.
+const DEFAULT_FAMILIES = [FONT_MONO, FONT_FRAKTUR];
 
 const ENTER = 4;
 const outCubic = Easing.out(Easing.cubic);

@@ -1,5 +1,6 @@
 import type React from "react";
-import { AbsoluteFill, Easing, Img, Solid, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { useEffect, useState } from "react";
+import { AbsoluteFill, Easing, continueRender, delayRender, Img, Solid, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { CameraMotionBlur } from "@remotion/motion-blur";
 import { lightLeak } from "@remotion/effects/light-leak";
 import { vignette } from "@remotion/effects/vignette";
@@ -7,6 +8,8 @@ import { halftone } from "@remotion/effects/halftone";
 import { duotone } from "@remotion/effects/duotone";
 import { paper } from "@remotion/effects/paper";
 import { Grain } from "../../src/texture";
+import { FONT_MONO, loadFace } from "../../src/type/fonts";
+import monoUrl from "../../assets/fonts/JetBrainsMono-VF.ttf";
 // Assets live in <studio>/assets (not in public/): the bundler imports them, no staticFile and no move.
 import picture from "../../assets/img/piranesi-campo-vaccino.jpg";
 import cutRider from "../../assets/cut/cut-figure-cavalier.png";
@@ -72,13 +75,13 @@ const Split: React.FC<{ i: number; children: React.ReactNode }> = ({ i, children
 };
 
 const Tag: React.FC<{ x: number; text: string }> = ({ x, text }) => (
-  <div style={{ position: "absolute", left: x, top: 28, padding: "4px 12px", borderRadius: 5, background: "rgba(21,19,15,0.72)", color: "#f4efe4", fontFamily: "Georgia, serif", fontSize: 22 }}>{text}</div>
+  <div style={{ position: "absolute", left: x, top: 28, padding: "4px 12px", borderRadius: 5, background: "rgba(21,19,15,0.72)", color: "#f4efe4", fontFamily: FONT_MONO, fontSize: 22 }}>{text}</div>
 );
 
 const Label: React.FC = () => {
   const frame = useCurrentFrame();
   return (
-    <div style={{ position: "absolute", left: 48, bottom: 40, height: 40, fontFamily: "Georgia, serif", fontSize: 26, letterSpacing: 0.4, color: "#f4efe4" }}>
+    <div style={{ position: "absolute", left: 48, bottom: 40, height: 40, fontFamily: FONT_MONO, fontSize: 26, letterSpacing: 0.4, color: "#f4efe4" }}>
       {LOOKS.map((text, i) => {
         const s = startOf(i);
         const o = interpolate(frame, [s - 8, s + 6, s + LENGTHS[i] - 6, s + LENGTHS[i] + 8], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
@@ -139,7 +142,19 @@ const MotionScene: React.FC = () => {
   );
 };
 
-export const T07Texture: React.FC = () => (
+/** Holds the render until the bundled mono (labels) is ready. */
+function useMonoFace(): void {
+  const [handle] = useState(() => delayRender("T07 fonts"));
+  useEffect(() => {
+    loadFace(FONT_MONO, monoUrl, "100 800")
+      .catch((e) => console.error(e))
+      .finally(() => continueRender(handle));
+  }, [handle]);
+}
+
+export const T07Texture: React.FC = () => {
+  useMonoFace();
+  return (
   <AbsoluteFill style={{ backgroundColor: "#15130f" }}>
     <Photo />
 
@@ -168,4 +183,5 @@ export const T07Texture: React.FC = () => (
     <MotionScene />
     <Label />
   </AbsoluteFill>
-);
+  );
+};
