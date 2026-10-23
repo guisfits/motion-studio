@@ -35,3 +35,14 @@ describe("fitSize", () => {
     expect(padded("MISERICÓRDIAS", "x", size + 1)).toBeGreaterThan(600);
   });
 });
+
+describe("fitSize style", () => {
+  const styled = (text: string, _f: string, size: number, style?: { fontWeight?: string | number; letterSpacing?: string }) =>
+    text.length * size * (style?.fontWeight === "900" ? 0.8 : 0.5) + (style?.letterSpacing ? text.length * 5 : 0);
+
+  it("fits smaller when the measure is bolder or letter-spaced", () => {
+    const plain = fitSize("MISERICÓRDIAS", "x", 600, 400, styled);
+    expect(fitSize("MISERICÓRDIAS", "x", 600, 400, styled, { fontWeight: "900" })).toBeLessThan(plain);
+    expect(fitSize("MISERICÓRDIAS", "x", 600, 400, styled, { letterSpacing: "5px" })).toBeLessThan(plain);
+  });
+});
