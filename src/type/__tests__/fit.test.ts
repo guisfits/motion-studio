@@ -26,4 +26,12 @@ describe("fitSize", () => {
     expect(fitSize("", "x", 600, 100, measure)).toBe(0);
     expect(fitSize("abc", "x", 0, 100, measure)).toBe(0);
   });
+
+  it("walks down when the linear estimate overshoots (side bearings are not proportional)", () => {
+    // 0.6 * size per char plus a fixed 30 px: the 100 px probe over-estimates, 74 px measures 607 px.
+    const padded = (text: string, _family: string, size: number) => text.length * 0.6 * size + 30;
+    const size = fitSize("MISERICÓRDIAS", "x", 600, 400, padded);
+    expect(padded("MISERICÓRDIAS", "x", size)).toBeLessThanOrEqual(600);
+    expect(padded("MISERICÓRDIAS", "x", size + 1)).toBeGreaterThan(600);
+  });
 });
