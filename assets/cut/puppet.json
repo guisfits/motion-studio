@@ -1,0 +1,80 @@
+[
+  {
+    "part": "torso",
+    "file": "puppet-torso.png",
+    "pivot": [
+      270,
+      499
+    ],
+    "parent": null,
+    "origin": [
+      0,
+      61
+    ]
+  },
+  {
+    "part": "head",
+    "file": "puppet-head.png",
+    "pivot": [
+      87,
+      185
+    ],
+    "parent": "torso",
+    "origin": [
+      198,
+      0
+    ]
+  },
+  {
+    "part": "upper_arm_l",
+    "file": "puppet-upper_arm_l.png",
+    "pivot": [
+      51,
+      31
+    ],
+    "parent": "torso",
+    "origin": [
+      119,
+      194
+    ]
+  },
+  {
+    "part": "lower_arm_l",
+    "file": "puppet-lower_arm_l.png",
+    "pivot": [
+      43,
+      16
+    ],
+    "parent": "upper_arm_l",
+    "origin": [
+      129,
+      424
+    ]
+  },
+  {
+    "part": "upper_arm_r",
+    "file": "puppet-upper_arm_r.png",
+    "pivot": [
+      21,
+      41
+    ],
+    "parent": "torso",
+    "origin": [
+      324,
+      184
+    ]
+  },
+  {
+    "part": "lower_arm_r",
+    "file": "puppet-lower_arm_r.png",
+    "pivot": [
+      36,
+      299
+    ],
+    "parent": "upper_arm_r",
+    "origin": [
+      374,
+      61
+    ]
+  }
+]
