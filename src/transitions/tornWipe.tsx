@@ -5,6 +5,7 @@ import type {
   TransitionPresentationComponentProps,
 } from "@remotion/transitions";
 import { smootherstep } from "../camera";
+import { clamp01 } from "../shared/math";
 import { Torn, tornClip } from "../paper";
 
 export type TornWipeDirection = "up" | "left";
@@ -28,7 +29,6 @@ export type TornWipePose = {
   shadow: number;
 };
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 const MAX_BITE = 2.2;
 const BITE_RAMP = 0.12;

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { CameraMotionBlur } from "@remotion/motion-blur";
-import { cameraAt, type CamKey } from "../camera";
+import { cameraAt, shutterAngleFor, type CamKey } from "../camera";
 import { blurFor, layerOffset } from "./depth";
 
 export type MultiplaneLayer = {
@@ -23,8 +23,6 @@ export type MultiplaneProps = {
   motionBlur?: boolean;
 };
 
-const BLUR_GAIN = 2.2;
-const BLUR_MAX_ANGLE = 120;
 const BLUR_SAMPLES = 12;
 
 // Planes read the frame themselves: CameraMotionBlur re-renders its children at sub-frame offsets.
@@ -63,7 +61,7 @@ const Planes: React.FC<Omit<MultiplaneProps, "motionBlur">> = ({ camKeys, layers
  */
 export const Multiplane: React.FC<MultiplaneProps> = ({ motionBlur = false, ...rest }) => {
   const frame = useCurrentFrame();
-  const angle = Math.min(BLUR_MAX_ANGLE, cameraAt(rest.camKeys, frame).velocity * BLUR_GAIN);
+  const angle = shutterAngleFor(cameraAt(rest.camKeys, frame).velocity);
   const planes = <Planes {...rest} />;
   if (!motionBlur || angle < 1) return <AbsoluteFill style={{ overflow: "hidden" }}>{planes}</AbsoluteFill>;
   return (

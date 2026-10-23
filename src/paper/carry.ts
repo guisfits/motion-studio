@@ -1,4 +1,5 @@
 import { stepFrame } from "./step";
+import { clamp01 } from "../shared/math";
 
 export type CarryOptions = {
   /** Seconds before the piece starts travelling. */
@@ -21,7 +22,6 @@ export type Carry = {
   lift: number;
 };
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 /** Paper set-down curve ported from the engine's `carryIn`. Pure in the frame. */
 export const carryAt = (

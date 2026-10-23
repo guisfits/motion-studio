@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { CameraMotionBlur } from "@remotion/motion-blur";
+import { shutterAngleFor } from "./blur";
 import { cameraAt, type CamKey } from "./path";
 
 export type CameraProps = {
@@ -12,10 +13,6 @@ export type CameraProps = {
   children: ReactNode;
 };
 
-// shutterAngle (degrees) per px/frame of camera velocity, and its ceiling: a whip smears but
-// never melts the frame into a wash.
-const BLUR_GAIN = 2.2;
-const BLUR_MAX_ANGLE = 120;
 const BLUR_SAMPLES = 16;
 
 // The world reads the frame itself: CameraMotionBlur re-renders its children at sub-frame
@@ -48,7 +45,7 @@ export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = 0.02
       {children}
     </World>
   );
-  const shutterAngle = Math.min(BLUR_MAX_ANGLE, cam(keys, frame) * BLUR_GAIN);
+  const shutterAngle = shutterAngleFor(cam(keys, frame));
   // Below one degree the smear is invisible: skip the extra sample renders on holds and glides.
   if (!blur || shutterAngle < 1) return <AbsoluteFill style={{ overflow: "hidden" }}>{world}</AbsoluteFill>;
   return (
