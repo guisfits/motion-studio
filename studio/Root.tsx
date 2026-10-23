@@ -1,4 +1,5 @@
 import { AbsoluteFill, Composition, Folder } from "remotion";
+import { T01_DURATION, T01Camera } from "./demos/T01Camera";
 
 // One second of plain ground: the render smoke target. `remotion compositions` also crashes on
 // an empty list (4.0.538), so the card always holds at least this one.
@@ -8,5 +9,6 @@ const Smoke: React.FC = () => <AbsoluteFill style={{ backgroundColor: "#ece4d4" 
 export const RemotionRoot: React.FC = () => (
   <Folder name="techniques">
     <Composition id="T00-Smoke" component={Smoke} durationInFrames={30} fps={30} width={1920} height={1080} />
+    <Composition id="T01-Camera" component={T01Camera} durationInFrames={T01_DURATION} fps={30} width={1920} height={1080} />
   </Folder>
 );
