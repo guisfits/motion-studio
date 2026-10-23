@@ -32,3 +32,6 @@ tools/kit/reference/ocr
 
 # Remotion official skills: no licence, fetched by tools/skills/sync-remotion-skills.sh.
 skills/remotion/*/
+
+# whisper.cpp build + ggml model downloaded by tools/captions/transcribe.mjs.
+tools/captions/.whisper/
