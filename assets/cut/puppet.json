@@ -3,25 +3,25 @@
     "part": "torso",
     "file": "puppet-torso.png",
     "pivot": [
-      270,
-      499
+      190,
+      480
     ],
     "parent": null,
     "origin": [
       0,
-      61
+      0
     ]
   },
   {
     "part": "head",
     "file": "puppet-head.png",
     "pivot": [
-      87,
+      83,
       185
     ],
     "parent": "torso",
     "origin": [
-      198,
+      102,
       0
     ]
   },
@@ -29,52 +29,52 @@
     "part": "upper_arm_l",
     "file": "puppet-upper_arm_l.png",
     "pivot": [
-      51,
-      31
+      87,
+      25
     ],
     "parent": "torso",
     "origin": [
-      119,
-      194
+      25,
+      180
     ]
   },
   {
     "part": "lower_arm_l",
     "file": "puppet-lower_arm_l.png",
     "pivot": [
-      43,
-      16
+      35,
+      23
     ],
     "parent": "upper_arm_l",
     "origin": [
-      129,
-      424
+      25,
+      282
     ]
   },
   {
     "part": "upper_arm_r",
     "file": "puppet-upper_arm_r.png",
     "pivot": [
-      21,
-      41
+      29,
+      29
     ],
     "parent": "torso",
     "origin": [
-      324,
-      184
+      211,
+      181
     ]
   },
   {
     "part": "lower_arm_r",
     "file": "puppet-lower_arm_r.png",
     "pivot": [
-      36,
-      299
+      73,
+      29
     ],
     "parent": "upper_arm_r",
     "origin": [
-      374,
-      61
+      227,
+      293
     ]
   }
 ]

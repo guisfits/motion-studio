@@ -14,12 +14,11 @@ Public-domain / CC0 only. No AI images, no brand material. Images are resized (l
 | merian-alsatiae.jpg | https://commons.wikimedia.org/wiki/File:Topographia_Alsatiae_(Merian)_p_013.JPG | Matthäus Merian / Martin Zeiller (1644) | Public domain | Town view / architecture, 1700 px |
 | gutenberg-genesis.jpg | https://commons.wikimedia.org/wiki/File:Gutenberg_Bible_B42_Genesis.JPG | Johannes Gutenberg (printer); scan by Jossi (facsimile of the Berlin copy) | Public domain | Manuscript-style printed page; scan of a facsimile of the 1455 original (Commons tags it public domain, PD-old) |
 | schedel-tiburtine-sibyl.jpg | https://commons.wikimedia.org/wiki/File:Nuremberg_Chronicle_-_Tiburtine_Sibyl_(XCIIIv)_edit.jpg | Michael Wolgemut, Wilhelm Pleydenwurff (1493) | Public domain | Hand-coloured woodcut |
-| costume-archer-bm2848.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2848).jpg | After Cesare Vecellio, *De gli habiti antichi et moderni* (1590); British Museum | Public domain | Source of the puppet; figure on plain paper inside an ornamental border |
-| costume-noble-bm2849.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2849).jpg | same | Public domain | |
-| costume-archer-bm2850.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2850).jpg | same | Public domain | |
-| costume-sultan-bm2853.jpg | https://commons.wikimedia.org/wiki/File:Print,_costume_print,_book-illustration_(BM_1871,1209.2853).jpg | same | Public domain | |
+| figure-jager.jpg | https://commons.wikimedia.org/wiki/File:Koninklijke_Jager,_BI-B-FM-123-41.jpg | Anonymous, *Koninklijke Jager* (19th c., hand-coloured print), Rijksmuseum | CC0 (Rijksmuseum; Commons licence CC0, no further permission note) | Soldier on plain paper, 2000 px; source of the puppet |
+| figure-cavalier.jpg | https://commons.wikimedia.org/wiki/File:Staande_man_in_kostuum,_RP-P-OB-24.082.jpg | Anonymous (17th c. costume etching, series with monogram N.G.), Rijksmuseum | CC0 (Rijksmuseum; Commons licence CC0, no further permission note) | Full-length standing man, 1300 px |
+| figure-walker.jpg | https://commons.wikimedia.org/wiki/File:Staande_man_met_stok,_RP-P-OB-24.080.jpg | Anonymous (17th c. costume etching, same series), Rijksmuseum | CC0 (Rijksmuseum; Commons licence CC0, no further permission note) | Full-length man with a staff, 1300 px |
+| figure-mode1660.jpg | https://commons.wikimedia.org/wiki/File:Staande_man,_gekleed_volgens_de_mode_omstreeks_1660,_RP-P-2002-434.jpg | Anonymous (c. 1660 fashion engraving), Rijksmuseum | CC0 (Rijksmuseum; Commons licence CC0, no further permission note) | Full-length man, hand on hip, 1300 px |
 
-**Open licence point (costume-*.jpg, and the `cut-archer2`, `cut-noble`, `cut-sultan` and `puppet-*` files cut from them).** The Commons pages tag these British Museum scans public domain (PD-scan of a 1590 work), but their Permission field also reads "© The Trustees of the British Museum, released as CC BY-NC-SA 4.0". The two statements conflict; until the owner rules, treat these files as not cleared for redistribution beyond this repo.
 
 ## Cut-outs — `cut/`
 
@@ -27,13 +26,13 @@ All transparent PNG, cut from the images above.
 
 | File | Cut from | Notes |
 |---|---|---|
-| cut-noble.png | costume-noble-bm2849.jpg | Full figure |
-| cut-archer2.png | costume-archer-bm2850.jpg | Full figure, bow and arrow overhang |
-| cut-sultan.png | costume-sultan-bm2853.jpg | Full figure |
+| cut-figure-cavalier.png | figure-cavalier.jpg | Full figure |
+| cut-figure-walker.png | figure-walker.jpg | Full figure, staff included |
+| cut-figure-mode1660.png | figure-mode1660.jpg | Full figure |
 | cut-moses.png | dore-moses-sinai.jpg | Figure with tablets; light rays above the head are kept |
 | cut-virgin.png | durer-virgin-st-john.jpg | Lower half only (scene); small hole in the cloud, Vision's mask |
 | cut-sibyl.png | schedel-tiburtine-sibyl.jpg | Right-hand pair of women, cropped from a larger group; kept coloured |
-| puppet-torso.png, puppet-head.png, puppet-upper_arm_l.png, puppet-lower_arm_l.png, puppet-upper_arm_r.png, puppet-lower_arm_r.png | costume-archer-bm2848.jpg | Rig parts; `puppet.json` lists `part`, `file`, `pivot` (px inside that part's PNG), `parent`, plus `origin` (top-left of the part in the assembled 550x1071 figure). Parts overlap 10-16 px at the joints; the torso is filled with paper colour where an arm was lifted out, so rotating an arm shows no hole. Left/right are the figure's, seen from the viewer: `_l` is on the viewer's left. |
+| puppet-torso.png, puppet-head.png, puppet-upper_arm_l.png, puppet-lower_arm_l.png, puppet-upper_arm_r.png, puppet-lower_arm_r.png | figure-jager.jpg | Rig parts; `puppet.json` lists `part`, `file`, `pivot` (px inside that part's PNG), `parent`, plus `origin` (top-left of the part in the assembled 341x886 figure). Parts overlap about 7 px at the joints; the torso is filled with paper colour where an arm was lifted out (coat colour), so rotating an arm shows no hole. Left/right are the figure's, seen from the viewer: `_l` is on the viewer's left. |
 
 ## Fonts — `fonts/`
 
