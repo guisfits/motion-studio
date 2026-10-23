@@ -42,6 +42,17 @@ describe("tornSplitClips", () => {
     expect(shared.length).toBeGreaterThan(10);
   });
 
+  it("walks each half as a simple ring: the top half returns along the rip, the bottom half runs along it", () => {
+    const a = tornSplitClips("ring");
+    const xs = (poly: string, from: number, to?: number) => points(poly).slice(from, to).map((p) => p[0]);
+    const nonIncreasing = (v: number[]) => v.every((x, i) => i === 0 || x <= v[i - 1]);
+    const nonDecreasing = (v: number[]) => v.every((x, i) => i === 0 || x >= v[i - 1]);
+    // top: 0% 0%, 100% 0%, then the rip from right to left
+    expect(nonIncreasing(xs(a.top, 2))).toBe(true);
+    // bottom: the rip from left to right, then 100% 100%, 0% 100%
+    expect(nonDecreasing(xs(a.bottom, 0, -2))).toBe(true);
+  });
+
   it("keeps all points within 0-100%", () => {
     const a = tornSplitClips("split2", 40, 4);
     for (const [x, y] of [...points(a.top), ...points(a.bottom)]) {
