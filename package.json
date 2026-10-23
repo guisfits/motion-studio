@@ -9,6 +9,9 @@
   },
   "scripts": {
     "dev": "remotion studio studio/index.ts",
+    "assets": "bash tools/assets/make-vo.sh",
+    "check:assets": "node tools/assets/check-assets.mjs",
+    "prerender": "npm run check:assets",
     "render": "remotion render studio/index.ts",
     "compositions": "remotion compositions studio/index.ts",
     "test": "vitest run",

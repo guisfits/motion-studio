@@ -26,6 +26,12 @@ copy) and builds its films on top.
 - `tools/checks/` — measured gates (cues, legibility, media loudness, picture, rhythm, sync).
 - `tools/critique/sheets.mjs video.mp4` — contact, phone-size, strip and loop sheets.
 
+## Render
+
+Demo T09 needs `assets/audio/vo-01..03.wav`, which are gitignored. Generate them once with
+`npm run assets` (macOS: `say` + ffmpeg). `npm run check:assets` fails with that hint when they
+are missing, and `npm run render` runs it first (npm `prerender` hook).
+
 ## Repository
 
 ```
