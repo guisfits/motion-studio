@@ -27,7 +27,7 @@
 // Without a voice stem the old balance holds: the music at 0.8 and the SFX a few dB under it.
 //
 // Voice takes: a film may speak in more than one take, such as its own narration and a house
-// outro that carries its own recorded voice from its own start. render.mjs writes the takes the
+// outro that carries its own recorded voice from its own start. The v1 renderer wrote the takes the
 // film declares (window.VOICE_TAKES) to out/voices.auto.json as [{ file, at }]; they are summed
 // with --voice (at 0) into one voice stem before anything is measured, so the balance, the ducking
 // and the loudness all follow one speech level.

@@ -15,9 +15,9 @@ from which entry.
 
 **Notes only.** The studies are committed as notes; clips and frames are a local cache, never
 committed (`<register>/frames/`, `<register>/media/`, `<register>/**/cache/` are git-ignored). To
-study a new piece: `node <E>/core/reference/inspiration.mjs <id> <url> [--fps 2] --out
+study a new piece: `node <E>/tools/kit/reference/inspiration.mjs <id> <url> [--fps 2] --out
 inspirations/<register>` (download only with permission and for study), measure it (see the
-`motion-engine` skill, `references/render-and-review.md`), and write what you saw to
+archived `motion-engine` skill, `archive/engine-v1/skills/motion-engine/references/render-and-review.md`), and write what you saw to
 `inspirations/<register>/<id>.md`: grammar and general takeaways, no project specifics.
 
 ## Vox-collage index

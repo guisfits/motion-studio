@@ -13,8 +13,8 @@ what looks odd), never about content.
   `finding`, `measure`, `why_it_works`, `use_when`, `confidence`; plus a `done` line per piece with
   its ASL and events per 10 s.
 - `study-brief.md` — the brief every study agent followed.
-- How each video was measured before anyone looked: `core/reference/study-prep.sh` runs
-  `core/reference/editing.py` (OpenCV: picture events with camera-move compensation, per-shot camera
+- How each video was measured before anyone looked: `tools/kit/reference/study-prep.sh` runs
+  `tools/kit/reference/editing.py` (OpenCV: picture events with camera-move compensation, per-shot camera
   move — zoom, pan, rotation, speed peak, stepped/posterized — and frames around every event) and a
   2 fps contact sheet.
 - `cache/` — the media, measures and frames (git-ignored: the pieces are their authors' work).

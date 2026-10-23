@@ -12,7 +12,7 @@
 //                   pieces/, out/
 //   --catalog FILE  the catalog (default <kit>/catalog.json)
 //   --pieces DIR    where pieces and manifest.json go (default <kit>/pieces)
-//   --root DIR      the served root (see server.mjs): catalog `src` paths and manifest URLs are
+//   --root DIR      the served root (see root.mjs): catalog `src` paths and manifest URLs are
 //                   relative to it (default: the git top level of the kit)
 //
 // Entry fields the build reads: `cut` subject | paper | none | regions, `border` px, `matte`
