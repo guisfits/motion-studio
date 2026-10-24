@@ -27,10 +27,10 @@ export const S16: React.FC = () => {
   // folder pop: 11 % W -> 44 % W by local 6, 3 % overshoot, plus a 1 % pulse at the landing
   const t = interpolate(frame, [0, 6], [0, 1], { extrapolateRight: "clamp" });
   const sc = 0.25 + 0.75 * easeOut(t) + (frame >= 5 && frame <= 8 ? 0.03 * Math.sin(((frame - 5) / 3) * Math.PI) : 0);
-  const cy = interpolate(frame, [0, 6], [0.58, 0.5], { extrapolateRight: "clamp" });
+  const cy = interpolate(frame, [0, 6], [0.53, 0.45], { extrapolateRight: "clamp" });
   const lift = interpolate(frame, [4, 11], [0, 100], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const n = Math.min(URL_TEXT.length, Math.max(0, Math.floor((frame - 28) / 1.4) + 1));
-  const typing = frame >= 28;
+  const n = Math.min(URL_TEXT.length, Math.max(0, Math.floor((frame - 29) / 1.75) + 1));
+  const typing = frame >= 29;
   return (
     <AbsoluteFill style={{ background: "#5a2c18", overflow: "hidden" }}>
       <Cam cam={cam}>
@@ -47,12 +47,12 @@ export const S16: React.FC = () => {
           <Img src={folderUrl} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.45))" }} />
         </div>
         {frame >= 10 && (
-          <div style={{ position: "absolute", left: W / 2 - W * 0.26, top: H * 0.47 - H * 0.15, width: W * 0.52, height: H * 0.3 }}>
-            <CircleMark at={1} lead={3} dur={9} color="#d42a2a" strokeWidth="5px" pad={0} seed="earn-folder" style={{ width: "100%", height: "100%", display: "block" }} />
+          <div style={{ position: "absolute", left: W / 2 - W * 0.26, top: H * 0.43 - H * 0.15, width: W * 0.52, height: H * 0.3 }}>
+            <CircleMark at={1} lead={3} dur={10} color="#e02020" strokeWidth="9px" pad={0} seed="earn-folder" style={{ width: "100%", height: "100%", display: "block" }} />
           </div>
         )}
         {typing && (
-          <div style={{ position: "absolute", left: 0, right: 0, top: H * 0.49 - 50, textAlign: "center", fontFamily: ORBITRON, fontWeight: 800, fontSize: 70, color: "#f2f2f2", textShadow: "2px 3px 0 rgba(0,0,0,0.7)", WebkitTextStroke: "2px rgba(10,10,10,0.8)", whiteSpace: "nowrap" }}>
+          <div style={{ position: "absolute", left: 0, right: 0, top: H * 0.46 - 62, textAlign: "center", fontFamily: ORBITRON, fontWeight: 900, fontSize: 90, color: "#f2f2f2", textShadow: "2px 3px 0 rgba(0,0,0,0.7)", WebkitTextStroke: "3px rgba(10,10,10,0.85)", paintOrder: "stroke fill", whiteSpace: "nowrap" }}>
             <span style={{ color: "#27d13a" }}>{"{"}</span>
             {URL_TEXT.slice(0, n)}
             <span style={{ color: "#fff" }}>{"}"}</span>

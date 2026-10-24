@@ -28,24 +28,17 @@ export const S13: React.FC = () => {
     <AbsoluteFill style={{ background: "#8db4e6", overflow: "hidden" }}>
       <Cam cam={cam}>
         <Img src={courtUrl} style={{ position: "absolute", left: -120, top: -40 + horizon, width: W + 240, height: H + 80, objectFit: "cover" }} />
-        <div style={{ position: "absolute", left: -112, top: 192, width: 1280, height: 1280, transform: `rotate(${lean * 0.4}deg)`, transformOrigin: "50% 100%" }}>
+        <div style={{ position: "absolute", left: -209, top: 192, width: 1280, height: 1280, transform: `scaleX(-1) rotate(${-lean * 0.4}deg)`, transformOrigin: "50% 100%" }}>
           <Img src={painterUrl} style={{ width: "100%", height: "100%" }} />
         </div>
-        {/* brush + dab on the canvas */}
-        <svg viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", inset: 0 }}>
-          <g transform={`translate(${W * 0.66 + Math.sin(phase * Math.PI * 2) * 22} ${H * 0.4 + Math.cos(phase * Math.PI * 2) * 14}) rotate(-35)`}>
-            <rect x={-6} y={-70} width={12} height={90} rx={5} fill="#5a3a1c" />
-            <rect x={-7} y={14} width={14} height={22} rx={5} fill="#f2d43c" />
-          </g>
-        </svg>
         <div style={{ position: "absolute", left: 0, right: 0, top: H * 0.1, textAlign: "center", ...title }}>
           <div style={{ height: 134 }}>
-            <PopText text="HIS" frame={frame} start={1} style={title} />
+            <PopText text="HIS" frame={frame} start={0} style={title} />
             {" "}
-            <PopText text="OWN" frame={frame} start={4} per={1} style={title} />
+            <PopText text="OWN" frame={frame} start={2} per={1} style={title} />
           </div>
           <div style={{ height: 134, marginTop: 0 }}>
-            <PopText text="STRUGGLES" frame={frame} start={6} per={0.7} style={title} />
+            <PopText text="STRUGGLES" frame={frame} start={3.5} per={0.55} style={title} />
           </div>
         </div>
       </Cam>

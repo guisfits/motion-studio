@@ -47,7 +47,7 @@ export const Piece: React.FC<{ spec: PieceSpec; size: number; pitch: [number, nu
       <path d={d} transform="translate(6 10)" fill="rgba(0,0,0,0.3)" style={{ filter: "blur(5px)" }} />
       <path d={d} fill={`url(#g-${spec.id})`} />
       <g clipPath={`url(#cp-${spec.id})`}>
-        <image href={spec.img} x={-10} y={-10} width={120} height={120} preserveAspectRatio={spec.imgPos} opacity={0.5} style={{ mixBlendMode: "luminosity" }} />
+        <image href={spec.img} x={-10} y={-10} width={120} height={120} preserveAspectRatio={spec.imgPos} opacity={0.28} style={{ mixBlendMode: "luminosity" }} />
         <path d={d} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth={5} transform="translate(1.5 1.5)" />
         {spec.extra}
       </g>

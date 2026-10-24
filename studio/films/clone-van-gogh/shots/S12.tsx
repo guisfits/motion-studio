@@ -35,8 +35,8 @@ const Wall: React.FC<{ frame: number }> = ({ frame }) => {
   };
   return (
     <AbsoluteFill style={{ background: "#2a2218" }}>
-      {band(14, -60, 1100, 0.55, false)}
-      {band(26, 480, 760, 0.7, true)}
+      {band(14, -60, 1100, 0.85, false)}
+      {band(26, 480, 760, 1.0, true)}
       {/* dark brown cylinder edges */}
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #2a2218 0%, rgba(42,34,24,0) 22%, rgba(42,34,24,0) 78%, #2a2218 100%)" }} />
     </AbsoluteFill>
@@ -76,7 +76,7 @@ export const S12: React.FC = () => {
       <Cam cam={cam}>
         <Wall frame={frame} />
         <Plinth />
-        <Img src={vgUrl} style={{ position: "absolute", left: W / 2 - 321, top: 393, width: 643, height: 1125 }} />
+        <Img src={vgUrl} style={{ position: "absolute", left: W / 2 - 321, top: 393, width: 643, height: 1125, filter: "saturate(1.45) contrast(1.12) drop-shadow(0 20px 30px rgba(0,0,0,0.6))" }} />
         {canvasOn && (
           <div style={{ position: "absolute", left: cx, top: cy, width: 620, height: 520, marginLeft: -310, marginTop: -260, transform: `scale(${cs}) rotate(${rot}deg)` }}>
             <Fragment src={cafe} x={0} y={0} w={620} h={520} rot={0} poly="3% 6%, 97% 0%, 100% 94%, 4% 100%" />
