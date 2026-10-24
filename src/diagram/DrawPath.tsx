@@ -18,6 +18,7 @@ export type DrawPathProps = {
 /**
  * A line that writes itself on: `evolvePath` turns progress into a real-length dash, so the
  * stroke keeps its width under any scale (no non-scaling-stroke, which would break the dash).
+ * An empty path draws nothing.
  */
 export const DrawPath: React.FC<DrawPathProps> = ({
   d,
@@ -29,6 +30,7 @@ export const DrawPath: React.FC<DrawPathProps> = ({
   style,
 }) => {
   const p = Math.min(1, Math.max(0, progress));
+  if (!d.trim()) return null;
   const evolved = evolvePath(p, d);
   return (
     <svg

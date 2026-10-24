@@ -18,13 +18,14 @@ export type RouteMapProps = {
   lineWidth?: number;
 };
 
-/** Position (px) of the route's head at `progress`; also used by callers to time stops. */
+/** Position (px) of the route's head at `progress`; also used by callers to time stops. An empty route has its head at (0, 0). */
 export const routeHead = (
   route: [number, number][],
   progress: number,
   width: number,
   height: number,
 ): { x: number; y: number } => {
+  if (route.length === 0) return { x: 0, y: 0 };
   const d = polylinePath(route.map(([x, y]) => [x * width, y * height]));
   const p = getPointAtLength(d, Math.min(1, Math.max(0, progress)) * getLength(d));
   return p ? { x: p.x, y: p.y } : { x: 0, y: 0 };
@@ -50,7 +51,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
       <Img src={image} style={{ width, height, display: "block" }} />
       <DrawPath d={d} progress={progress} size={[width, height]} stroke="#f4efe3" width={lineWidth + 8} />
       <DrawPath d={d} progress={progress} size={[width, height]} stroke={stroke} width={lineWidth} />
-      {progress > 0 ? (
+      {progress > 0 && route.length > 0 ? (
         <div
           style={{
             position: "absolute",

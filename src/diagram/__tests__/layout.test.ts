@@ -87,3 +87,11 @@ describe("treeLayout", () => {
     expect(forest.r1.x).not.toBe(forest.r2.x);
   });
 });
+
+describe("treeLayout with a parent loop", () => {
+  it("still places every node of a loop and of what hangs under it", () => {
+    const p = treeLayout([{ id: "a", parent: "b" }, { id: "b", parent: "a" }, { id: "c", parent: "b" }], 1000, 600);
+    expect(Object.keys(p).sort()).toEqual(["a", "b", "c"]);
+    for (const id of ["a", "b", "c"]) expect(Number.isFinite(p[id].x) && Number.isFinite(p[id].y)).toBe(true);
+  });
+});

@@ -30,7 +30,8 @@ export const timelineLayout = (
 /**
  * Top-down tree layout inside `width` x `height`: one row per generation (root row first),
  * leaves spread evenly left to right, each parent centred over its children. Nodes whose
- * parent is missing are roots, so several roots form a forest.
+ * parent is missing are roots, so several roots form a forest; nodes in a parent loop are
+ * placed too (the first of the loop sits on top).
  */
 export const treeLayout = (
   nodes: TreeNode[],
@@ -64,6 +65,11 @@ export const treeLayout = (
     xSlot.set(id, (Math.min(...slots) + Math.max(...slots)) / 2);
   };
   roots.forEach((r) => visit(r, 0));
+  // A parent loop leaves nodes no root reaches: the first of each loop becomes a root, so every
+  // node is still placed.
+  nodes.forEach((n) => {
+    if (!depth.has(n.id)) visit(n.id, 0);
+  });
 
   const rows = Math.max(...depth.values()) + 1;
   const out: Record<string, Point> = {};
