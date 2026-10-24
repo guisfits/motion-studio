@@ -1,6 +1,7 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
 import { carryAt, type CarryOptions } from "./carry";
+import { setDownTravel } from "./set-down-travel";
 
 export type Side = "top" | "bottom" | "left" | "right";
 
@@ -18,6 +19,8 @@ export type SetDownProps = Partial<Omit<CarryOptions, "delay">> & {
   from?: Side;
   /** Final rotation in degrees. */
   rotate?: number;
+  /** The sheet's [width, height] in px: travel then always clears the frame, wherever it rests. */
+  size?: [number, number];
   /** Extra off-frame margin in px so a large or rotated sheet clears the edge. */
   margin?: number;
   /** Resting-shadow strength 0..1 (0 = no shadow). */
@@ -38,6 +41,7 @@ export const SetDown: React.FC<SetDownProps> = ({
   from = "top",
   rotate = 0,
   margin = 0,
+  size,
   shadow = 1,
   dur,
   over,
@@ -49,7 +53,7 @@ export const SetDown: React.FC<SetDownProps> = ({
   const { fps, width, height } = useVideoConfig();
   const { remaining, lift } = carryAt(frame, fps, { delay, dur, over, stepFps });
   const [dx, dy] = DIR[from];
-  const travel = (dx !== 0 ? width : height) + margin;
+  const travel = setDownTravel(from, width, height, { size, margin });
   const tilt = Math.max(0, remaining) * 5 * (dx !== 0 ? dx : 1);
   const rest = 4 * shadow;
   return (

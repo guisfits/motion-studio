@@ -6,3 +6,4 @@ export { SetDown, type SetDownProps, type Side } from "./SetDown";
 export { Tape, type TapeProps } from "./Tape";
 export { tapeTravel } from "./tape-travel";
 export { Torn, type TornProps } from "./Torn";
+export { setDownTravel } from "./set-down-travel";
