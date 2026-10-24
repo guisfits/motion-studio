@@ -31,7 +31,7 @@ Read these before anything; each is a rule below.
    - **Measure**, don't eyeball: `tools/critique/motion-measure.py ref.mp4 --shots scene.ts --out out/measure/ref` → per-shot zoom curve, peak object speed (px/f), settle frames, sharpness and edge blur (depth of field), contrast, warmth, grain. These numbers are the spec. `frames.csv` `zoom_step_pct` per frame, multiplied as `Π(1 + z/100)` over a shot, IS the reference's camera path: use it as a per-frame scale table (S5 S15/S16 matched within 5 % this way).
    - Voice: transcribe with word times; our take (OmniVoice) phrase by phrase, each phrase anchored on the reference's start time (`voice/build-vo.py`: drift ≤ 0.25 s).
 2. **Pictures per shot**, matched to the reference's composition (Rule 1).
-3. **Build one shot at a time** with the engine (Rules 2–4), render that shot only (`--scale=0.5`).
+3. **Build one shot at a time** with the engine (Rules 2–4). For strips render that shot's range only (`--frames=A-B --scale=0.5`, ~20 s); `motion-measure` needs the full film at full size.
 4. **Compare at full rate** (Rule 5) and with the measures; fix; at most 3 rounds per shot.
 5. **Send the shot** to the owner as soon as it passes: `tools/critique/vs.sh ref.mp4 clone.mp4 <from> <to> out.mp4 [--slow] [--audio]` (never a range cut carrying the whole reference audio: it freezes in players). Then the next.
 6. **Fold every lesson** into a skill rule, a component or a tool the same day; record gaps in `crew/notes-*.md` and in the benchmark table (✅ / 🟡 / ❌ per shot, with the cause).
@@ -41,6 +41,7 @@ Read these before anything; each is a rule below.
 - Camera columns, in order: total zoom % (negative = pulls out), zoom mean / peak %/f, where the peak sits, zoom done at 50 % time, punch-ins, pan mean / peak px/f, rotation deg. A hard cut inside a span reads as one huge zoom/pan step: ignore that frame.
 - Every px number (pan, object energy) is in the video's own native pixels, for the reference and the clone alike — never rescale them (S5: a builder doubled a camera table on a false "the reference is 540 wide", and the pan read 2x until it was halved). `tx`/`ty` are residuals about the frame centre: compose them with each step's scale when you build a camera table.
 - The tracker follows the biggest moving thing: a spinning or thrown object can read as camera rotation/pan (S5 S06: "436° and 1600 px/f" was the spinning brain). Before copying a camera row, check in the strip that background features move too.
+- Camera tables: skip rows whose method is `ecc` or `none`, drop a shot's last row when the next shot starts on it, and check each pan jump against the strip (people entering read as pan). Apply a table as `transformOrigin: "0 0"` + translate/scale about the frame centre — a centred origin applies the zoom twice.
 - Frames inside a transition (blur, whip, keyhole) and on a cut are tracker noise (S05 f148-152 read −50 %/f): read those from the pictures. A cut's step also changes composition — match the new framing, not the step size.
 - Sharpness counts grain: single-pixel noise multiplies it. Calibrate grain first (`Grain size` ~1.3 px for video-compressed grain), then softness; both are per shot (`look` in `scene.ts`), never only film-wide.
 - A clone sharpness < 0.5x the reference means the plate is too small: generate at the render size (1080x1920 or larger for a pushed-in shot) or upscale it. Cost on this Mac: ~2.5 min per 1080x1920 plate, 40–60 s per 1024² cut-out, queued on the shared heavy-job lock — batch a shot's pictures in one call and plan for the wait.
@@ -55,5 +56,7 @@ Read these before anything; each is a rule below.
 6. **Resources.** Parallel agents share `/tmp`, the scratchpad and `out/`: every agent writes its own prefixed files and renders to a private output name. One heavy job at a time on the machine (render, image, music, TTS: they share `tools/render.sh`'s lock); drafts at `--scale=0.5`; at most 2 agents; never a disk-wide search.
 
 ## What cannot be cloned here (say so in the benchmark, don't fake it)
+
+- People in motion (reference AI video clips): a cut-out rig gets camera, composition and gesture timing close, but reads as puppets — no head turns, rigid sleeves, a static face. `Puppet` steps poses at 12 fps by default: pass the film's rate (`stepFps={16}`). Cut arms with a 2-link capsule cutter (S5: `studio/films/clone-van-gogh/lib/s08-cut-arms.py`; to be promoted to `tools/`).
 
 - Shots that were image-to-video clips in the reference (people gesturing, walking, painting): AI video is banned. Rebuild with separated parts (puppet rig, parallax, physics) and mark 🟡 with the reason.
