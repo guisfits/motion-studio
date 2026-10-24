@@ -83,7 +83,7 @@ The ending: the cut times of the last 5 s against the body mean above, and the l
 ## 4b. Motion feel at full rate (S5: a film passed every gate and the client called its motion "bem abaixo da média")
 
 A contact sheet (2 fps) shows layout, never speed, overshoot, settle or blur. For every entrance, landing, punch-in and camera move, cut a 12-frame consecutive strip (`node tools/critique/sheets.mjs <mp4> --strip <t>`) and read it frame by frame. Facts to write, with frame numbers:
-- arrival: frames from first appearance to rest (a throw crosses in 0.12–0.25 s; more than ~0.4 s reads as drift); overshoot present or not; a constant speed with no settle is a lerp (`film-animator` `references/motion-craft.md` §1);
+- arrival: frames from first appearance to rest (default from one professional reel: a throw crosses in 0.12–0.25 s, more than ~0.4 s reads as drift; the film's own target and its measurements override it); overshoot present or not; a constant speed with no settle is a lerp (`film-animator` `references/motion-craft.md` §1);
 - scale and depth: hero share of frame height; foreground pieces big and blurred or small and sharp (§2);
 - camera: steps (punch) vs eases; frame 0 already moving;
 - look: grain clumpy or single-pixel, a centre spotlight from bloom/vignette on flat ground, plates soft from upscaling (§4).

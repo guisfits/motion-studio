@@ -3,6 +3,8 @@
 How a professional short-form edit moves, measured, and how to build it with this engine. Style-free:
 nothing here is a palette, a font or a subject; every number is a mechanism that works in any look.
 
+Every number below is a default, measured on one professional reel. The film's own target (a reference video, an approved style frame) and its measurements override them: measure the target first, fall back to these only where nothing is measured.
+
 Source: the S5 study (2026-10-24). A 34.6 s professional reel was rebuilt from scratch, measured
 frame by frame against its reference with `tools/critique/motion-measure.py`, judged by the owner twice:
 first pass "bem abaixo da média — animação, física dos objetos, movimentação, filtros visuais";
@@ -38,8 +40,8 @@ Secondary motion: stagger a group's arrivals 1 frame apart at 16 fps (~0.06 s); 
 
 ## 2. Scale and depth
 
-- **Measure before sizing.** Hero subjects fill **50–80 % of frame height**; framed pictures on a wall are ~35 % bigger than a first guess. Measure on full-resolution frames (head height ÷ frame height, object width ÷ frame width) and size every cut-out from those numbers. A generated cut-out has transparent padding: measure its visible alpha, not its box.
-- **Foreground is big and blurred.** Pieces passing in front (leaves, fragments, frames) are 30–50 % of frame width and depth-blurred; the background is soft. A flat stack of sharp cut-outs reads as cheap.
+- **Measure before sizing.** Default: hero subjects fill **50–80 % of frame height** on the S5 reel; the target's own measurement overrides it. Measure on full-resolution frames (head height ÷ frame height, object width ÷ frame width) and size every cut-out from those numbers. A generated cut-out has transparent padding: measure its visible alpha, not its box.
+- **Foreground is big and blurred.** Default: pieces passing in front (leaves, fragments, frames) are 30–50 % of frame width and depth-blurred; the background is soft. A flat stack of sharp cut-outs reads as cheap.
 - **Composition is part of the edit.** When one picture takes the place of part of another (a frame where a head was), cut that band out of the first and put the second in its place on the beat — never two pictures floating side by side.
 - **Type in depth.** Words sit between planes (behind falling leaves, over a figure); a word must still read whole — never hide letters behind a body unless the reference does.
 
