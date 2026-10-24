@@ -10,7 +10,7 @@ export type CamPose = { x: number; y: number; zoom: number; rotate: number };
 export type CamState = CamPose & { velocity: number };
 
 const FPS = 30;
-// Screen-space weights for zoom and roll, from the engine's whoosh heuristic (core/lib/table.js).
+// Screen-space weights for zoom and roll, from the engine's whoosh heuristic (archive/engine-v1/core/lib/table.js).
 const ZOOM_PX = 900;
 const ROLL_PX = 14;
 

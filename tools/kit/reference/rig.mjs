@@ -1,7 +1,7 @@
 // Cuts one picture into a hinged paper puppet: parts that rotate about pivots (a Monty-Python /
 // Vox cut-out). Each part is cut at full resolution, the hole a moving part leaves in its parent is
 // filled so the parent never shows a ghost, and the part reaches a little past its joint so a
-// turn never opens a gap. core/lib/rig.js poses the result on a film page.
+// turn never opens a gap. rig-pose.js poses the result on a film page.
 //
 //   node tools/kit/reference/rig.mjs <image> <spec.json> --out <dir> [--swing 20] [--no-preview]
 //
@@ -53,7 +53,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { polyMask, bake } from "./oven.mjs";
 import { readRGBA, writePNG, uprightSize } from "./regions.mjs";
-import { poseMatrices, drawOrder, stepPose } from "../../../core/lib/rig.js";
+import { poseMatrices, drawOrder, stepPose } from "./rig-pose.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const NAME = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
@@ -544,7 +544,7 @@ function build(srcPath, spec, outDir, work) {
 
 // Paints one part into an RGB frame through its pose matrix (bilinear, straight alpha over the
 // frame), by walking the destination pixels back into the part. The matrix is the one the film
-// page gets from core/lib/rig.js, so the preview checks the runtime's maths too.
+// page gets from rig-pose.js, so the preview checks the runtime's maths too.
 function paintPart(frame, fw, fh, part, m) {
   const det = m[0] * m[3] - m[1] * m[2];
   const inv = [m[3] / det, -m[1] / det, -m[2] / det, m[0] / det];

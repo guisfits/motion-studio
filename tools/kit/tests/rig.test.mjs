@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseSpec, polyBox, alphaBox, pivotPx, jointGeometry, behindPivot, rigRow, fillNeighbours, shrinkAlpha, textureJob, buildRig } from "../reference/rig.mjs";
 import { readRGBA, writePNG } from "../reference/regions.mjs";
-import { rotateAbout, apply, poseMatrices, drawOrder, drawRig, checkRig, stepPose, quantize, cssMatrix } from "../../../core/lib/rig.js";
+import { rotateAbout, apply, poseMatrices, drawOrder, drawRig, checkRig, stepPose, quantize, cssMatrix } from "../reference/rig-pose.js";
 
 const close = (a, b, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, `${a} !~ ${b}`);
 const closePt = (p, q, eps = 1e-6) => {

@@ -1,10 +1,10 @@
-// Ease curves for camera legs, ported from the engine's core/lib/table.js and motion.js.
+// Ease curves for camera legs, ported from the engine's archive/engine-v1/core/lib/table.js and motion.js.
 // The engine ran GLIDE/MOVE/WHIP as springs; here each is a closed-form curve of leg progress,
 // so a frame never depends on the one before it (a 10-minute film stays exact at frame 18 000).
 
 export type CamEase = "glide" | "move" | "whip";
 
-// Engine smootherstep (core/lib/motion.js): the "bell" every baseline leg uses.
+// Engine smootherstep (archive/engine-v1/core/lib/motion.js): the "bell" every baseline leg uses.
 export const smootherstep = (p: number): number => {
   const t = Math.min(1, Math.max(0, p));
   return t * t * t * (t * (t * 6 - 15) + 10);

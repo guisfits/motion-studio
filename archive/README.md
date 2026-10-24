@@ -20,5 +20,6 @@ inside it still point at the old layout (its own `README.md` describes it).
 To re-render a film made with it, check out the tag: `git checkout engine-v1`.
 
 The tools that outlived it moved to `tools/` (audio, kit + reference, checks, critique).
-`core/lib/{table,rig,motion,texture,torn,voice,phone,clip}.js` and `core/fonts/` stay in place as
-porting reference until the end of phase 1.
+The porting references `core/lib/{table,motion,texture,torn,voice,phone,clip}.js` and `core/fonts/`
+joined this archive at the end of phase 1 (`archive/engine-v1/core/`). `core/lib/rig.js` is still
+used by the rig tool and lives on as `tools/kit/reference/rig-pose.js`.

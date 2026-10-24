@@ -2,7 +2,7 @@
 
 motion-studio's code is MIT (see LICENSE). The third-party material it ships or fetches:
 
-## Fonts (`core/fonts/`)
+## Fonts (`archive/engine-v1/core/fonts/`)
 
 | Font | Licence | File |
 |------|---------|------|
