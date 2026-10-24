@@ -43,6 +43,17 @@ describe("stepped camera", () => {
   });
 });
 
+describe("linear ease", () => {
+  it("moves at constant speed over the whole leg, between frames too", () => {
+    const keys: CamKey[] = [
+      { frame: 10, x: 0, y: 0, zoom: 1, ease: "linear" },
+      { frame: 50, x: 400, y: 0, zoom: 1 },
+    ];
+    for (const f of [10, 10.25, 20, 30.5, 49.75, 50]) expect(cameraAt(keys, f).x).toBeCloseTo(((f - 10) / 40) * 400, 9);
+    expect(cameraAt(keys, 20).velocity).toBeCloseTo(cameraAt(keys, 40).velocity, 9);
+  });
+});
+
 describe("cutAtPeak", () => {
   it("finds the middle of a symmetric glide", () => {
     expect(cutAtPeak(leg, 0, 60)).toBe(30);

@@ -15,7 +15,8 @@ export type TornWipeOptions = {
   seed?: string;
   /**
    * Poses per second for the jerked tear of the old engine (12): the sheet holds a pose and
-   * jumps, on the same cadence as `stepFrame`. Omit for the smooth baseline join.
+   * jumps, on the same cadence as `stepFrame` counted from the start of the transition. It reads
+   * progress as frames, so pair it with `linearTiming`. Omit for the smooth baseline join.
    */
   stepFps?: number;
 };

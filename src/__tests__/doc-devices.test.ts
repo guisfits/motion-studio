@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { cameraAt } from "../camera";
 import { docZoomKeys, docZoomPose, pageBox, type DocZoomGeometry } from "../devices";
 import { heroWordPose } from "../devices";
-import { steppedProgress, tornWipePose } from "../transitions";
+import { steppedProgress, tornWipe, tornWipePose } from "../transitions";
 import { turnAt } from "../three";
 import { leafAngle } from "../three";
 
@@ -79,6 +79,18 @@ describe("stepped tear", () => {
     expect(p(5)).not.toBe(p(4));
     const poses = new Set(Array.from({ length: 19 }, (_, i) => p(i + 1)));
     expect(poses.size).toBeLessThan(10);
+  });
+
+  it("starts whole and ends gone on a transition that is not on a pose edge", () => {
+    for (const dur of [21, 22, 23]) {
+      expect(steppedProgress(0, dur, 30, 12)).toBe(0);
+      expect(steppedProgress(1, dur, 30, 12)).toBe(1);
+    }
+  });
+
+  it("is carried by the presentation's props", () => {
+    expect(tornWipe({ stepFps: 12 }).props.stepFps).toBe(12);
+    expect(tornWipe().props.stepFps).toBeUndefined();
   });
 
   it("never runs ahead of the smooth progress", () => {
