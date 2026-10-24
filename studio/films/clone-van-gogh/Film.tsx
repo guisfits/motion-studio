@@ -1,5 +1,5 @@
 import { AbsoluteFill, Audio, Sequence } from "remotion";
-import { Grain } from "../../../src/texture";
+import { Grade, Grain } from "../../../src/texture";
 import mixUrl from "./audio/mix.wav";
 import { SHOTS, type ShotId } from "./scene";
 import { S01 } from "./shots/S01";
@@ -22,18 +22,19 @@ import { S16 } from "./shots/S16";
 const SHOT: Record<ShotId, React.FC> = { S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13, S14, S15, S16 };
 
 // One Sequence per shot, in cut order: an overlapping later shot draws on top and owns the
-// transition. The reference's grade (grain + vignette) sits over everything.
+// transition. The reference's look: one Grade pass (warmth, contrast, bloom, aberration, vignette) and stepped grain.
 export const Film: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: "#000" }}>
-    {SHOTS.map(({ id, from, to }) => {
-      const Shot = SHOT[id];
-      return (
-        <Sequence key={id} from={from} durationInFrames={to - from} name={id}>
-          <Shot />
-        </Sequence>
-      );
-    })}
-    <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%)" }} />
+    <Grade>
+      {SHOTS.map(({ id, from, to }) => {
+        const Shot = SHOT[id];
+        return (
+          <Sequence key={id} from={from} durationInFrames={to - from} name={id}>
+            <Shot />
+          </Sequence>
+        );
+      })}
+    </Grade>
     <Grain opacity={0.08} stepFps={16} />
     <Audio src={mixUrl} />
   </AbsoluteFill>
