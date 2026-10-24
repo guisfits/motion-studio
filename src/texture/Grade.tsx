@@ -10,7 +10,7 @@ import { vignette } from "@remotion/effects/vignette";
 import { whiteBalance } from "@remotion/effects/white-balance";
 
 export type GradeProps = {
-  /** Contrast amount (effect default 1 = unchanged; the collage reels sit around 1.15-1.25). */
+  /** Contrast amount (1 = unchanged). Start neutral: 1.18 overshot every shot of the S5 clone (motion-craft §4). */
   contrast?: number;
   saturation?: number;
   /** White-balance temperature: > 0 warm. */
@@ -55,7 +55,7 @@ export const Grade: React.FC<GradeProps> = ({
         contrast({ amount: c }),
         saturation({ amount: s }),
         glow({ intensity: bloom.intensity, radius: bloom.radius, threshold: bloom.threshold, disabled: bloom.intensity === 0 }),
-        radialProgressiveBlur({ start: edgeBlur.start ?? 0.45, startBlur: 0, endBlur: edgeBlur.px, disabled: edgeBlur.px === 0 }),
+        radialProgressiveBlur({ start: edgeBlur.start ?? 0.35, startBlur: 0, endBlur: edgeBlur.px, disabled: edgeBlur.px === 0 }),
         chromaticAberration({ amount: aberration, disabled: aberration === 0 }),
         vignette({ amount: v, disabled: v === 0 }),
       ]}
