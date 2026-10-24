@@ -56,7 +56,7 @@ The stated gate, not a script (the scripts ran before you: `FILM_STAGE=<stage> n
 
 - Final: **APPROVED** only if zero 🔴, all twelve scores 8 or more, inputs complete and fresh with no 🔴 in the checks file, all three passes done. Draft: the same with D11 `not assessed (no mix)`. Animatic: **CLEAR** on zero 🔴 and every applicable score 8 or more (it clears the animatic touchpoint only).
 - Otherwise **NOT APPROVED** / **NOT CLEAR**, or **ESCALATE** after round 2. No "approved with notes". With only 🟡 left and all scores 8 or more it is APPROVED and the 🟡 are listed.
-- Gate codes you cite: `S1`-`S10`, `H1`, `P1`, `T0`-`T11`, `R1`-`R4`, `M0`-`M6`, `F1`, `F2`, `X1`-`X4` (fact-check; a fact on screen or in the voice you doubt is 🔴 and goes to `film-fact-checker`, never judged by you alone); norms by key: `NORMS.rhythm.*`, `NORMS.caption.*` (incl. `capHeight`, `minContrast`), `NORMS.camera.*` (incl. `punchMax`), `NORMS.frames.*`, `NORMS.sync.*`, `NORMS.audio.*`.
+- Gate codes you cite: `S1`-`S11`, `H1`, `P1`, `T0`-`T12`, `R1`-`R4`, `V0`-`V3`, `M0`-`M6`, `F1`, `F2`, `X1`-`X4` (fact-check; a fact on screen or in the voice you doubt is 🔴 and goes to `film-fact-checker`, never judged by you alone); norms by key: `NORMS.rhythm.*`, `NORMS.caption.*` (incl. `capHeight`, `minContrast`), `NORMS.camera.*` (incl. `punchMax`), `NORMS.frames.*`, `NORMS.sync.*`, `NORMS.audio.*`.
 
 ## Tells
 
