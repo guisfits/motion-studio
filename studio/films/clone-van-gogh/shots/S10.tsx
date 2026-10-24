@@ -33,7 +33,7 @@ const along = (k: [number, number][], f: number) => {
 
 type WordSpec = { text: string; at: number; per: number; x: number; y: number; size: number; font: string; opacity?: number };
 const WORDS: WordSpec[] = [
-  { text: "LATER", at: 1, per: 1, x: 0.53, y: 0.5, size: 250, font: F_LILITA, opacity: 0.92 },
+  { text: "LATER", at: 1, per: 1, x: 0.4, y: 0.5, size: 250, font: F_LILITA, opacity: 0.92 },
   { text: "VOLUNTARILY", at: 15, per: 0.65, x: 0.36, y: 0.5, size: 64, font: F_POPPINS },
   { text: "ENTERED", at: 23, per: 0.5, x: 0.67, y: 0.3, size: 130, font: F_LILITA },
   { text: "THE", at: 27, per: 0.5, x: 0.285, y: 0.375, size: 120, font: F_LILITA },
@@ -96,7 +96,6 @@ export const S10: React.FC = () => {
 
   // rack focus into the keyhole: the whole shot defocuses over the last frames
   const blur = f >= 27 ? [0, 0, 3, 7, 12][Math.min(4, f - 26)] ?? 12 : 0;
-  const textBehind = f < 7;
 
   const man = (
     <div style={{ position: "absolute", left: manLeft, top: manTop, width: MAN.w * s, height: MAN.h * s, transformOrigin: "50% 100%", transform: `rotate(${roll}deg)` }}>
@@ -145,19 +144,10 @@ export const S10: React.FC = () => {
             }}
           />
         </div>
-        {/* LATER sits between the wall and the man: "LA" in front, "TER" tucked behind his back, then it pops in front */}
-        {textBehind ? (
-          <>
-            <Word w={later} f={f} />
-            {man}
-            <Word w={later} f={f} only={(i) => i < 2} />
-          </>
-        ) : (
-          <>
-            {man}
-            <Word w={later} f={f} />
-          </>
-        )}
+        {/* LATER reads whole over the man from its first letter (reference f319-326); hiding "TER" behind
+            his back left only "LA" on screen. */}
+        {man}
+        <Word w={later} f={f} />
         {others.map((w) => (
           <Word key={w.text} w={w} f={f} />
         ))}
