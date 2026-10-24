@@ -1,18 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SRGBColorSpace, Texture, TextureLoader } from "three";
 import { cancelRender, continueRender, delayRender } from "remotion";
 
 /**
  * Loads image textures and holds the render (delayRender) until every one is ready, so no frame
  * is ever drawn with a blank map. Entries are null until loaded; the list length must not change.
+ * The first render holds from the start; a later change of `srcs` takes a fresh hold, and
+ * unmounting while a load is pending releases it (an abandoned hold would fail the render on
+ * Remotion's delayRender timeout). A texture that cannot load cancels the render.
  */
 export const useImageTextures = (srcs: (string | undefined)[]): (Texture | null)[] => {
   const key = srcs.join("|");
   const [textures, setTextures] = useState<(Texture | null)[]>(() => srcs.map(() => null));
-  const [handle] = useState(() => delayRender(`three textures: ${key}`));
+  const [first] = useState(() => delayRender(`three textures: ${key}`));
+  // The hold of the load in flight; null once that load has finished or been released.
+  const held = useRef<number | null>(first);
 
   useEffect(() => {
     let alive = true;
+    const handle = held.current ?? delayRender(`three textures: ${key}`);
+    held.current = handle;
     const loader = new TextureLoader();
     Promise.all(
       srcs.map(
@@ -35,11 +42,18 @@ export const useImageTextures = (srcs: (string | undefined)[]): (Texture | null)
       .then((loaded) => {
         if (!alive) return;
         setTextures(loaded);
+        held.current = null;
         continueRender(handle);
       })
-      .catch((e) => cancelRender(e));
+      .catch((e) => {
+        if (alive) cancelRender(e);
+      });
     return () => {
       alive = false;
+      if (held.current === handle) {
+        held.current = null;
+        continueRender(handle);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
