@@ -11,3 +11,4 @@ export * from "./audio";
 export * from "./three";
 export * from "./rig";
 export * from "./diagram";
+export * from "./fx";
