@@ -9,13 +9,22 @@ export type Offset = { x: number; y: number; rotate: number };
 
 /**
  * Damped-spring step response 0 -> 1 (After Effects "inertial bounce" as a closed form).
- * `hz` = natural frequency, `damping` = ratio (<1 overshoots: 0.35 ~ 30 % over, 0.6 ~ 10 %).
+ * `hz` = natural frequency, `damping` = ratio (<1 overshoots: 0.35 ~ 30 % over, 0.6 ~ 10 %; 1 = fastest with
+ * no overshoot; >1 creeps in slower).
  */
 export function bounce(frame: number, fps: number, { hz = 2.2, damping = 0.35 }: { hz?: number; damping?: number } = {}): number {
   if (frame <= 0) return 0;
   const t = frame / fps;
   const w = 2 * Math.PI * hz;
-  if (damping >= 1) return 1 - Math.exp(-w * t) * (1 + w * t);
+  // Critical (and a hair over, where the overdamped form below cancels badly): fastest without overshoot.
+  if (damping >= 1 && damping < 1 + 1e-4) return 1 - Math.exp(-w * t) * (1 + w * t);
+  if (damping > 1) {
+    // Overdamped: two real decay rates, slower than critical the higher the damping.
+    const r = Math.sqrt(damping * damping - 1);
+    const s1 = -w * (damping - r);
+    const s2 = -w * (damping + r);
+    return 1 - (s2 * Math.exp(s1 * t) - s1 * Math.exp(s2 * t)) / (s2 - s1);
+  }
   const wd = w * Math.sqrt(1 - damping * damping);
   return 1 - Math.exp(-damping * w * t) * (Math.cos(wd * t) + ((damping * w) / wd) * Math.sin(wd * t));
 }

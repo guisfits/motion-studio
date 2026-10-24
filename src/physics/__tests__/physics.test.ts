@@ -18,6 +18,12 @@ describe("bounce (AE inertial bounce as a closed-form progress)", () => {
     const f = Array.from({ length: FPS }, (_, i) => i).find((i) => bounce(i, FPS) >= 0.9)!;
     expect(f / FPS).toBeLessThanOrEqual(0.25);
   });
+  it("an overdamped spring (damping > 1) is slower than a critical one, and still settles on 1", () => {
+    const t = Math.round(FPS * 0.3);
+    expect(bounce(t, FPS, { damping: 2 })).toBeLessThan(bounce(t, FPS, { damping: 1 }) - 0.05);
+    expect(bounce(FPS * 10, FPS, { damping: 2 })).toBeCloseTo(1, 3);
+    expect(bounce(t, FPS, { damping: 1.0000001 })).toBeCloseTo(bounce(t, FPS, { damping: 1 }), 5);
+  });
   it("is negative-safe: holds 0 before its start", () => {
     expect(bounce(-5, FPS)).toBe(0);
   });
