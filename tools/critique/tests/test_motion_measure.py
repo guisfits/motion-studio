@@ -116,6 +116,23 @@ def test_zoom_ramp_is_recovered():
     assert abs(summary["zoom_ease_t50"] - 0.4) < 0.2
 
 
+def test_ecc_rows_are_held_out_of_camera_totals_and_speeds():
+    # ECC is the last-resort tracker (camera-table holds those rows too): a wild ECC estimate must not
+    # reach the zoom/pan totals or peaks, and the shot reports how many rows it set aside.
+    rows = analyze(zoom_clip(21, 0.015))
+    for i in (5, 6, 7):
+        rows[i].update(method="ecc", scale=1.2, tx=50.0, ty=0.0, rot_deg=9.0)
+    summary = mm.summarize_shot(rows, {"id": "T", "from": 0, "to": 21})
+    kept_total = (1.015**17 - 1) * 100
+    assert summary["ecc_frames"] == 3
+    assert abs(summary["total_zoom_pct"] - kept_total) < 0.15 * kept_total
+    assert summary["zoom_speed_peak"] < 3.0
+    assert summary["pan_speed_peak"] < 10.0
+    assert abs(summary["rot_total_deg"]) < 1.0
+    clean = mm.summarize_shot(analyze(zoom_clip(21, 0.015)), {"id": "T", "from": 0, "to": 21})
+    assert clean["ecc_frames"] == 0
+
+
 def test_punch_in_is_counted():
     base = zoom_clip(1, 0)[0]
     clip = []

@@ -431,12 +431,18 @@ def _camera_summary(rows, lo, hi):
         "pan_speed_peak",
         "rot_total_deg",
         "camera_fail_frames",
+        "ecc_frames",
     ]
     if hi - lo < 1:
         return {k: NAN for k in keys}
-    scale = _arr(rows, "scale", lo, hi)
-    tx, ty = _arr(rows, "tx", lo, hi), _arr(rows, "ty", lo, hi)
-    rot = _arr(rows, "rot_deg", lo, hi)
+    # ECC rows are the tracker's last resort (camera-table holds them too): they stay out of every zoom/pan
+    # total and speed, and the shot reports how many it set aside. Zoom keeps its frame positions (held at
+    # no change) so the peak position and ease timing still read on the shot's own clock.
+    ecc = np.array([rows[i]["method"] == "ecc" for i in range(lo, hi)])
+    scale = np.where(ecc, 1.0, _arr(rows, "scale", lo, hi))
+    tx = np.where(ecc, 0.0, _arr(rows, "tx", lo, hi))
+    ty = np.where(ecc, 0.0, _arr(rows, "ty", lo, hi))
+    rot = np.where(ecc, 0.0, _arr(rows, "rot_deg", lo, hi))
     step = (scale - 1.0) * 100.0
     cum = (np.exp(np.cumsum(np.log(scale))) - 1.0) * 100.0
     total = float(cum[-1])
@@ -449,20 +455,24 @@ def _camera_summary(rows, lo, hi):
     if abs(total) > 0.5 and speed.size > 1:
         mid = cum[int(round((speed.size - 1) / 2))]
         t50 = float(mid / total)
+    tracked = ~ecc
+    n_ecc = int(ecc.sum())
     pan = np.hypot(tx, ty)
+    zoom_speed, pan_speed = speed[tracked], pan[tracked]
     fails = sum(1 for i in range(lo, hi) if rows[i]["method"] == "none")
     return {
         "total_zoom_pct": total,
-        "zoom_speed_mean": float(speed.mean()),
-        "zoom_speed_peak": float(speed.max()),
+        "zoom_speed_mean": float(zoom_speed.mean()) if zoom_speed.size else NAN,
+        "zoom_speed_peak": float(zoom_speed.max()) if zoom_speed.size else NAN,
         "zoom_peak_pos": peak_pos,
         "zoom_ease_t50": t50,
         "punch_ins": int((step > PUNCH_STEP * 100).sum()),
         "pan_total_px": float(pan.sum()),
-        "pan_speed_mean": float(pan.mean()),
-        "pan_speed_peak": float(pan.max()),
+        "pan_speed_mean": float(pan_speed.mean()) if pan_speed.size else NAN,
+        "pan_speed_peak": float(pan_speed.max()) if pan_speed.size else NAN,
         "rot_total_deg": float(rot.sum()),
         "camera_fail_frames": fails,
+        "ecc_frames": n_ecc,
     }
 
 
