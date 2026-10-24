@@ -41,6 +41,17 @@ describe("throwIn", () => {
     const p = (throwIn(4, FPS, { from, to, frames: 4 }).x - from.x) / (to.x - from.x);
     expect(p).toBeGreaterThan(0.9);
   });
+  it("takes its `frames` to arrive at any damping, even a wobbly one", () => {
+    // The 95 % point is the FIRST time the spring gets there; a low damping rings back below it
+    // afterwards, and the throw must not be timed on one of those later crossings.
+    for (const damping of [0.1, 0.2, 0.3, 0.45, 0.7, 1.2]) {
+      for (const frames of [3, 6, 20]) {
+        const prog = (f: number) => (throwIn(f, 30, { from, to, frames, damping }).x - from.x) / (to.x - from.x);
+        expect(prog(frames)).toBeCloseTo(0.95, 2);
+        expect(prog(frames - 1)).toBeLessThan(0.95);
+      }
+    }
+  });
   it("overshoots its landing rotation (settle wobble)", () => {
     const rots = Array.from({ length: 24 }, (_, f) => throwIn(f, FPS, { from, to, frames: 4 }).rotate);
     expect(Math.max(...rots)).toBeGreaterThan(to.rotate + 0.5);

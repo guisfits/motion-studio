@@ -20,16 +20,22 @@ export function bounce(frame: number, fps: number, { hz = 2.2, damping = 0.35 }:
   return 1 - Math.exp(-damping * w * t) * (Math.cos(wd * t) + ((damping * w) / wd) * Math.sin(wd * t));
 }
 
-// Natural frequency at which `bounce` first reaches `target` after `seconds` (bisection: monotone in hz).
+// Natural frequency at which `bounce` FIRST reaches `target` (< 1) after `seconds`. The response
+// depends on hz * t only, so this finds the first crossing u of the 1 Hz response and returns
+// u / seconds. Before its first peak the response rises monotonically, so bisect on [0, peak]:
+// an underdamped spring peaks (above 1) at t = 1 / (2 sqrt(1 - damping^2)) for 1 Hz; bisecting on
+// hz directly could land on a later crossing, when a low damping rings back below the target.
 function hzReaching(target: number, seconds: number, damping: number): number {
-  let lo = 0.05;
-  let hi = 40;
-  for (let i = 0; i < 40; i++) {
+  const at = (u: number) => bounce(u, 1, { hz: 1, damping });
+  let lo = 0;
+  let hi = damping < 1 ? 1 / (2 * Math.sqrt(1 - damping * damping)) : 1;
+  while (at(hi) < target) hi *= 2; // overdamped/critical: monotone, widen until bracketed
+  for (let i = 0; i < 50; i++) {
     const mid = (lo + hi) / 2;
-    if (bounce(seconds, 1, { hz: mid, damping }) >= target) hi = mid;
+    if (at(mid) >= target) hi = mid;
     else lo = mid;
   }
-  return hi;
+  return hi / Math.max(seconds, 1e-6);
 }
 
 export type ThrowIn = {
