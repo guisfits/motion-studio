@@ -11,7 +11,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "allowJs": true,
+    "checkJs": false
   },
   "include": ["src", "studio", "remotion.config.ts", "vitest.config.ts"]
 }
