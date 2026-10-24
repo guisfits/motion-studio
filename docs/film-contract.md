@@ -68,13 +68,26 @@ rendered ink to within 6 px.
 | `sheet` | S1–S11 sync sheet, S10 one picture of a person per scene (with `crew/scenes.json`), F1 length |
 | `animatic` | sheet + trace: T0–T9, T12, H1, P1, R1–R3 |
 | `draft` | sheet + trace with R1, R2, R4; T10 caption cap height; T11 contrast and the mp4 checks when `out/silent.mp4` exists |
-| `final` | draft + X1–X4 against the signed sheet; a missing render is red F2 |
+| `final` | draft + X1–X4 against the signed sheet + the sound gates below; a missing render or mixed cut is red F2 |
 
 The trace gates T0–T8 and T12 are `src/film/trace-gates.ts` (ported from the old `trace.mjs`); every other gate is `tools/checks/` and is never copied.
 
 **Contrast (T11) needs pixels.** Decision: it reads the rendered `out/silent.mp4` (any `--scale`: boxes are in format px and are cropped by ratio) with `sampleBox`, at `draft` and `final`. With no render at `draft` the gate still runs, reports a yellow T11 and F2 note, and passes; at `final` a missing render is red. A stale render is caught by its length (`checkMp4` against `durationInFrames / fps`), not by its look: render again after every change to `Film.tsx`.
 
-Not ported yet: SFX cue and loudness gates of the old `final` (`core/audio`). Render with sound and run `node tools/checks/run-mp4.mjs <mp4> --audio` for loudness.
+**Sound (`final` only, M0–M6).** The gate reads the sound role's files: `crew/sfx-cues.json` (`{t,type,gain,len}`, `t` = when heard), `out/sfx.wav` with its sidecar `out/sfx.wav.cues.json` (written by `tools/audio/sfx.mjs`), `voice/words.json` (the film's `words`), and the mixed cut `out/final-<format>.mp4` (else `out/final.mp4`; override with `runFilmGate({ mixed })`). Same codes and severities as the old engine:
+
+| Code | Severity | Means |
+|---|---|---|
+| `F2` | red | the mixed cut is missing |
+| `M0` | red | ffmpeg could not read the mixed cut |
+| `M1` | red | nothing moves for ≥ `NORMS.frames.deadWindowS` in the mixed cut |
+| `M2` | red | integrated loudness outside `NORMS.audio.lufs` ± `lufsTol` (an unreadable value is red too) |
+| `M3` | orange | loudness range above `NORMS.audio.maxLra` |
+| `M4` | red | more cues in a `sfxWindowS` window than `maxSfxPer4s` |
+| `M5` | orange | a cue's span (lead-in `cuePre`, `len`, margin) overlaps a spoken word: a judgment for the reviewer |
+| `M6` | red | `out/sfx.wav` without `crew/sfx-cues.json`, without its sidecar, or with a sidecar hashed from another cue file |
+
+A film may have no SFX: no cue file and no stem is no finding. M4/M5 read the cues the stem was rendered from (the sidecar, after thinning) and fall back to the cue file. The pure part is `checkFilm({ stage: "final", sound })` (`SoundInput`); `runFilmGate` reads the files and measures the mix. Without a mixed cut the gate adds a yellow M2 note beside the red F2. `node tools/checks/run-mp4.mjs <mp4> --audio` still checks the file alone.
 
 ## Commands
 

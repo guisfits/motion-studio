@@ -1,4 +1,6 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -12,7 +14,7 @@ import {
   type TraceAt,
   type TraceItem,
 } from "../film";
-import { checkFilm, stageFromEnv, writeChecks, type CheckFilmInput } from "../film/gate";
+import { checkFilm, runFilmGate, stageFromEnv, writeChecks, type CheckFilmInput, type SfxCue, type SoundInput } from "../film/gate";
 import { traceAt as exampleTraceAt } from "../../studio/films/example/trace";
 import film from "../../studio/films/example/film.json";
 
@@ -163,6 +165,155 @@ describe("checkFilm", () => {
     it("a malformed item cannot slip past the gates (T0)", () => {
       const fs = run(mutate((items) => items.map((i) => (i.id === "moses" ? { ...i, box: [0, 0, NaN, 10] } : i))));
       expect(codes(fs, "red")).toEqual(["T0"]);
+    });
+  });
+});
+
+// The final stage's sound gates (M2–M6), ported from the old run.mjs. The example speaks "law" over
+// 0.5–0.95 s and "came" over 1.4–1.7 s; 1.1 s is a gap, 0.7 s is inside a word.
+describe("final sound gates", () => {
+  const sha = (cues: SfxCue[]) => createHash("sha256").update(JSON.stringify(cues)).digest("hex");
+  const inGap: SfxCue = { t: 1.1, type: "click", gain: 1, len: 0.1 };
+  const onWord: SfxCue = { t: 0.7, type: "click", gain: 1, len: 0.1 };
+  const IN_RANGE = { I: -14, LRA: 1 };
+  // A stem rendered from `cues` (sidecar hashed from them) and a mix inside the norms.
+  const sound = (cues: SfxCue[] | null, over: Partial<SoundInput> = {}): SoundInput => ({
+    cues,
+    cueSha256: cues && sha(cues),
+    hasStem: !!cues,
+    sidecar: cues && { sha256: sha(cues), cues },
+    loudness: IN_RANGE,
+    ...over,
+  });
+  const final = (s?: SoundInput) => run(exampleTraceAt, { stage: "final", sound: s });
+  // The sound gates only: the example has no signed fact-check, which is X1 at final.
+  const soundCodes = (fs: ReturnType<typeof final>, severity: string) => codes(fs, severity).filter((c) => /^M/.test(c));
+
+  it("is clean for a cue in a gap with a traceable stem and a mix at -14 LUFS", () => {
+    const fs = final(sound([inGap]));
+    expect(soundCodes(fs, "red")).toEqual([]);
+    expect(soundCodes(fs, "orange")).toEqual([]);
+    expect(soundCodes(fs, "yellow")).toEqual([]);
+  });
+
+  it("is clean for a film with no SFX at all", () => {
+    expect(soundCodes(final(sound(null)), "red")).toEqual([]);
+  });
+
+  it("does not run before `final`", () => {
+    const fs = run(exampleTraceAt, { stage: "draft", sound: sound([onWord], { loudness: { I: -30, LRA: 9 } }) });
+    expect(fs.filter((f) => /^M/.test(f.code))).toEqual([]);
+  });
+
+  it("M5 orange: a cue sounding over a spoken word", () => {
+    const fs = final(sound([onWord]));
+    expect(soundCodes(fs, "orange")).toEqual(["M5"]);
+    expect(soundCodes(fs, "red")).toEqual([]);
+    expect(fs).toContainEqual(expect.objectContaining({ code: "M5", t: 0.7, msg: expect.stringContaining('"law"') }));
+  });
+
+  it("M5 reads the lead-in of the recording (preOf) and judges the sidecar's thinned list", () => {
+    const early: SfxCue = { t: 1.3, type: "whoosh", len: 0 };
+    expect(soundCodes(final(sound([early])), "orange")).toEqual([]);
+    expect(soundCodes(final(sound([early], { preOf: () => 0.4 })), "orange")).toEqual(["M5"]);
+    // thinning dropped the cue on the word from the stem: the sidecar is what was mixed
+    const kept = [inGap];
+    const crew = [onWord, inGap];
+    expect(soundCodes(final(sound(crew, { sidecar: { sha256: sha(crew), cues: kept } })), "orange")).toEqual([]);
+  });
+
+  it("M4 red: more cues in a 4 s window than the cap", () => {
+    const cues: SfxCue[] = [1.0, 1.1, 1.2].map((t) => ({ t, type: "click", len: 0 }));
+    expect(soundCodes(final(sound(cues)), "red")).toContain("M4");
+  });
+
+  it("M6 red: a stem without its cue list, without a sidecar, or from another list", () => {
+    expect(soundCodes(final(sound(null, { hasStem: true })), "red")).toEqual(["M6"]);
+    expect(soundCodes(final(sound([inGap], { sidecar: null })), "red")).toEqual(["M6"]);
+    expect(soundCodes(final(sound([inGap], { sidecar: { sha256: "stale", cues: [inGap] } })), "red")).toEqual(["M6"]);
+  });
+
+  it("M2 red / M3 orange: loudness outside the norms, judged separately", () => {
+    expect(soundCodes(final(sound([inGap], { loudness: { I: -20, LRA: 1 } })), "red")).toEqual(["M2"]);
+    expect(soundCodes(final(sound([inGap], { loudness: { I: -12.5, LRA: 1 } })), "red")).toEqual(["M2"]);
+    expect(soundCodes(final(sound([inGap], { loudness: { I: -14, LRA: 4 } })), "orange")).toEqual(["M3"]);
+    expect(soundCodes(final(sound([inGap], { loudness: { I: -14, LRA: 4 } })), "red")).toEqual([]);
+    // a reading that could not be parsed is a finding, never a pass
+    expect(soundCodes(final(sound([inGap], { loudness: { I: NaN, LRA: NaN } })), "red")).toEqual(["M2"]);
+  });
+
+  it("says so (yellow) when there is no mixed file or no sound input to read", () => {
+    expect(final(sound([inGap], { loudness: undefined }))).toContainEqual(expect.objectContaining({ severity: "yellow", code: "M2" }));
+    expect(final(undefined)).toContainEqual(expect.objectContaining({ severity: "yellow", code: "M2" }));
+  });
+
+  describe("runFilmGate reads the files", () => {
+    const tone = (path: string, volume: number) => {
+      const r = spawnSync(
+        "ffmpeg",
+        ["-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc=d=6:s=64x64:r=30", "-f", "lavfi", "-i", `sine=f=440:d=6,volume=${volume}`, "-shortest", "-pix_fmt", "yuv420p", "-c:a", "aac", path],
+        { encoding: "utf8" },
+      );
+      if (r.status !== 0) throw new Error(r.stderr);
+    };
+    // A copy of the example film folder holding only film.json, so each case adds its own files.
+    const withFilm = (fn: (dir: string) => void) => {
+      const dir = mkdtempSync(join(tmpdir(), "film-final-"));
+      try {
+        writeFileSync(join(dir, "film.json"), JSON.stringify(film));
+        mkdirSync(join(dir, "crew"));
+        mkdirSync(join(dir, "out"));
+        fn(dir);
+      } finally {
+        rmSync(dir, { recursive: true });
+      }
+    };
+    const gate = (dir: string) => runFilmGate({ dir, traceAt: exampleTraceAt, stage: "final", write: false });
+    const sound_ = (r: ReturnType<typeof gate>, severity: string) => r.findings.filter((f) => f.severity === severity && (/^M/.test(f.code) || (f.code === "F2" && f.msg.includes("final")))).map((f) => f.code);
+
+    it("a missing mixed cut is red F2, named after the format", () => {
+      withFilm((dir) => {
+        const r = gate(dir);
+        expect(r.findings).toContainEqual(expect.objectContaining({ severity: "red", code: "F2", msg: "missing out/final-9x16.mp4" }));
+      });
+    });
+
+    it("measures the mixed cut: -14 LUFS passes, a quiet one is M2", () => {
+      withFilm((dir) => {
+        tone(join(dir, "out", "final-9x16.mp4"), 2.45);
+        expect(sound_(gate(dir), "red")).toEqual([]);
+        tone(join(dir, "out", "final-9x16.mp4"), 0.5);
+        expect(sound_(gate(dir), "red")).toEqual(["M2"]);
+      });
+    });
+
+    it("accepts out/final.mp4 when there is no format-named file", () => {
+      withFilm((dir) => {
+        tone(join(dir, "out", "final.mp4"), 2.45);
+        expect(sound_(gate(dir), "red")).toEqual([]);
+      });
+    });
+
+    it("reads crew/sfx-cues.json, out/sfx.wav and its sidecar: stale hash is M6, a cue on a word is M5", () => {
+      withFilm((dir) => {
+        tone(join(dir, "out", "final-9x16.mp4"), 2.45);
+        const cues = [onWord];
+        const bytes = JSON.stringify(cues);
+        writeFileSync(join(dir, "crew", "sfx-cues.json"), bytes);
+        writeFileSync(join(dir, "out", "sfx.wav"), "");
+        const sha256 = createHash("sha256").update(bytes).digest("hex");
+        writeFileSync(join(dir, "out", "sfx.wav.cues.json"), JSON.stringify({ sha256, cues }));
+        let r = gate(dir);
+        expect(sound_(r, "orange")).toEqual(["M5"]);
+        expect(sound_(r, "red")).toEqual([]);
+        writeFileSync(join(dir, "out", "sfx.wav.cues.json"), JSON.stringify({ sha256: "stale", cues }));
+        expect(sound_(gate(dir), "red")).toEqual(["M6"]);
+        writeFileSync(join(dir, "out", "sfx.wav.cues.json"), "not json");
+        expect(sound_(gate(dir), "red")).toEqual(["M6"]);
+        rmSync(join(dir, "crew", "sfx-cues.json"));
+        r = gate(dir);
+        expect(sound_(r, "red")).toEqual(["M6"]);
+      });
     });
   });
 });

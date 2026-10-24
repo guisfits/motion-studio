@@ -10,6 +10,8 @@ import { checkPicture } from "../../tools/checks/picture.mjs";
 import { checkRhythm } from "../../tools/checks/rhythm.mjs";
 import { checkCapHeight, checkContrast } from "../../tools/checks/legibility.mjs";
 import { checkFacts } from "../../tools/checks/facts.mjs";
+import { checkCues, checkSfxFiles } from "../../tools/checks/cues.mjs";
+import { judgeLoudness } from "../../tools/checks/media.mjs";
 import { checkTrace } from "./trace-gates";
 import type { Box, Finding, Manifest, Sheet, Stage, Trace, WordsInput } from "./types";
 
@@ -17,6 +19,31 @@ import type { Box, Finding, Manifest, Sheet, Stage, Trace, WordsInput } from "./
 export type PixelSampler = (t: number, box: Box) => Uint8Array;
 
 export type Scene = { n: number; rows: string[]; continues?: number };
+
+// tools/checks is plain JS with defaulted options; these are the shapes checkSound uses.
+const sfxFiles = checkSfxFiles as (a: { hasStem: boolean; hasCues: boolean; sidecar: unknown; cueSha256: string | null }) => Finding[];
+const cueGate = checkCues as (cues: SfxCue[], words: unknown, o: { preOf?: (type: string) => number }) => Finding[];
+
+/** One line of crew/sfx-cues.json (tools/audio/sfx.mjs): `t` is when the sound is heard. */
+export type SfxCue = { t: number; type: string; gain?: number; len?: number };
+
+/**
+ * What the `final` stage reads of the mix. Files are read by node.ts; this is their content.
+ *   cues      crew/sfx-cues.json parsed, or null when the film has none
+ *   cueSha256 sha256 of that file's bytes (null without it)
+ *   hasStem   out/sfx.wav exists
+ *   sidecar   out/sfx.wav.cues.json parsed, or null when missing or unreadable
+ *   loudness  integrated loudness (LUFS) and range (LU) of the mixed file; undefined when there is none
+ *   preOf     seconds a cue of that type is heard before its `t` (tools/audio/sfx.mjs cuePre)
+ */
+export type SoundInput = {
+  cues: SfxCue[] | null;
+  cueSha256: string | null;
+  hasStem: boolean;
+  sidecar: { sha256?: string; cues?: SfxCue[] } | null;
+  loudness?: { I: number; LRA: number };
+  preOf?: (type: string) => number;
+};
 
 export type CheckFilmInput = {
   stage: Stage;
@@ -34,6 +61,8 @@ export type CheckFilmInput = {
   length?: { minS: number; maxS: number };
   /** Rendered pixels for T11 (contrast). Without it, T11 is not run and the report says so. */
   sampler?: PixelSampler;
+  /** The sound role's files and the mix reading, for the `final` stage (M2–M6). Ignored before it. */
+  sound?: SoundInput;
 };
 
 /** The gate shape `{w, start, end}` of word timings given as `{w, s, e}` or `{w, start, end}`. */
@@ -49,7 +78,8 @@ export function gateWords(input: WordsInput): { words: { w: string; start: numbe
  *   sheet    the paper: sync sheet (S*), one-person-per-scene (S10), length (F1)
  *   animatic sheet + trace (T*, H1, P1, R1–R3)
  *   draft    sheet + trace (R1, R2, R4) + caption type (T10) and, with `sampler`, contrast (T11)
- *   final    draft + the fact-check against the signed sheet
+ *   final    draft + the fact-check against the signed sheet + the sound: SFX cues against the
+ *            narration (M4, M5), the stem traced to its cue list (M6), loudness of the mix (M2, M3)
  * The fact-check gates the script and the final cut, never the stages between (client, 2026-10-16).
  */
 export function checkFilm(input: CheckFilmInput): Finding[] {
@@ -93,5 +123,21 @@ export function checkFilm(input: CheckFilmInput): Finding[] {
     if (input.sampler) out.push(...checkContrast(trace, input.sampler));
     else out.push(finding("yellow", "T11", null, "contrast not checked: no rendered out/silent.mp4 to read the pixels behind each caption"));
   }
+  if (stage === "final") out.push(...checkSound(input.sound, words));
+  return out;
+}
+
+/**
+ * The sound gates of the final stage, ported from the old run.mjs. A film may have no SFX: no cue
+ * file and no stem is no finding; a stem alone is M6. M4/M5 read the cues the stem was rendered
+ * from (the sidecar, after thinning) and fall back to the cue file when there is no usable sidecar.
+ */
+function checkSound(sound: SoundInput | undefined, words: ReturnType<typeof gateWords>): Finding[] {
+  if (!sound) return [finding("yellow", "M2", null, "sound not checked: no `sound` input (cues, stem, mixed file) was given")];
+  const { cues, cueSha256, hasStem, sidecar, loudness, preOf } = sound;
+  const out: Finding[] = sfxFiles({ hasStem, hasCues: cues !== null, sidecar, cueSha256 });
+  if (cues !== null) out.push(...cueGate(Array.isArray(sidecar?.cues) ? sidecar.cues : cues, words, { preOf }));
+  if (loudness) out.push(...judgeLoudness(loudness));
+  else out.push(finding("yellow", "M2", null, "loudness not checked: no mixed file to measure"));
   return out;
 }

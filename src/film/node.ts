@@ -1,12 +1,14 @@
 // Node side of the film contract: reads a film folder, runs the stage's gates and writes the
 // report. Kept out of src/index.ts because it reads files and runs ffmpeg; a film imports it from
 // "motion-studio/film/gate" (or by relative path) in its film.test.ts only.
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { summarize, toMarkdown, finding } from "../../tools/checks/report.mjs";
-import { sampleBox } from "../../tools/checks/media.mjs";
+import { deadFrames as deadFramesJs, loudness as loudnessJs, sampleBox } from "../../tools/checks/media.mjs";
+import { cuePre as cuePreJs } from "../../tools/audio/sfx.mjs";
 import { checkMp4 as checkMp4Js } from "../../tools/checks/mp4.mjs";
-import { checkFilm, type PixelSampler, type Scene } from "./check";
+import { checkFilm, type PixelSampler, type Scene, type SfxCue, type SoundInput } from "./check";
 import { layoutOf, type FilmFormat } from "./format";
 import { sampleTrace } from "./sample";
 import { STAGES, type Finding, type Manifest, type Sheet, type Stage, type TraceAt, type WordsInput } from "./types";
@@ -30,6 +32,10 @@ export type LoadedFilm = Omit<FilmJson, "words" | "manifest"> & { words: WordsIn
 
 // tools/checks is plain JS with defaulted options; this is the shape the runner uses.
 const checkMp4 = checkMp4Js as (mp4: string, o: { min?: number; max?: number; audio?: boolean }) => { findings: Finding[] };
+
+const deadFrames = deadFramesJs as (mp4: string) => Finding[];
+const loudness = loudnessJs as (mp4: string) => { I: number; LRA: number; findings: Finding[] };
+const cuePre = cuePreJs as (type: string) => number;
 
 const readJson = (p: string) => JSON.parse(readFileSync(p, "utf8"));
 const maybe = (p: string) => (existsSync(p) ? readFileSync(p, "utf8") : null);
@@ -70,6 +76,8 @@ export type RunFilmGateOptions = {
   write?: boolean;
   /** The render the cut gates read. Default `<dir>/out/silent.mp4`. */
   video?: string;
+  /** The mixed cut the `final` sound gates read. Default `<dir>/out/final-<format>.mp4`, else `<dir>/out/final.mp4`. */
+  mixed?: string;
 };
 
 /**
@@ -77,8 +85,11 @@ export type RunFilmGateOptions = {
  * (draft, final) reads the render in `out/silent.mp4` for contrast (T11) and the mp4 checks (V*).
  * At `final` a missing render is red F2; at `draft` the render-based checks are skipped and the
  * report says so, so the gate can run before the first render.
+ * At `final` it also reads the sound role's files (crew/sfx-cues.json, out/sfx.wav and its
+ * sidecar) and the mixed cut (`mixed`): M1 dead frames, M2/M3 loudness, M4–M6 cues; a missing
+ * mixed cut is red F2.
  */
-export function runFilmGate({ dir, traceAt, stage = stageFromEnv(), write = !!process.env.FILM_STAGE, video }: RunFilmGateOptions): GateResult {
+export function runFilmGate({ dir, traceAt, stage = stageFromEnv(), write = !!process.env.FILM_STAGE, video, mixed }: RunFilmGateOptions): GateResult {
   const film = loadFilm(dir);
   const findings: Finding[] = [];
   const cut = stage === "draft" || stage === "final";
@@ -90,6 +101,7 @@ export function runFilmGate({ dir, traceAt, stage = stageFromEnv(), write = !!pr
     sampler = sampleBox(mp4, W, H);
   }
   const scenes = maybe(join(dir, "crew", "scenes.json"));
+  const mix = stage === "final" ? readSound(dir, film.format, mixed) : undefined;
   findings.push(
     ...checkFilm({
       stage,
@@ -102,8 +114,10 @@ export function runFilmGate({ dir, traceAt, stage = stageFromEnv(), write = !!pr
       factCheck: JSON.parse(maybe(join(dir, "crew", "fact-check.json")) ?? "null"),
       length: film.length,
       sampler,
+      sound: mix?.sound,
     }),
   );
+  if (mix) findings.push(...mix.findings);
   if (cut) {
     if (haveMp4) {
       // The render must be the film's length (a stale file from an older cut is caught here).
@@ -119,4 +133,41 @@ export function runFilmGate({ dir, traceAt, stage = stageFromEnv(), write = !!pr
   const summary = summarize(findings);
   const markdown = write ? writeChecks(dir, stage, findings) : `${toMarkdown(findings)}\n`;
   return { stage, findings, summary, markdown };
+}
+
+/**
+ * The sound role's files for the `final` gates, plus the findings that come from reading the mixed
+ * cut itself (F2 when missing; M0/M1 from ffmpeg). Without crew/sfx-cues.json `cues` is null: a film
+ * may have no SFX. A sidecar that is not JSON counts as missing, which the gate reports as M6.
+ */
+function readSound(dir: string, format: FilmFormat, mixed?: string): { sound: SoundInput; findings: Finding[] } {
+  const cuesPath = join(dir, "crew", "sfx-cues.json");
+  const cuesBytes = existsSync(cuesPath) ? readFileSync(cuesPath) : null;
+  let sidecar: SoundInput["sidecar"] = null;
+  const sidecarRaw = maybe(join(dir, "out", "sfx.wav.cues.json"));
+  try {
+    sidecar = sidecarRaw ? JSON.parse(sidecarRaw) : null;
+  } catch {
+    sidecar = null;
+  }
+  const sound: SoundInput = {
+    cues: cuesBytes ? (JSON.parse(cuesBytes.toString("utf8")) as SfxCue[]) : null,
+    cueSha256: cuesBytes ? createHash("sha256").update(cuesBytes).digest("hex") : null,
+    hasStem: existsSync(join(dir, "out", "sfx.wav")),
+    sidecar,
+    preOf: cuePre,
+  };
+  const findings: Finding[] = [];
+  const mp4 = mixed ?? [join(dir, "out", `final-${format}.mp4`), join(dir, "out", "final.mp4")].find(existsSync) ?? join(dir, "out", `final-${format}.mp4`);
+  if (!existsSync(mp4)) {
+    findings.push(finding("red", "F2", null, `missing ${relative(dir, mp4)}`));
+  } else {
+    const l = loudness(mp4);
+    if (l.findings.some((x) => x.code === "M0")) findings.push(...l.findings);
+    else {
+      sound.loudness = { I: l.I, LRA: l.LRA };
+      findings.push(...deadFrames(mp4));
+    }
+  }
+  return { sound, findings };
 }
