@@ -24,6 +24,15 @@ describe("docZoomKeys", () => {
     expect(end.zoom * 0.5 * 800).toBeCloseTo(0.8 * 1920);
   });
 
+  it("frames the quote for the frame it is given, a portrait Reel included", () => {
+    const frame: [number, number] = [1080, 1920];
+    const keys = docZoomKeys(g, { ...t, frame });
+    const wide = cameraAt(keys, 0);
+    expect(800 * wide.zoom).toBeLessThanOrEqual(1080 * 0.7 + 1e-6);
+    expect(1200 * wide.zoom).toBeLessThanOrEqual(1920 * 0.8 + 1e-6);
+    expect(cameraAt(keys, 120).zoom * 0.5 * 800).toBeCloseTo(0.8 * 1080);
+  });
+
   it("zooms monotonically during the push", () => {
     let last = 0;
     for (let f = 30; f <= 90; f += 5) {

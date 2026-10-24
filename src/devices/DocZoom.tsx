@@ -1,5 +1,5 @@
 import type React from "react";
-import { Img } from "remotion";
+import { Img, useVideoConfig } from "remotion";
 import { Camera, type CamKey } from "../camera";
 import { Highlight, type HighlightProps } from "../type";
 import { docZoomKeys, pageBox, type DocZoomGeometry, type DocZoomTiming } from "./doc-zoom";
@@ -64,10 +64,16 @@ export type DocZoomProps = DocZoomPageProps &
 
 /**
  * A scan laid on the table, the camera pushing in to one quote while a highlighter sweeps the key
- * line. Geometry and timing go through `docZoomKeys`, which a trace can call with the same props.
+ * line. Geometry and timing go through `docZoomKeys`, which a trace calls with the same props and
+ * the same `frame` (the composition's size, `layoutOf(format)` W and H, unless you pass one).
  */
-export const DocZoom: React.FC<DocZoomProps> = ({ keys, drift = 0, blur, pushFrom, pushTo, ease, frame, ...page }) => (
-  <Camera keys={keys ?? docZoomKeys(page, { pushFrom, pushTo, ease, frame })} drift={drift} blur={blur}>
-    <DocZoomPage {...page} />
-  </Camera>
-);
+export const DocZoom: React.FC<DocZoomProps> = ({ keys, drift = 0, blur, pushFrom, pushTo, ease, frame, ...page }) => {
+  const { width, height } = useVideoConfig();
+  // The camera's window is the composition: a portrait Reel must not frame the quote for 1920x1080.
+  const view: [number, number] = frame ?? [width, height];
+  return (
+    <Camera keys={keys ?? docZoomKeys(page, { pushFrom, pushTo, ease, frame: view })} drift={drift} blur={blur}>
+      <DocZoomPage {...page} />
+    </Camera>
+  );
+};

@@ -25,7 +25,10 @@ export type DocZoomTiming = {
   /** Frame the push arrives on the quote. */
   pushTo: number;
   ease?: CamEase;
-  /** Frame size in px, the camera's window (default 1920x1080). */
+  /**
+   * Frame size in px, the camera's window. `DocZoom` takes the composition's size when it is left
+   * out; this pure function defaults to 1920x1080, so a trace passes `layoutOf(format)`'s W and H.
+   */
   frame?: [number, number];
 };
 

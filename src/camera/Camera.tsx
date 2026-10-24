@@ -35,7 +35,7 @@ const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = DEFAULT_DRIF
 
 /**
  * Children live in world coordinates (px on the table); the frame shows 1920x1080 of it at zoom 1,
- * centred on the camera's (x, y). Never stepped, never shaken.
+ * centred on the camera's (x, y). Smooth unless `stepFps` is given; never shaken.
  */
 export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = DEFAULT_DRIFT, stepFps, children }) => {
   const frame = useCurrentFrame();
