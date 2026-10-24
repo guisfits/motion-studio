@@ -60,3 +60,7 @@ The beat test runs when `.venv/bin/python` (or `$MOTION_PYTHON`) has librosa.
 ## Licence
 
 MIT for the code (`LICENSE`). Fonts and sounds keep their own licences: see `CREDITS.md`.
+
+Remotion itself is not MIT: it is free for individuals and for companies of up to three people,
+and larger teams need a company licence (<https://www.remotion.dev/license>). Using motion-studio
+means using Remotion, so check which tier applies to you.
