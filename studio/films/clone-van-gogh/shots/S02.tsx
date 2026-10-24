@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame } from "remotion";
+import { AbsoluteFill, useCurrentFrame, Img } from "remotion";
 import { FONT, H, W, backOut, easeOut, keys, useFonts } from "../lib/s01-03-kit";
 import holes from "../assets/s01-03/holes.json";
 import wallUrl from "../assets/gen/s02-wall.png";
@@ -37,9 +37,11 @@ export const GiltFrame: React.FC<{ kind: keyof typeof KINDS; painting: string; c
   return (
     <div style={{ position: "absolute", left: cx - w / 2, top: cy - h / 2, width: w, height: h, transform: `rotate(${rot}deg) scale(${scale})`, opacity, filter: shadow ? "drop-shadow(0 14px 18px rgba(0,0,0,.55))" : undefined }}>
       <div style={{ position: "absolute", inset: 0, WebkitMaskImage: `url(${k.mask})`, WebkitMaskSize: "100% 100%", maskImage: `url(${k.mask})`, maskSize: "100% 100%" }}>
-        <img src={painting} style={{ position: "absolute", left: `${x0 * 100}%`, top: `${y0 * 100}%`, width: `${(x1 - x0) * 100}%`, height: `${(y1 - y0) * 100}%`, objectFit: "cover" }} />
+        <Img src={painting} style={{ position: "absolute", left: `${x0 * 100}%`, top: `${y0 * 100}%`, width: `${(x1 - x0) * 100}%`, height: `${(y1 - y0) * 100}%`, objectFit: "cover" }} />
       </div>
-      <img src={k.frame} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+      <Img src={k.frame} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+      {/* A CSS mask-image url is not awaited by the renderer: loading it through Img holds the frame until it is in cache. */}
+      <Img src={k.mask} style={{ position: "absolute", width: 1, height: 1, opacity: 0 }} />
     </div>
   );
 };
@@ -50,8 +52,8 @@ type Item = {
 };
 
 const ITEMS: Item[] = [
-  { kind: "oval", painting: selfUrl, w: 0.43, rest: [0.5, 0.46], restRot: 0, from: [0.62, 0.48], fromRot: -8, fromScale: 1.15, start: 0, end: 4, sway: 0 },
-  { kind: "rect", painting: cafeUrl, w: 0.35, rest: [0.76, 0.15], restRot: 2, from: [1.0, -0.02], fromRot: 25, start: 0, end: 5, sway: 1 },
+  { kind: "oval", painting: selfUrl, w: 0.43, rest: [0.5, 0.46], restRot: 0, from: [0.62, 0.48], fromRot: -8, fromScale: 1.15, start: -3, end: 3, sway: 0 },
+  { kind: "rect", painting: cafeUrl, w: 0.35, rest: [0.76, 0.15], restRot: 2, from: [1.0, -0.02], fromRot: 25, start: -2, end: 4, sway: 1 },
   { kind: "heart", painting: irisUrl, w: 0.36, rest: [0.79, 0.75], restRot: 3, from: [1.12, 0.62], fromRot: -20, start: 0, end: 6, sway: 2 },
   { kind: "oval", painting: wheatUrl, w: 0.27, rest: [0.2, 0.17], restRot: -2, from: [-0.15, -0.02], fromRot: -30, start: 1, end: 6, sway: 3 },
   { kind: "round", painting: rhoneUrl, w: 0.2, rest: [0.06, 0.42], restRot: 0, from: [-0.14, 0.42], fromRot: -15, start: 1, end: 5, sway: 4 },
@@ -68,7 +70,7 @@ export const S02: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: "#2b1a10", overflow: "hidden" }}>
       <AbsoluteFill style={{ transform: `scale(${cam})`, transformOrigin: "50% 45%" }}>
-        <img src={wallUrl} style={{ position: "absolute", left: 0, top: 0, width: W, height: H, objectFit: "cover" }} />
+        <Img src={wallUrl} style={{ position: "absolute", left: 0, top: 0, width: W, height: H, objectFit: "cover" }} />
         <div style={{ position: "absolute", inset: 0, background: `linear-gradient(115deg, rgba(255,230,190,${keys(f, [[0, 0.22], [5, 0]])}) 0%, transparent 55%)` }} />
         {ITEMS.map((it, i) => {
           const t = keys(f, [[it.start, 0], [it.end, 1]]);

@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame } from "remotion";
+import { AbsoluteFill, useCurrentFrame, Img } from "remotion";
 import { FONT, H, W, easeOut, hash, keys, useFonts } from "../lib/s01-03-kit";
 import { GiltFrame } from "./S02";
 import bustUrl from "../assets/gen/s03-vg-profile-cut.png";
@@ -59,9 +59,9 @@ export const S03: React.FC = () => {
     <AbsoluteFill style={{ background: "#EDEBE6" }}>
       <AbsoluteFill style={world}>
         {/* back branches, three depths */}
-        <img src={blossomUrl} style={{ position: "absolute", left: -280, top: -380, width: 1300, transform: "rotate(160deg)", filter: "blur(5px) brightness(.85)", opacity: 0.9 }} />
-        <img src={blossomUrl} style={{ position: "absolute", left: 420, top: 60, width: 900, transform: "rotate(-25deg)" }} />
-        <img src={blossomUrl} style={{ position: "absolute", left: -250, top: 420, width: 700, transform: "rotate(95deg)", filter: "blur(2px)" }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: -280, top: -380, width: 1300, transform: "rotate(160deg)", filter: "blur(5px) brightness(.85)", opacity: 0.9 }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: 420, top: 60, width: 900, transform: "rotate(-25deg)" }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: -250, top: 420, width: 700, transform: "rotate(95deg)", filter: "blur(2px)" }} />
       </AbsoluteFill>
     </AbsoluteFill>
   );
@@ -69,14 +69,14 @@ export const S03: React.FC = () => {
   const man = (
     <AbsoluteFill style={{ ...world }}>
       <div style={{ position: "absolute", inset: 0, transform: `translateY(${manIn}px)` }}>
-        <img src={bustUrl} style={{ position: "absolute", left: 74, top: 440, width: 1110, height: 1480, clipPath: punched ? `inset(${0.5 * H - 440}px 0 0 0)` : undefined }} />
+        <Img src={bustUrl} style={{ position: "absolute", left: 74, top: 440, width: 1110, height: 1480, clipPath: punched ? `inset(${0.5 * H - 440}px 0 0 0)` : undefined }} />
         {/* blossom clusters on the coat */}
-        <img src={blossomUrl} style={{ position: "absolute", left: 120, top: 1180, width: 620, transform: `rotate(${20 + sway}deg)` }} />
-        <img src={blossomUrl} style={{ position: "absolute", left: 480, top: 1050, width: 640, transform: `rotate(${-70 + sway}deg)` }} />
-        <img src={blossomUrl} style={{ position: "absolute", left: 330, top: 1450, width: 700, transform: `rotate(${110 - sway}deg)` }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: 120, top: 1180, width: 620, transform: `rotate(${20 + sway}deg)` }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: 480, top: 1050, width: 640, transform: `rotate(${-70 + sway}deg)` }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: 330, top: 1450, width: 700, transform: `rotate(${110 - sway}deg)` }} />
         {/* front-top right + bottom-right branches */}
-        <img src={blossomUrl} style={{ position: "absolute", left: 600, top: -160, width: 760, transform: `rotate(${200 + sway}deg)` }} />
-        <img src={blossomUrl} style={{ position: "absolute", left: 640, top: 1380, width: 760, transform: `rotate(${-20 - sway}deg)` }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: 600, top: -160, width: 760, transform: `rotate(${200 + sway}deg)` }} />
+        <Img src={blossomUrl} style={{ position: "absolute", left: 640, top: 1380, width: 760, transform: `rotate(${-20 - sway}deg)` }} />
         {painting > 0 && <GiltFrame kind="rect" painting={starryUrl} cx={0.52 * W} cy={0.38 * H} w={0.45 * W} />}
       </div>
       {/* TURNED IT / INTO SOME ride the camera */}
@@ -109,7 +109,7 @@ export const S03: React.FC = () => {
         const cx = (l.x0 + l.vx * t) * W;
         const cy = (-0.12 + l.vy * t) * H;
         const w = l.size * W * 1.45;
-        return <img key={i} src={l.src} style={{ position: "absolute", left: cx - w / 2, top: cy - w / 2, width: w, height: w, transform: `rotate(${l.rot0 + l.spin * t}deg)`, filter: l.near > 0.75 ? "blur(4px)" : undefined }} />;
+        return <Img key={i} src={l.src} style={{ position: "absolute", left: cx - w / 2, top: cy - w / 2, width: w, height: w, transform: `rotate(${l.rot0 + l.spin * t}deg)`, filter: l.near > 0.75 ? "blur(4px)" : undefined }} />;
       })}
     </AbsoluteFill>
   );

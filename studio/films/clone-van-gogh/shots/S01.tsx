@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame } from "remotion";
+import { AbsoluteFill, useCurrentFrame, Img } from "remotion";
 import { FONT, H, W, Pic, backOut, hash, keys, useFonts } from "../lib/s01-03-kit";
 import skyUrl from "../assets/gen/s01-sky.png";
 import seaUrl from "../assets/gen/s01-sea.png";
@@ -43,7 +43,7 @@ export const S01: React.FC = () => {
   const camLift = punch ? keys(pf, [[0, 0], [21, 40]]) : 0;
 
   const man = punch
-    ? { cx: W * 0.5, cy: H * keys(pf, [[0, 0.565], [21, 0.575]]), h: H * 0.42, s: keys(pf, [[0, 1], [21, 1.06]]) }
+    ? { cx: W * 0.5, cy: H * keys(pf, [[0, 0.6], [21, 0.61]]), h: H * 0.6, s: keys(pf, [[0, 1], [21, 1.06]]) }
     : { cx: W * 0.5 + f * 1.2, cy: H * (0.375 + (f / 9) * 0.02), h: H * 0.28, s: 1 };
 
   const fishScale = punch ? 1 : 1;
@@ -53,10 +53,10 @@ export const S01: React.FC = () => {
     <AbsoluteFill style={{ background: "#12254A", overflow: "hidden" }}>
       <AbsoluteFill style={{ transformOrigin: `${camOx}px ${camOy}px`, transform: `translateY(${camLift}px) scale(${camS})` }}>
         <div style={{ position: "absolute", left: 0, top: wl - 1500, width: W, height: 1500, background: "#1b2c4d" }} />
-        <img src={skyUrl} style={{ position: "absolute", left: -110 - f * 4.3, top: wl + 330 - 2311, width: 1300, height: 2311, filter: "brightness(1.15)" }} />
-        <img src={skyUrl} style={{ position: "absolute", left: 560 - f * 3.2, top: wl + 160 - 2311, width: 1300, height: 2311, transform: "scaleX(-1)", filter: "brightness(1.15)" }} />
+        <Img src={skyUrl} style={{ position: "absolute", left: -110 - f * 4.3, top: wl + 330 - 2311, width: 1300, height: 2311, filter: "brightness(1.15)" }} />
+        <Img src={skyUrl} style={{ position: "absolute", left: 560 - f * 3.2, top: wl + 160 - 2311, width: 1300, height: 2311, transform: "scaleX(-1)", filter: "brightness(1.15)" }} />
         <div style={{ position: "absolute", left: 0, top: wl, width: W, height: 2400, background: "linear-gradient(#1e4ba3, #1b449a 60%, #1a3f8c)" }} />
-        <img src={seaUrl} style={{ position: "absolute", left: -60, top: wl - 15, width: 1200, height: 2133, opacity: 0.3, mixBlendMode: "soft-light" }} />
+        <Img src={seaUrl} style={{ position: "absolute", left: -60, top: wl - 15, width: 1200, height: 2133, opacity: 0.3, mixBlendMode: "soft-light" }} />
         <svg width={W} height={60} style={{ position: "absolute", left: 0, top: wl - 30 }} viewBox="0 0 1080 60">
           <path d={`M0 30 ${Array.from({ length: 13 }, (_, i) => `Q ${i * 90 + 45} ${i % 2 ? 40 : 18} ${(i + 1) * 90} 30`).join(" ")}`} fill="none" stroke="#4FA9F0" strokeWidth={14} strokeLinecap="round" />
         </svg>
