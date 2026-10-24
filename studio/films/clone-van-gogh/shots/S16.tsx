@@ -3,6 +3,7 @@ import deskUrl from "../assets/gen/s16-desk.png";
 import folderUrl from "../assets/gen/s16-folder-cut.png";
 import cafe from "../assets/pd/cafe-terrace.jpg";
 import { CircleMark } from "../../../../src/type";
+import { TableCamera, tableAt, type CamTable } from "../../../../src/camera";
 import { bounce, drift, throwIn } from "../../../../src/physics";
 import { H, ORBITRON, useShotFonts, W } from "../lib/s12-16-kit";
 
@@ -20,7 +21,8 @@ const CAM_SCALE = [
   1.234, 1.23, 1.227, 1.226, 1.227, 1.23, 1.237, 1.249, 1.273, 1.321, 1.375, 1.412, 1.438, 1.457, 1.472, 1.483, 1.49, 1.493, 1.497, 1.503, 1.507, 1.511,
   1.514, 1.516, 1.518, 1.519, 1.52, 1.52, 1.521, 1.521, 1.521, 1.521, 1.522, 1.522, 1.522, 1.522, 1.522, 1.522, 1.521, 1.521,
 ];
-const camScale = (f: number) => CAM_SCALE[Math.max(0, Math.min(CAM_SCALE.length - 1, Math.round(f)))];
+// Scale-only camera (the measured tx/ty are 2 px or less): the engine's table camera, no hand-rolled transform.
+const CAM_TABLE: CamTable = CAM_SCALE.map((s) => [s, 0, 0] as const);
 
 // Folder: world centre, the cut-out's visible body is 68 % of its image width.
 const FOLDER_W = 356; // visible body width at rest
@@ -95,8 +97,8 @@ const AeCard: React.FC<{ cx: number; cy: number; rot: number; size: number }> = 
 export const S16: React.FC = () => {
   useShotFonts();
   const f = useCurrentFrame();
-  const s = camScale(f);
-  const dz = Math.abs(s / camScale(f - 1) - 1) * 100;
+  const s = tableAt(CAM_TABLE, f).scale;
+  const dz = Math.abs(s / tableAt(CAM_TABLE, f - 1).scale - 1) * 100;
   const smear = Math.min(5, dz * 0.55); // zoom smear on the punches
   const pose = throwIn(f, FPS, {
     from: { x: FOLDER_START[0], y: FOLDER_START[1], rotate: -4, scale: 0.76 },
@@ -116,7 +118,7 @@ export const S16: React.FC = () => {
   const typing = f >= 31;
   return (
     <AbsoluteFill style={{ background: "#5a2c18", overflow: "hidden" }}>
-      <AbsoluteFill style={{ transformOrigin: "0 0", transform: `translate(${W / 2}px, ${H / 2}px) scale(${s}) translate(${-W / 2}px, ${-H / 2}px)`, filter: smear > 0.3 ? `blur(${smear.toFixed(2)}px)` : undefined }}>
+      <TableCamera table={CAM_TABLE} style={{ filter: smear > 0.3 ? `blur(${smear.toFixed(2)}px)` : undefined }}>
         <Wood />
         {[Frame, Ruler, Calculator, Pen, Tarot, Keyboard].map((Item, i) => {
           // desk objects settle and nudge a few px (the reference's moving fraction is 12 %)
@@ -138,7 +140,7 @@ export const S16: React.FC = () => {
             <CircleMark at={17 / FPS} lead={3} dur={9} color="#d82424" strokeWidth={`${(6.5 * s).toFixed(1)}px`} pad={0} seed="earn-folder" style={{ width: "100%", height: "100%", display: "block" }} />
           </div>
         )}
-      </AbsoluteFill>
+      </TableCamera>
       {typing && (
         <div style={{ position: "absolute", left: 0.05 * W, top: H * 0.49, transform: "translateY(-50%) scale(1, 1.4)", fontFamily: ORBITRON, fontWeight: 900, fontSize: 98, transformOrigin: "0 50%", color: "#f2f2f2", textShadow: "2px 0 0 #0a0a0a, -2px 0 0 #0a0a0a, 0 2px 0 #0a0a0a, 0 -2px 0 #0a0a0a, 2px 2px 0 #0a0a0a, -2px -2px 0 #0a0a0a, 2px -2px 0 #0a0a0a, -2px 2px 0 #0a0a0a, 0 5px 0 rgba(0,0,0,0.6)", whiteSpace: "nowrap" }}>
           <span style={{ color: "#27d13a" }}>{"{"}</span>
