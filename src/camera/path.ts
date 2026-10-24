@@ -38,18 +38,43 @@ function poseAt(keys: CamKey[], frame: number): CamPose {
   };
 }
 
+/** Frames where the camera hard-cuts: two keys on one frame (the old pose, then the new one). */
+export function cutFrames(keys: CamKey[]): number[] {
+  const frames = keys.map((k) => k.frame).sort((a, b) => a - b);
+  return [...new Set(frames.filter((f, i) => i > 0 && f === frames[i - 1]))];
+}
+
+// Just short of a cut: the pose a shot ends on, since `poseAt` at the cut frame itself is the next shot's.
+const CUT_EPSILON = 1e-6;
+
 /**
  * Camera state at `frame`. `velocity` is screen-space px per frame (travel, plus weighted zoom
- * and roll), taken from the pose one frame either side; 0 on a hold and at the clamped ends.
+ * and roll), measured over the half frame either side; 0 on a hold and at the clamped ends.
+ * A hard cut (two keys on one frame) is a jump, not a speed: the measurement never reaches
+ * across one, so the cut frame reports the new shot's own speed and the last frames of a shot
+ * never see the next cut coming.
  */
 export function cameraAt(keys: CamKey[], frame: number): CamState {
   keys = [...keys].sort((a, b) => a.frame - b.frame);
   const pose = poseAt(keys, frame);
-  const before = poseAt(keys, frame - 0.5);
-  const after = poseAt(keys, frame + 0.5);
-  const travel = Math.hypot(after.x - before.x, after.y - before.y) * pose.zoom;
+
+  let shotStart = -Infinity;
+  let shotEnd = Infinity;
+  for (const cut of cutFrames(keys)) {
+    if (cut <= frame) shotStart = Math.max(shotStart, cut);
+    else shotEnd = Math.min(shotEnd, cut);
+  }
+  const from = Math.max(frame - 0.5, shotStart);
+  const to = Math.min(frame + 0.5, shotEnd - CUT_EPSILON);
+  const span = to - from;
+  if (!(span > 0)) return { ...pose, velocity: 0 };
+  const before = poseAt(keys, from);
+  const after = poseAt(keys, to);
+
+  const travel = (Math.hypot(after.x - before.x, after.y - before.y) * pose.zoom) / span;
   const velocity =
-    travel + Math.abs(after.zoom - before.zoom) * ZOOM_PX + Math.abs(after.rotate - before.rotate) * ROLL_PX;
+    travel +
+    (Math.abs(after.zoom - before.zoom) * ZOOM_PX + Math.abs(after.rotate - before.rotate) * ROLL_PX) / span;
   return { ...pose, velocity };
 }
 

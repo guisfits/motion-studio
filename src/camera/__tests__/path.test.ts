@@ -78,3 +78,45 @@ describe("cameraAt key order", () => {
     expect(shuffled).toEqual(snapshot);
   });
 });
+
+describe("cameraAt velocity across a hard cut", () => {
+  // A cut is two keys on one frame: the old pose, then the new one.
+  const cut = (after: CamKey[]): CamKey[] => [
+    { frame: 0, x: 0, y: 0, zoom: 1 },
+    { frame: 30, x: 0, y: 0, zoom: 1 },
+    { frame: 30, x: 1900, y: 0, zoom: 1 },
+    ...after,
+  ];
+
+  it("is the pose of the new key at the cut frame, and the jump is not a speed", () => {
+    const keys = cut([{ frame: 60, x: 1900, y: 0, zoom: 1 }]);
+    expect(cameraAt(keys, 30)).toMatchObject({ x: 1900, velocity: 0 });
+    expect(cameraAt(keys, 29).velocity).toBe(0);
+    expect(cameraAt(keys, 31).velocity).toBe(0);
+  });
+
+  it("reads the cut frame's speed from the shot it starts, not from the jump", () => {
+    const keys = cut([{ frame: 90, x: 2500, y: 0, zoom: 1 }]);
+    const alone: CamKey[] = [
+      { frame: 30, x: 1900, y: 0, zoom: 1 },
+      { frame: 90, x: 2500, y: 0, zoom: 1 },
+    ];
+    // The shot's own opening speed is the half-frame step forward; never the 1900 px jump.
+    expect(cameraAt(keys, 30).velocity).toBeLessThan(20);
+    expect(cameraAt(keys, 30).velocity).toBeCloseTo(cameraAt(alone, 30.5).velocity, 0);
+    // Away from the cut nothing changes.
+    expect(cameraAt(keys, 45).velocity).toBe(cameraAt(alone, 45).velocity);
+  });
+
+  it("does not read the next cut's jump in the last frames of a shot", () => {
+    const keys: CamKey[] = [
+      { frame: 0, x: 0, y: 0, zoom: 1 },
+      { frame: 30, x: 600, y: 0, zoom: 1 },
+      { frame: 30, x: 5000, y: 0, zoom: 1 },
+      { frame: 60, x: 5000, y: 0, zoom: 1 },
+    ];
+    const lead = cameraAt(keys, 29.75).velocity;
+    expect(lead).toBeGreaterThan(0);
+    expect(lead).toBeLessThan(50);
+  });
+});

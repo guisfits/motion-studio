@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { CameraMotionBlur } from "@remotion/motion-blur";
-import { shutterAngleFor } from "./blur";
-import { cameraAt, DEFAULT_DRIFT, viewAt, type CamKey } from "./path";
+import { BLUR_MIN_ANGLE, BLUR_SAMPLES, shutterAt } from "./blur";
+import { DEFAULT_DRIFT, viewAt, type CamKey } from "./path";
 
 export type CameraProps = {
   keys: CamKey[];
@@ -12,8 +12,6 @@ export type CameraProps = {
   drift?: number;
   children: ReactNode;
 };
-
-const BLUR_SAMPLES = 16;
 
 // The world reads the frame itself: CameraMotionBlur re-renders its children at sub-frame
 // offsets, so a transform computed outside it would be the same in every sample (no smear).
@@ -44,9 +42,8 @@ export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = DEFA
       {children}
     </World>
   );
-  const shutterAngle = shutterAngleFor(cam(keys, frame));
-  // Below one degree the smear is invisible: skip the extra sample renders on holds and glides.
-  if (!blur || shutterAngle < 1) return <AbsoluteFill style={{ overflow: "hidden" }}>{world}</AbsoluteFill>;
+  const shutterAngle = shutterAt(keys, frame);
+  if (!blur || shutterAngle < BLUR_MIN_ANGLE) return <AbsoluteFill style={{ overflow: "hidden" }}>{world}</AbsoluteFill>;
   return (
     <AbsoluteFill style={{ overflow: "hidden" }}>
       <CameraMotionBlur shutterAngle={shutterAngle} samples={BLUR_SAMPLES}>
@@ -55,5 +52,3 @@ export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = DEFA
     </AbsoluteFill>
   );
 };
-
-const cam = (keys: CamKey[], frame: number) => cameraAt(keys, frame).velocity;

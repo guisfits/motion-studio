@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { CameraMotionBlur } from "@remotion/motion-blur";
-import { cameraAt, shutterAngleFor, type CamKey } from "../camera";
+import { cameraAt, shutterAt, type CamKey } from "../camera";
 import { blurFor, layerOffset } from "./depth";
 
 export type MultiplaneLayer = {
@@ -62,7 +62,7 @@ const Planes: React.FC<Omit<MultiplaneProps, "motionBlur">> = ({ camKeys, layers
  */
 export const Multiplane: React.FC<MultiplaneProps> = ({ motionBlur = false, ...rest }) => {
   const frame = useCurrentFrame();
-  const angle = shutterAngleFor(cameraAt(rest.camKeys, frame).velocity);
+  const angle = shutterAt(rest.camKeys, frame, BLUR_SAMPLES);
   const planes = <Planes {...rest} />;
   if (!motionBlur || angle < 1) return <AbsoluteFill style={{ overflow: "hidden" }}>{planes}</AbsoluteFill>;
   return (
