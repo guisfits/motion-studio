@@ -29,12 +29,20 @@ if (values.boxes && positionals.length > 1) {
   console.error("--boxes applies to one file only");
   process.exit(2);
 }
-const num = (v) => (v === undefined ? undefined : Number(v));
+// A numeric flag; one that is not a number stops the run (a NaN bound would let every file pass).
+const num = (v, flag) => {
+  if (v === undefined) return undefined;
+  if (v.trim() === "" || !Number.isFinite(Number(v))) {
+    console.error(`${flag} needs a number of seconds, got "${v}"`);
+    process.exit(2);
+  }
+  return Number(v);
+};
 const boxes = values.boxes ? JSON.parse(readFileSync(values.boxes, "utf8")) : [];
 
 let red = 0;
 const sections = positionals.map((mp4) => {
-  const { probe, findings } = checkMp4(mp4, { min: num(values.min), max: num(values.max), audio: values.audio, boxes });
+  const { probe, findings } = checkMp4(mp4, { min: num(values.min, "--min"), max: num(values.max, "--max"), audio: values.audio, boxes });
   const s = summarize(findings);
   red += s.red;
   if (values.stills && probe && boxes.length) {

@@ -75,8 +75,20 @@ test("an unreadable file is red, never a pass", () => {
 
 test("the runner exits 1 on a red file and writes the markdown", { timeout: 60_000 }, () => {
   const md = join(dir, "checks.md");
-  const r = spawnSync("node", ["tools/checks/run-mp4.mjs", join(dir, "black.mp4"), "--md", md], { encoding: "utf8" });
+  const black = clip("runner-black.mp4", "drawbox=c=black:t=fill:enable='between(t,2,4.2)'");
+  const r = spawnSync("node", ["tools/checks/run-mp4.mjs", black, "--md", md], { encoding: "utf8" });
   assert.equal(r.status, 1);
   assert.ok(existsSync(md));
   assert.match(r.stdout, /V2/);
+});
+
+test("the runner refuses a bound that is not a number instead of passing every file", { timeout: 60_000 }, () => {
+  const ok = clip("runner-ok.mp4");
+  for (const flag of ["--min", "--max"]) {
+    const r = spawnSync("node", ["tools/checks/run-mp4.mjs", ok, flag, "abc"], { encoding: "utf8" });
+    assert.equal(r.status, 2, `${flag} abc: ${r.stdout}`);
+    assert.match(r.stderr, new RegExp(flag));
+  }
+  assert.equal(spawnSync("node", ["tools/checks/run-mp4.mjs", ok, "--min", "2", "--max", "9"], { encoding: "utf8" }).status, 0);
+  assert.equal(spawnSync("node", ["tools/checks/run-mp4.mjs", ok, "--min", "7"], { encoding: "utf8" }).status, 1);
 });
