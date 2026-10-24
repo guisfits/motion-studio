@@ -2,8 +2,20 @@
 
 Run bare or with pytest:
 
-  /Users/guisfits/llm-models/venv_mlx/bin/python -I tools/critique/tests/test_camera_table.py
+  ${MOTION_STUDIO_PY:-python3} -I tools/critique/tests/test_camera_table.py   (npm run test:py)
 """
+
+import sys
+
+try:
+    import numpy  # noqa: F401
+except ImportError:
+    if "pytest" in sys.modules:
+        import pytest
+
+        pytest.skip("no numpy", allow_module_level=True)
+    print("skipped: no numpy")
+    sys.exit(0)
 
 import importlib.util
 import sys

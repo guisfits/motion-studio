@@ -14,7 +14,7 @@ Composition about the frame centre c, step p' = s (p - c) + c + m on top of the 
   S' = s S        T' = s T + m
 The output module exports `TABLE: [scale, tx, ty][]`, the shape src/camera/table.ts reads.
 
-Run with: /Users/guisfits/llm-models/venv_mlx/bin/python -I tools/critique/camera-table.py ...
+Run with: $MOTION_STUDIO_PY -I tools/critique/camera-table.py ...
 """
 
 import argparse

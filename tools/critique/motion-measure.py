@@ -8,7 +8,7 @@ Measure writes <dir>/frames.csv (one row per frame) and <dir>/shots.json (per-sh
 Compare reads two such dirs and writes compare.md (ref vs clone, one row per shot, ratio and
 flag) plus zoom-<id>.png / energy-<id>.png curve plots.
 
-CPU only. Run with the venv that has OpenCV: /Users/guisfits/llm-models/venv_mlx/bin/python -I
+CPU only. Run with the python that has OpenCV (`$MOTION_STUDIO_PY`, set by the project overlay): $MOTION_STUDIO_PY -I
 Units: pixels are native video pixels; zoom is % of frame scale; "frame" is one video frame.
 """
 

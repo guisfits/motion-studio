@@ -3,8 +3,21 @@
 Each test builds a clip with a known camera / object / look and asserts the measure recovers it.
 Run with the OpenCV venv (system python has no cv2; the file is pytest-compatible and also runs bare):
 
-  nice /Users/guisfits/llm-models/venv_mlx/bin/python -I tools/critique/tests/test_motion_measure.py
+  nice ${MOTION_STUDIO_PY:-python3} -I tools/critique/tests/test_motion_measure.py   (npm run test:py)
 """
+
+import sys
+
+try:
+    import cv2  # noqa: F401
+    import numpy  # noqa: F401
+except ImportError:
+    if "pytest" in sys.modules:
+        import pytest
+
+        pytest.skip("no cv2/numpy", allow_module_level=True)
+    print("skipped: no cv2/numpy")
+    sys.exit(0)
 
 import importlib.util
 import json

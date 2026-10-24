@@ -3,8 +3,21 @@
 The figure is a torso block with a two-link arm (a capsule from the shoulder to the elbow, another to
 the hand). Run bare or with pytest, with PIL + numpy:
 
-  /Users/guisfits/llm-models/venv_mlx/bin/python -I tools/kit/tests/test_cut_limbs.py
+  ${MOTION_STUDIO_PY:-python3} -I tools/kit/tests/test_cut_limbs.py   (npm run test:py)
 """
+
+import sys
+
+try:
+    import numpy  # noqa: F401
+    import PIL  # noqa: F401
+except ImportError:
+    if "pytest" in sys.modules:
+        import pytest
+
+        pytest.skip("no PIL/numpy", allow_module_level=True)
+    print("skipped: no PIL/numpy")
+    sys.exit(0)
 
 import importlib.util
 import json

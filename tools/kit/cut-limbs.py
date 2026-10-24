@@ -38,7 +38,7 @@ The module <out_dir>/<name>-parts.ts exports:
          `pivot` is the hinge inside the part's own image; `origin` is the image's top-left in the figure;
          `file` is the PNG's name, next to the module (map it to an imported URL in `images`).
 
-Run with PIL: /Users/guisfits/llm-models/venv_mlx/bin/python -I tools/kit/cut-limbs.py ...
+Run with PIL: $MOTION_STUDIO_PY -I tools/kit/cut-limbs.py ...
 """
 
 import argparse

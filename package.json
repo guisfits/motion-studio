@@ -18,6 +18,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "test:tools": "node --test tools/*/tests/*.test.mjs",
+    "test:py": "${MOTION_STUDIO_PY:-python3} -I tools/critique/tests/test_motion_measure.py && ${MOTION_STUDIO_PY:-python3} -I tools/critique/tests/test_camera_table.py && ${MOTION_STUDIO_PY:-python3} -I tools/kit/tests/test_cut_limbs.py",
     "fetch-sfx": "node tools/audio/fetch-sfx.mjs"
   },
   "peerDependencies": {
