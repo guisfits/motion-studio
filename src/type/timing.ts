@@ -21,7 +21,12 @@ const outCubic = Easing.out(Easing.cubic);
 export function useDraw(landing: Landing, dur = 12, lead = 3, onTwos = true): number {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const start = Math.round(landingS(landing) * fps) - lead;
+  return drawProgress(frame, fps, landingS(landing), dur, lead, onTwos);
+}
+
+/** Pure form of `useDraw`: the 0..1 progress at `frame` for an annotation landing at `landS` seconds. */
+export function drawProgress(frame: number, fps: number, landS: number, dur = 12, lead = 3, onTwos = true): number {
+  const start = Math.round(landS * fps) - lead;
   const f = onTwos ? Math.floor(frame / 2) * 2 : frame;
   return interpolate(f, [start, start + dur], [0, 1], {
     extrapolateLeft: "clamp",
