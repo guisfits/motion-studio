@@ -84,20 +84,23 @@ The summary line goes into the hand-off.
 
 ## Sheet to film.json
 
-The storyboard owns the mapping: the composition (`Film.tsx`) reads `film.json` props, and each
-sheet field becomes one prop the composition (and `trace.ts` `traceAt(frame)`) reads, in seconds
-converted to frames at the composition's fps. The sheet stays the human-readable source for the
-gates; `film.json` carries the same rows for the render. Prop names follow
-`docs/film-contract.md`; when that document and this table differ, the contract wins and this
-table changes in the same commit.
+The sheet is not translated into new props: `film.json` carries it as it is, and the animator's `scene.ts`
+converts seconds to frames. The contract (`docs/film-contract.md`, "film.json") and the reference film
+(`studio/films/example/film.json`) decide; when this table and they differ, they win and this table changes in the same commit.
 
-| Sheet field | Becomes (in `film.json`) |
+| Sheet field | In `film.json` |
 |---|---|
-| `t`, `says`, `key` | the row's timing: start/end frame, the key words' frames |
-| `hero`, `support` | the row's asset ids (the manifest resolves the files) |
-| `lettering` | the row's lettering items with `lands` as a frame |
-| `zoom` | the camera target and kind for the row |
-| `device`, `join` | the row's device and its join |
+| the whole table | `sheet: { beats: [...], register?, app?: { t0 } }`: one object per row with the fields above, `t`, `key[].t` and `lettering[].lands` in seconds as written |
+| the voice's word table | `words: { words: [{ w, s, e }] }` (what `tools/captions/transcribe.mjs` writes), inline or a path relative to the film |
+| `hero.asset`, `support[]` | `manifest: { assets: [{ id, kind, status, licence, source }] }`, inline or a path; the trace ids are these asset ids |
+| closing house outro | `house: [t0, t1]` seconds, a window that puts nothing in the trace |
+| a spot or test film's length | `length: { minS, maxS }` replaces the register's norm (the report carries a yellow F1) |
+| composition clock | `id` (composition `F-<id>`), `format` (`9x16`, `1x1`, `16x9`), `fps`, `durationInFrames` |
+| anything the film needs beyond the sheet | film props (the example keeps its caption chunks in `captions: [{ id, words: [first, last] }]`, indices into `words`) |
+
+The animator reads `sheet.beats[i].t`, `key`, `zoom`, `device`, `join` and `lettering` at import and turns them into
+frames (`Math.round(seconds * fps)`); nothing is retyped. `support`, `device` and `join` have no dedicated `film.json`
+key beyond the beat itself.
 
 ## Running the gate
 

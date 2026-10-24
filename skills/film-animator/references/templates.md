@@ -1,6 +1,6 @@
 # Templates
 
-Four working papers of the animator. The gates read the film, not these; they exist so the rhythm, the camera and the trace are decided before they are drawn. Thresholds are `NORMS` keys (`core/checks/norms.mjs`).
+Four working papers of the animator. The gates read the film, not these; they exist so the rhythm, the camera and the trace are decided before they are drawn. Thresholds are `NORMS` keys (`tools/checks/norms.mjs`).
 
 ## 1. Event ledger (`crew/animation-ledger.md`, written before the first line of the film)
 
@@ -23,21 +23,21 @@ A row that gives no event of its own (a held plate with no chunk starting in it)
 
 ## 2. Camera key table (`crew/animation-notes.md`, one line per row that moves)
 
-| row | kind | target part | z from -> to | ease (keys) | start = `key.t` - reach | lands (95 %) | cut? | target at the key word (`partAt`, frame px) |
+| row | kind | target part | zoom from -> to | ease (`CamKey.ease`) | start frame = key frame - reach | lands (95 %) | cut? | target box at the key frame (`traceAt`, frame px) |
 |---|---|---|---|---|---|---|---|---|
-| b08 | push-in | `hero-b.part` | 1.00 -> 1.18 | `glide` | 23.30 (at the cut) | 23.92 | cut at 23.30 | (540, 962), inside `stage.box` |
+| b08 | push-in | `hero-b.part` | 1.00 -> 1.18 | `glide` | f699 (23.30 s, at the cut) | 23.92 s | cut at f699 | [440, 880, 200, 160], inside the safe box |
 
-The reach per ease and the stacked-key variants are in `devices-rhythm-camera.md` (engine facts). The `partAt` column is read from the real film at the key word and at the row's end (T9 covers the whole span).
+The reach per ease and the stacked-key variants are in `devices-rhythm-camera.md` (engine facts). The target column is read from the real film's trace (`traceAt(frame).items`, the `<row id>-target` item) at the key frame and at the row's end (T9 covers the whole span).
 
 ## 3. Registration checklist (per row, before its stills)
 
-- [ ] hero registered from the row's start (or its cut frame), alpha >= `NORMS.frames.heroAlpha`, one hero at a time
-- [ ] supports, pieces, marks, lettering, ground registered with the roles of `registration.md` 2
-- [ ] `<row id>-target` registered from the same `PARTS` entry as `partAt`
-- [ ] captions: unique id, `text`, `box`, `cap`, `color`
-- [ ] every `cut: true` key bumps `camera.shot`
-- [ ] one clock `T(t)` for camera, pieces and trace (stepped only if the brief says so)
-- [ ] a still at the end of the move and one at the key word, looked at (the gate does not see a wrong part framed)
+- [ ] hero in the trace from the row's start (or its cut frame), alpha >= `NORMS.frames.heroAlpha`, one hero at a time
+- [ ] supports, pieces, marks, lettering, ground traced with the roles of `registration.md` 2
+- [ ] `<row id>-target` traced from the same `PARTS` entry (`scene.ts`) the component and the stills use
+- [ ] captions: unique id, `captionItem` with `text`, `box`, `cap`, `color`
+- [ ] every hard cut is in `CUT_FRAMES` (`scene.ts`) so `shotAt` bumps `camera.shot`
+- [ ] one clock for camera, pieces and trace (`stepFrame(frame, 30, 12)` only if the brief says so)
+- [ ] a still at the end of the move and one at the key frame, opened as images (the gate does not see a wrong part framed); the self-check loop of SKILL.md ran
 
 ## 4. `crew/animation-notes.md`
 

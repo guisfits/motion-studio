@@ -1,81 +1,91 @@
 # Registration: the film contract and the trace
 
-What the film draws is registered once, from the same variables that draw it, so the gates measure meaning (captions, lettering, hero, zoom target) without reading pixels. Source ids: `[eng]` = engine code read for this file (`core/lib/trace.js`, `core/checks/trace.mjs`, `core/checks/picture.mjs`, `core/checks/norms.mjs`, `core/lib/table.js`, `core/lib/layout.js`, README "The film contract"); `[tested]` = observed by running the gates or the engine's own functions; `~` = inference. Numbers are `NORMS` keys, never restated.
+What the film draws is reported once, from the same constants and pure functions that draw it, so the gates measure meaning (captions, lettering, hero, zoom target) without reading pixels. Source ids: `[eng]` = engine code read for this file (`docs/film-contract.md`, `src/film/`, `tools/checks/norms.mjs`, `studio/films/example/`); `[tested]` = observed by running the gates or the engine's own functions; `~` = inference. Numbers are `NORMS` keys, never restated.
 
 ## 0. Read the contract before the first line
 
-The contract is documented in `README.md` ("The film contract", trace items `cap`, `color`, `target`, `ground`, `camera(t).shot`) and is what `core/lib/trace.js`, `core/checks/trace.mjs`, `core/checks/picture.mjs`, `core/checks/rhythm.mjs` and `core/checks/legibility.mjs` read today. A caption without `cap` or `color` is a red T10 or T11 at the draft. Before the first line of a film, read the `ROLES` set in `trace.mjs` and the field names in those files again: a role the checker does not know is a T0 and stops every other gate, and a missing caption field is a red T10 or T11. If this file and the engine disagree, the engine wins and the Director hears about it.
+The contract is `docs/film-contract.md` (the film folder, `film.json`, `traceAt`, the item kinds, stages and gates) and the types in `src/film/types.ts`. The gates that read the trace are `src/film/trace-gates.ts` (T0-T8, T12) and `tools/checks/` (`picture.mjs`, `rhythm.mjs`, `legibility.mjs`, `sync.mjs`). A caption without `cap` or `color` is a red T10 or T11 at the draft. A role the checker does not know is a T0 and stops every other gate: read the `TraceRole` type again before the first line of a film. If this file and the engine disagree, the engine wins and the Director hears about it.
 
 ## 1. The film
 
-1. The film is `<film>/index.html`. DOM built once; `draw(t)` only sets styles; time enters only as `t`; random numbers only from `rng(seed)`; no CSS transitions, timers or state kept between calls `[eng README]`.
-2. Read data at load with `fetch` on relative URLs: `crew/sync-sheet.json`, `crew/manifest.json`, `voice/words.json`. Never copy a time into code. `loadVoice()` returns an object whose `words` is a method (`V.words(lineId)`); fetch the JSON yourself for the raw array `[tested: V.words.find throws]`.
-3. Assert at load that every derived constant (`tIn`, `tOut`, lands, key times) is a finite number. `undefined + 0.4` is `NaN`, a `NaN` pose silently becomes "off screen" and the hero vanishes `[tested]`.
-4. `window.CUES = table.cues()` plus any component `cues()`, so the sound role gets the landings `[eng]`. `window.camera = t => { const p = table.at(T(t)); return { scale: p.z, x: p.x, y: p.y, shot }; }` with `shot` = the number of `cut: true` keys at or before `T(t)`. Scale finite and > 0 or T0 stops the run. `shot` is how R1 to R3 see a hard cut as an event and how T7 avoids reading a cut's scale jump as a move; a cut key without it is both a missed event and a false punch `[eng rhythm.mjs, picture.mjs]`.
-5. One clock. `const T = (t) => (STEP ? stepped(t, 12) : t)`. When the register asks for stepped motion (SKILL step 1) the camera and every piece read `T(t)`, and the trace functions read the same `T(t)`: the gate sees the poses the viewer sees `[tested]`.
+A film is a folder `studio/films/<slug>/` (copy `studio/films/example/`, register `F-<Id>` in `studio/Root.tsx`):
 
-## 2. What to register
+| File | Holds |
+|---|---|
+| `film.json` | the sheet, word times, manifest, format, fps, duration, film props (read at import; never copy a time into code) |
+| `scene.ts` | geometry and timing both `Film.tsx` and `trace.ts` read: world boxes of the pieces, `CAMERA_KEYS`, caption chunks and metrics, frame landings; pure data, no images, fonts or React |
+| `Film.tsx` | the composition, built from `src/` components |
+| `trace.ts` | `traceAt(frame)`: pure, what the frame shows |
+| `film.test.ts` | `runFilmGate({ dir, traceAt })` for `FILM_STAGE` |
 
-`const tr = makeTrace(); tr.add(id, role, fn); tr.install();` before `stage.run`. `fn(t)` returns `{ box: [x, y, w, h], alpha, text, ... }` or `null` when the thing is not drawn; `alpha` defaults to 1. Boxes are frame pixels (`FILM.W` x `FILM.H`): the axis-aligned bounds of what is on the canvas after camera, rotation and entrance offset `[eng]`.
+1. `Film.tsx` is pure per frame: every pose comes from `useCurrentFrame()` (or a prop derived from it). No timers, no CSS transitions or animations, no state kept between frames, no `Math.random` or `Date`; random numbers only from `random(seed)` of `remotion`. A component that must wait for a font or texture uses `delayRender` (the example loads its face this way; `skills/remotion/` covers it) `[eng]`.
+2. Time comes from `film.json`: `fromWords(film.words)` gives the spoken words as captions with `startMs`/`endMs`; a landing frame is `Math.round(s * film.fps)`. Assert at import that every derived frame is finite: `undefined + 12` is `NaN`, a `NaN` pose silently becomes "off screen" and the hero vanishes `[tested]`.
+3. One set of numbers. Anything both files need is exported from `scene.ts`. A number typed in `trace.ts` and also in `Film.tsx` is a defect: the trace drifts from the picture and the gates pass a film nobody sees `[eng]`.
+4. Cues: the sound role gets the landings from a pure `cues.ts` (`Cue = { at, sfx, gain? }` per sequence, flattened by `collectCues(blocks, fps)`, exported with `node tools/audio/cues-json.mjs <file.cues.ts> <EXPORT> out/cues.json`). Compute `at` from the same landing frames the picture uses, so the SFX and the picture share one timing source.
+5. The camera is `<Camera keys={CAMERA_KEYS} drift={CAMERA_DRIFT}>` in `Film.tsx` and `viewAt(CAMERA_KEYS, frame, { durationInFrames, drift })` in `trace.ts`: the same keys, the pose the component actually draws (drift folded in). `camera: cameraTrace(view, shotAt(CUT_FRAMES, frame))`; scale must be finite and > 0 or T0 stops the run. `shot` is how R1 to R3 see a hard cut as an event and how T7 avoids reading a cut's scale jump as a move; a hard cut without it is both a missed event and a false punch `[eng]`.
+6. One clock. When the register asks for stepped motion (SKILL step 1) the pieces and the trace read `stepFrame(frame, fps, 12)` (a function of the frame, so it stays pure; the `Camera` stays smooth, `devices-rhythm-camera.md` 2): the gate sees the poses the viewer sees `[tested]`.
+
+## 2. What to put in the trace
+
+`traceAt(frame) => { items, camera }`. An item is `{ id, role, box: [x, y, w, h], alpha?, text?, cap?, color?, bleed? }`; skip an item (do not push it) when it is not drawn. Boxes are frame pixels (`W` x `H` from `layoutOf(format)`): the axis-aligned bounds of what is on the canvas after camera, rotation and entrance offset `[eng]`.
 
 | What | Role | Id | Box and fields | Read by |
 |---|---|---|---|---|
-| Caption chunk | `caption` | `cap-<n>`, unique per chunk, never reused for other text | `box` = the text run with a little padding (T11 samples the rendered pixels in it: the median luminance is the background, so the glyphs must be a minority of the box); `text` = the displayed words; `cap` = cap height in frame px as drawn; `color` = text colour as `#rgb`, `#rrggbb` or `rgb()` | T1-T4, T10 (`cap`), T11 (`color`), R1 and R3 (chunk change = event) |
-| Lettering | `lettering` | `<beat>-<word>` | the word's full final extents, measured once at load; `text`; `bleed: true` only for a display word cropped by the frame on purpose (README trace contract) | T4 (skipped when `bleed`) |
+| Caption chunk | `caption` | `cap-<n>`, unique per chunk, never reused for other text | `captionBox(words, size, { centerX, top, lineHeight })` = the text run (T11 samples the rendered pixels in it: the median luminance is the background, so the glyphs must be a minority of the box); `captionItem(id, text, box, { size, color, alpha })` fills `text` (the displayed words), `cap` (cap height in frame px as drawn) and `color` (`#rgb`, `#rrggbb` or `rgb()`). A face other than JetBrains Mono needs its own `metrics` | T1-T4, T10 (`cap`), T11 (`color`), R1 and R3 (chunk change = event) |
+| Lettering | `lettering` | `<beat>-<word>` | the word's full final extents, from `scene.ts`; `text`; `bleed: true` only for a display word cropped by the frame on purpose | T4 (skipped when `bleed`) |
 | Mark | `mark` | `<beat>-<word>-mark` | stroke bounds | role check; S6 reads the sheet |
 | Hero | `hero` | the manifest asset id | bounds; alpha 1 while it moves in | T5, T6, H1, P1, R1 (hero change = event) |
-| Support, other piece | `support`, `piece` | manifest asset id | bounds | T5, P1 |
+| Support, other piece | `support`, `piece` | manifest asset id | bounds. A hero that a later sheet covers stays in the trace as a `support` with the same id (the example flips role at the next beat's start) | T5, P1 |
 | Ground (paper, desk, disc, flat field, plate behind) | `ground` | `ground-<n>`, not a manifest id | full bounds | counted by nothing: excluded from T5 |
-| Zoom target, one per row that names one | `target` | `<row id>-target`, e.g. `b07-target` | the named part's extents in frame px, projected by the same function as the picture | T9: from the row's first key word until the camera leaves for the next row it is registered and inside the safe box (`stage.box`) |
-| Camera | `window.camera(t)` | | `{ scale, x, y, shot }` | T0, T7 (moves split at a change of `shot`), T8, R1 (`shot` change = event) |
+| Zoom target, one per row that names one | `target` | `<row id>-target`, e.g. `b07-target` | the named part's extents in frame px, projected by the same function as the picture (`projectBox` of the part's world box through `view`) | T9: from the row's first key word until the camera leaves for the next row it is in the trace and inside the safe box (`layoutOf(format).safe`) |
+| Camera | `camera` | | `cameraTrace(view, shot)` = `{ scale, x, y, shot }` | T0, T7 (moves split at a change of `shot`), T8, R1 (`shot` change = event) |
 
-Events for R1 to R3 are exactly three things (`core/checks/rhythm.mjs`): the first `hero` item on screen at alpha >= `NORMS.frames.heroAlpha` changes id; the `caption` item at alpha >= `NORMS.caption.legibleAlpha` changes id (a caption leaving is not an event, the next one arriving is); `camera.shot` changes. Frame 0 sets the first values and is not an event; events within `NORMS.rhythm.eventMergeS` of the last one are the same edit. Camera moves, supports entering, marks and flashes are not events. A row that repeats the previous hero id (a held plate, one prop per phrase, a crowd step) makes no hero event: its event is the caption chunk that starts in it, or a cut.
+Events for R1 to R3 are exactly three things: the first `hero` item on screen at alpha >= `NORMS.frames.heroAlpha` changes id; the `caption` item at alpha >= `NORMS.caption.legibleAlpha` changes id (a caption leaving is not an event, the next one arriving is); `camera.shot` changes. Frame 0 sets the first values and is not an event; events within `NORMS.rhythm.eventMergeS` of the last one are the same edit. Camera moves, supports entering, marks and flashes are not events. A row that repeats the previous hero id (a held plate, one prop per phrase, a crowd step) makes no hero event: its event is the caption chunk that starts in it, or a cut.
 
-A film that closes on the project's house outro (an imported, pre-approved closing piece that registers nothing) declares its window with `FILM.house = [t0, t1]` (seconds; t1 is the film's end), set before `window.ready`. T5-T9, R1-R4 and H1 then read the story only (it ends at t0, and R4's last 5 s are the story's); captions, legibility (T1-T4, T10, T11), P1 and the media gates still read the whole render. A malformed or non-closing window is a red T0 (`core/checks/house.mjs`, README trace contract).
+A film that closes on the project's house outro (an imported, pre-approved closing piece that puts nothing in the trace) declares its window in `film.json` as `house: [t0, t1]` (seconds; t1 is the film's end). T5-T9, R1-R4 and H1 then read the story only (it ends at t0, and R4's last 5 s are the story's); captions, legibility (T1-T4, T10, T11), P1 and the media gates still read the whole render. A malformed or non-closing window is a red T0 (`tools/checks/house.mjs`).
 
-## 3. Rules that keep draw and trace the same
+## 3. Rules that keep the component and the trace the same
 
-1. Draw and trace share one function. Write `pose(t)` once; `draw` applies it, `fn` projects it. Alpha, box and text are the drawn ones, so an entrance or fade the viewer sees is the one the gate sees. A parallel table of numbers drifts the first time a beat is retimed.
-2. Return `null` when the item is not on screen: before `tIn`, after `tOut`, or fully outside the frame. T6 takes the first `hero` in the list, so a hero kept registered while the camera is elsewhere is reported "off the middle third" `[tested]`. Exactly one hero is on screen at a time.
-3. A hero stays at alpha >= `NORMS.frames.heroAlpha` from its entrance on: it enters by position, rotation and scale, never by opacity. A fade-in counts as "no hero" for its whole length (T6) and can miss H1 `[eng]`. A dissolve between heroes does the same: finish it before the key word's window (`NORMS.sync.heroWindowFrames`).
-4. A caption's legible time counts only frames at alpha >= `NORMS.caption.legibleAlpha`, so fades come on top of the hold. T1 divides characters by that time `[eng]`.
-5. A ground is never registered as `piece` to lift coverage: T5 counts registered area, so that passes the gate and leaves the frame empty. Register it as `ground` (T5 also skips a manifest asset whose `kind` or `treatment` is `ground`, but do not rely on it).
-6. A deliberate bleed word (a display word cropped by the frame behind the subject, grammar §6 type interleaved) registers the part of its box that is inside the frame; T4 reads any lettering whose box crosses an edge `[eng]`. Never for a caption or small lettering. Open question for the engine: T4 has no exemption for a declared bleed.
-7. One malformed item (wrong role, a box that is not four finite numbers, alpha outside 0-1) makes the gate return only T0 `[eng checkTrace]`.
+1. The component and the trace share one function. A piece's pose is `setDownPose(frame - start, fps, W, H, carry)` in both: `SetDown` draws it, `trace.ts` projects it. A caption's alpha is `revealWord(frame, startMs, fps, enter)` in both. A parallel table of numbers drifts the first time a beat is retimed.
+2. Skip the item when it is not on screen: before its start, after its exit, or fully outside the frame. T6 takes the first `hero` in the list, so a hero kept in the trace while the camera is elsewhere is reported "off the middle third" `[tested]`. Exactly one hero is on screen at a time.
+3. A hero stays at alpha >= `NORMS.frames.heroAlpha` from its entrance on: it enters by position, rotation and scale, never by opacity. A fade-in counts as "no hero" for its whole length (T6) and can miss H1. A dissolve between heroes does the same: finish it before the key word's window (`NORMS.sync.heroWindowFrames`).
+4. A caption's legible time counts only frames at alpha >= `NORMS.caption.legibleAlpha`, so fades come on top of the hold. T1 divides characters by that time. Give the chunk the alpha of its least opaque word (the example's `Math.min` over the words).
+5. A ground is never traced as `piece` to lift coverage: T5 counts traced area, so that passes the gate and leaves the frame empty. Trace it as `ground` (T5 also skips a manifest asset whose `kind` or `treatment` is `ground`, but do not rely on it).
+6. A deliberate bleed word (a display word cropped by the frame behind the subject, grammar §6 type interleaved) traces the part of its box that is inside the frame with `bleed: true`, which T4 skips. Never for a caption or small lettering.
+7. One malformed item (wrong role, a box that is not four finite numbers, alpha outside 0-1) makes the gate return only T0.
+8. `sampleTrace` asks three frames twice and refuses a trace that answers differently: no clock, no random, no state carried from an earlier call `[eng]`.
+9. A trace box is checked against the ink once per film, after a render: measure one caption's pixels against its `box`, and lay one piece's box over its still (the self-check loop, SKILL step 4). A caption `fontSize` missing in the component, a padding that exists only in the CSS, a rotation the trace skipped: all pass every gate and all show here `[tested]`.
 
-## 4. Projecting a table film to frame pixels
+## 4. Projecting a piece to frame pixels
 
-The table draws `translate(W/2,H/2) rotate(-r) scale(z) translate(-x,-y)` `[eng table.draw]`. A station-local point goes to the frame like this, with `p = table.at(T(t))` and `w = station.toWorld(lx, ly)`:
+`Camera` draws `translate(W/2, H/2) rotate(r) scale(z) translate(-x, -y)` over world coordinates (px on the table; the frame shows the world at zoom 1 centred on the camera's `x`, `y`). The trace applies the same transform with the helpers, in this order:
 
-```js
-const toFrame = (st, lx, ly, t) => {
-  const w = st.toWorld(lx, ly), p = table.at(T(t)), a = (-p.r * Math.PI) / 180;
-  const dx = (w.x - p.x) * p.z, dy = (w.y - p.y) * p.z;
-  return [W / 2 + dx * Math.cos(a) - dy * Math.sin(a), H / 2 + dx * Math.sin(a) + dy * Math.cos(a)];
-};
-const frameBox = (st, corners, t) => { /* corners through toFrame; return [minx, miny, maxx-minx, maxy-miny] */ };
+```ts
+const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT });
+const pose = setDownPose(frame - p.start, FPS, W, H, p.carry);          // entrance offset and tilt
+const world = rotatedBox(shiftBox(p.rest, pose.dx, pose.dy), pose.rotate);
+const box = projectBox(world, view, W, H);                              // frame px, after the camera
 ```
 
-A piece's corners are its centre plus half-extents rotated by its current rotation, plus its entrance offset, all from the same `pose(t)`. Screen-space layers (captions on the fixed overlay) are already in frame pixels.
-
-Add one film-local aid, `PARTS`: `"<asset>.<part>"` to station and local point, and `window.partAt(id, t)` using `toFrame`. The `<row id>-target` registration is built from the same `PARTS` entry, so the number you read by eye on a still is the number T9 reads.
+Name each zoom target part in `scene.ts` as a world box inside its piece (`PARTS["portrait-a.eyes"] = [x, y, w, h]`), and build both the `<row id>-target` item and the number you read by eye on a still from that one entry through the same `projectBox`. A piece's corners are its centre plus half-extents rotated by its current rotation, plus its entrance offset, all from the same pose. Screen-space layers (captions above the camera) are already in frame pixels: `captionBox` takes `centerX` and `top` in frame px.
 
 ## 5. Reading the gates
 
-The trace is sampled at every `1/NORMS.fps` s over the whole film, so `fn` must be cheap and pure. Most codes report only their first occurrence (T5 once per film, T6 once per second or hero, T4 per id): after a fix, re-run until clean, one red can hide several `[tested]`.
+The trace is sampled at every frame over the whole film, so `traceAt` must be cheap and pure. Most codes report only their first occurrence (T5 once per film, T6 once per second or hero, T4 per id): after a fix, re-run until clean, one red can hide several `[tested]`. Report files: `crew/checks-<stage>.md` (+ `.json`).
 
 | Code | Usual cause | Fix |
 |---|---|---|
-| T0 | NaN or non-finite box, role the checker does not know, camera scale 0 | assert finite at load; re-read `ROLES` |
+| T0 | NaN or non-finite box, role the checker does not know, camera scale 0 | assert finite in `scene.ts`; re-read `TraceRole` |
 | T1, T2 | chunk too long for its hold, or hold counted from the start of the fade | lengthen the hold or split the chunk (`devices-type-data-life.md` 1) |
 | T3 | more than `NORMS.caption.maxWords` words | re-chunk |
-| T4 | lettering or caption crosses a frame edge while registered | retire it before the camera leaves; move it inside `stage.box` |
-| T5 | too few registered pieces on screen: frame 0 before the hero enters, a cut frame with pieces still flying in, a long lateral move before a cut, the closing pull-out | seat pieces earlier, move less, add earlier beats' pieces to the closing collage |
-| T6 | no hero on screen for a second, or its centre outside `NORMS.frames.heroThird` | hero seated from the beat start, stale registration, lateral move |
+| T4 | lettering or caption crosses a frame edge while traced | retire it before the camera leaves; move it inside the safe box |
+| T5 | too few traced pieces on screen: frame 0 before the hero enters, a cut frame with pieces still flying in, a long lateral move before a cut, the closing pull-out | seat pieces earlier, move less, add earlier beats' pieces to the closing collage |
+| T6 | no hero on screen for a second, or its centre outside `NORMS.frames.heroThird` | hero seated from the beat start, a stale trace item, lateral move |
 | T7 | a row whose `zoom.kind` is `push-in` or `pull-out` moves under `NORMS.camera.emphasisMinScaleDelta` inside one shot; or more than `NORMS.camera.maxPunches` rows reach `NORMS.camera.punchMax` | enlarge the move, or send the row back to be `drift`; budget the punches (a deep pull-out counts) |
-| T8 | a linear stretch of scale in a move; steps under `NORMS.camera.holdRate` per second (the breathing) are a hold | ease the move; a drift above the hold rate is a move |
-| T9 | the row's `<row id>-target` is not registered at its first key word, or leaves `stage.box` before the row ends | reframe or land the move earlier (`worked-examples.md` 2) |
-| T10, T11 | caption `cap` outside `NORMS.caption.capHeight` (or not registered); `color` against the pixels behind `box` under `NORMS.caption.minContrast` (or not registered) | size, plate and colour are the style bible's; move the caption to a quiet area (grammar §7) |
+| T8 | a linear stretch of scale in a move; steps under `NORMS.camera.holdRate` per second (the breathing) are a hold | ease the move (`EASES`); a drift above the hold rate is a move |
+| T9 | the row's `<row id>-target` is not in the trace at its first key word, or leaves the safe box before the row ends | reframe or land the move earlier (`worked-examples.md` 2) |
+| T10, T11 | caption `cap` outside `NORMS.caption.capHeight` (or missing); `color` against the pixels behind `box` under `NORMS.caption.minContrast` (or missing); T11 needs `out/silent.mp4` | size, plate and colour are the style bible's; move the caption to a quiet area (grammar §7) |
+| T12 | a piece appears in place at full size: the trace shows its rest box on the entrance frames | trace the live pose (`setDownPose`) during entrance and exit |
 | R1, R2, R3, R4 | event count or spacing outside `NORMS.rhythm`; R1 also reports a still hold (no event, camera still) of `NORMS.rhythm.maxStillHoldS` | `templates.md` 1 |
 | H1 | the hero is not on screen at alpha >= `NORMS.frames.heroAlpha` inside the window of its first key word | seat it earlier |
 | P1 | a hero, support or piece id that is not a `ready`, licensed manifest asset | never invent ids; ask the Director |
