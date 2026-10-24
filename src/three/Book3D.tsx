@@ -34,8 +34,10 @@ const easeInOut = (t: number) => t * t * (3 - 2 * t);
 export const leafAngle = (i: number, progress: number, turn: number): number => {
   const start = 0.3 + i * 0.1;
   const open = easeInOut(clamp01((progress - start) / 0.28)) * (i < FLIPPED_WHEN_OPEN ? 1 : 0);
-  // The extra turn flips the next leaves in order, each over its own slice.
-  const extra = easeInOut(clamp01(turn * TURNABLE - (i - FLIPPED_WHEN_OPEN)));
+  // The extra turn flips the next leaves in order, each over its own slice, and only once the
+  // book is open (the last leaf that opening flips has landed): a closed book turns nothing.
+  const opened = easeInOut(clamp01((progress - (0.3 + (FLIPPED_WHEN_OPEN - 1) * 0.1)) / 0.28));
+  const extra = easeInOut(clamp01(turn * TURNABLE - (i - FLIPPED_WHEN_OPEN))) * opened;
   const flipped = i < FLIPPED_WHEN_OPEN ? open : extra;
   return Math.PI * (0.96 - i * 0.02) * flipped;
 };

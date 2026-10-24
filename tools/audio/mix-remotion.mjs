@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { mix } from "./mix.mjs";
 import { renderSfx } from "./sfx.mjs";
+import { summary, thinCues } from "./thin.mjs";
 import { writeWav } from "./wav.mjs";
 
 // The render's length in seconds (the SFX stem is cut to it).
@@ -53,7 +54,10 @@ export function mixRemotion({ video, voice, music, cues, out }) {
     let sfx;
     if (cues.length) {
       sfx = join(tmp, "sfx.wav");
-      writeWav(sfx, [renderSfx(toSfxCues(cues), dur)]);
+      const sfxCues = toSfxCues(cues);
+      // renderSfx thins crowded cues; say how many it drops so a lost hit is never silent.
+      console.log(`sfx thinning: ${summary(sfxCues.length, thinCues(sfxCues))}`);
+      writeWav(sfx, [renderSfx(sfxCues, dur)]);
     }
     return mix({ video, out, voice, music, sfx });
   } finally {

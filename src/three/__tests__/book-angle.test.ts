@@ -18,4 +18,8 @@ describe("leafAngle", () => {
     expect(leafAngle(3, 1, 0.25)).toBeGreaterThan(Math.PI * 0.8);
     expect(leafAngle(4, 1, 0.25)).toBe(0);
   });
+
+  it("turns no extra leaf while the book is closed", () => {
+    for (let i = 0; i < 8; i++) expect(leafAngle(i, 0, 1)).toBe(0);
+  });
 });

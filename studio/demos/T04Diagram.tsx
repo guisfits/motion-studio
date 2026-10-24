@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AbsoluteFill, continueRender, delayRender, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, cancelRender, continueRender, delayRender, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { SetDown, Tape } from "../../src/paper";
 import { FONT_FRAKTUR, FONT_MONO, loadFace } from "../../src/type";
@@ -170,7 +170,7 @@ export const T04Diagram: React.FC = () => {
   const [handle] = useState(() => delayRender("T04 fonts"));
   useEffect(() => {
     Promise.all([loadFace(FONT_MONO, monoUrl, "100 800"), loadFace(FONT_FRAKTUR, frakturUrl, "700")])
-      .catch(() => undefined)
+      .catch((e) => cancelRender(e))
       .finally(() => continueRender(handle));
   }, [handle]);
   const join = linearTiming({ durationInFrames: JOIN });

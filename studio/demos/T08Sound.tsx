@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AbsoluteFill, Img, continueRender, delayRender, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, cancelRender, Img, continueRender, delayRender, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { SetDown, Tape, Torn, stepFrame, tornSplitClips } from "../../src/paper";
 import { FONT_MONO, loadFace } from "../../src/type";
@@ -209,7 +209,7 @@ export const T08Sound: React.FC = () => {
   const [handle] = useState(() => delayRender("T08 fonts"));
   useEffect(() => {
     loadFace(FONT_MONO, monoUrl, "100 800")
-      .catch(() => undefined)
+      .catch((e) => cancelRender(e))
       .finally(() => continueRender(handle));
   }, [handle]);
   return (

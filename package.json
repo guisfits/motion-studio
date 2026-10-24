@@ -22,7 +22,49 @@
   "peerDependencies": {
     "react": ">=19",
     "react-dom": ">=19",
-    "remotion": "4.0.538"
+    "remotion": "4.0.538",
+    "@react-three/fiber": "9.3.0",
+    "@remotion/captions": "4.0.538",
+    "@remotion/effects": "4.0.538",
+    "@remotion/fonts": "4.0.538",
+    "@remotion/layout-utils": "4.0.538",
+    "@remotion/motion-blur": "4.0.538",
+    "@remotion/paths": "4.0.538",
+    "@remotion/transitions": "4.0.538",
+    "@remotion/three": "4.0.538",
+    "three": "0.178.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-three/fiber": {
+      "optional": true
+    },
+    "@remotion/captions": {
+      "optional": true
+    },
+    "@remotion/effects": {
+      "optional": true
+    },
+    "@remotion/fonts": {
+      "optional": true
+    },
+    "@remotion/layout-utils": {
+      "optional": true
+    },
+    "@remotion/motion-blur": {
+      "optional": true
+    },
+    "@remotion/paths": {
+      "optional": true
+    },
+    "@remotion/transitions": {
+      "optional": true
+    },
+    "@remotion/three": {
+      "optional": true
+    },
+    "three": {
+      "optional": true
+    }
   },
   "dependencies": {
     "playwright": "1.55.0"
