@@ -18,6 +18,8 @@ import { SHOWREEL_DURATION, Showreel } from "./demos/Showreel";
 import { Film as ExampleFilm } from "./films/example/Film";
 import example from "./films/example/film.json";
 import { Film as DryRunFilm } from "./films/dry-run/Film";
+import { Film as CloneVanGoghFilm } from "./films/clone-van-gogh/Film";
+import * as cloneVanGogh from "./films/clone-van-gogh/scene";
 import dryRun from "./films/dry-run/film.json";
 import { layoutOf, type FilmFormat } from "../src/film";
 
@@ -70,6 +72,14 @@ const Films: React.FC = () => (
       fps={dryRun.fps}
       width={dry_run_size.W}
       height={dry_run_size.H}
+    />
+    <Composition
+      id="F-CloneVanGogh"
+      component={CloneVanGoghFilm}
+      durationInFrames={cloneVanGogh.DURATION}
+      fps={cloneVanGogh.FPS}
+      width={cloneVanGogh.WIDTH}
+      height={cloneVanGogh.HEIGHT}
     />
   </Folder>
 );
