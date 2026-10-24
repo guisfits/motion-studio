@@ -4,7 +4,7 @@ import { random } from "remotion";
 // any frame renders alone and a film's trace can call the same maths. Times are in seconds through
 // `fps`, so a 16 fps clone and a 30 fps film move alike.
 
-export type Pose = { x: number; y: number; rotate: number; scale: number };
+export type PiecePose = { x: number; y: number; rotate: number; scale: number };
 export type Offset = { x: number; y: number; rotate: number };
 
 /**
@@ -33,8 +33,8 @@ function hzReaching(target: number, seconds: number, damping: number): number {
 }
 
 export type ThrowIn = {
-  from: Pose;
-  to: Pose;
+  from: PiecePose;
+  to: PiecePose;
   /** Frames until the piece is ~95 % of the way (the throw itself); the settle rings on after. */
   frames?: number;
   /** Peak height of the flight arc in px (upward), 0 = straight. */
@@ -44,7 +44,7 @@ export type ThrowIn = {
 };
 
 /** A piece thrown onto the set: fast arc, lands, its rotation and scale wobble and settle. */
-export function throwIn(frame: number, fps: number, { from, to, frames = 4, arc = 0, damping = 0.45 }: ThrowIn): Pose {
+export function throwIn(frame: number, fps: number, { from, to, frames = 4, arc = 0, damping = 0.45 }: ThrowIn): PiecePose {
   if (frame <= 0) return { ...from };
   const hz = hzReaching(0.95, frames / fps, damping);
   const p = bounce(frame, fps, { hz, damping });
