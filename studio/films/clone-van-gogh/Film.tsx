@@ -1,6 +1,6 @@
 import { AbsoluteFill, Audio, Sequence } from "remotion";
 import { Grain } from "../../../src/texture";
-import voUrl from "./voice/vo.wav";
+import mixUrl from "./audio/mix.wav";
 import { SHOTS, type ShotId } from "./scene";
 import { S01 } from "./shots/S01";
 import { S02 } from "./shots/S02";
@@ -35,6 +35,6 @@ export const Film: React.FC = () => (
     })}
     <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%)" }} />
     <Grain opacity={0.08} stepFps={16} />
-    <Audio src={voUrl} />
+    <Audio src={mixUrl} />
   </AbsoluteFill>
 );
