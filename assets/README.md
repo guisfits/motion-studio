@@ -40,6 +40,7 @@ All transparent PNG, cut from the images above.
 |---|---|---|---|---|
 | UnifrakturCook-Bold.ttf | https://github.com/google/fonts/tree/main/ofl/unifrakturcook | j. 'mach' wust, Peter Wiegel | SIL OFL 1.1 (`OFL-UnifrakturCook.txt`) | Blackletter display |
 | JetBrainsMono-VF.ttf | https://github.com/google/fonts/tree/main/ofl/jetbrainsmono | The JetBrains Mono Project Authors | SIL OFL 1.1 (`OFL-JetBrainsMono.txt`) | Mono, variable weight (file is `JetBrainsMono[wght].ttf` upstream) |
+| HomemadeApple-Regular.ttf | https://github.com/google/fonts/tree/main/apache/homemadeapple | Font Diner (Sam Parrett) | Apache 2.0 (`SpecialElite-HomemadeApple-LICENSE-Apache2.txt`, shared with Special Elite) | Handwriting script; `FONT_SCRIPT`, default face of `Handwrite`; copied from `archive/engine-v1/core/fonts/` |
 
 ## Audio — `audio/`
 

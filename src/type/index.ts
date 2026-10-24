@@ -1,6 +1,6 @@
 export { fitSize, fitText } from "./fit";
 export type { MeasureFn } from "./fit";
-export { FONT_FRAKTUR, FONT_MONO, loadFace } from "./fonts";
+export { FONT_FRAKTUR, FONT_MONO, FONT_SCRIPT, loadFace } from "./fonts";
 export { Highlight } from "./Highlight";
 export type { HighlightProps } from "./Highlight";
 export { Ransom } from "./Ransom";

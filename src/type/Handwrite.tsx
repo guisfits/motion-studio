@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
-import { FONT_FRAKTUR } from "./fonts";
+import { FONT_SCRIPT } from "./fonts";
 import { handwriteMask, handwriteProgress } from "./write";
 import { type Landing, landingS } from "./timing";
 
@@ -20,7 +20,7 @@ export type HandwriteProps = Landing & {
 /**
  * Script text written on as if by a pen, for marginalia: a growing mask sweeps each line left to
  * right (never a dash offset). The face comes from `style.fontFamily` (default the bundled
- * blackletter); load it with `loadFace` first.
+ * script, `FONT_SCRIPT`); load it with `loadFace` first.
  */
 export const Handwrite: React.FC<HandwriteProps> = ({
   lines,
@@ -38,7 +38,7 @@ export const Handwrite: React.FC<HandwriteProps> = ({
   return (
     <div
       style={{
-        fontFamily: FONT_FRAKTUR,
+        fontFamily: FONT_SCRIPT,
         color,
         lineHeight: 1.25,
         whiteSpace: "pre",

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { AbsoluteFill, Easing, Img, Sequence, cancelRender, continueRender, delayRender, interpolate, useCurrentFrame } from "remotion";
-import { CircleMark, Counter, FONT_FRAKTUR, FONT_MONO, Handwrite, Typewriter, loadFace } from "../../src/type";
+import { CircleMark, Counter, FONT_MONO, FONT_SCRIPT, Handwrite, Typewriter, loadFace } from "../../src/type";
 import monoUrl from "../../assets/fonts/JetBrainsMono-VF.ttf";
-import frakturUrl from "../../assets/fonts/UnifrakturCook-Bold.ttf";
+import scriptUrl from "../../assets/fonts/HomemadeApple-Regular.ttf";
 import genesis from "../../assets/img/gutenberg-genesis.jpg";
 import virgin from "../../assets/img/durer-virgin-st-john.jpg";
 
@@ -15,6 +15,7 @@ const INK = "#1d1a16";
 const PAPER = "#ece4d4";
 const JOIN = 14;
 const SCENE_B = 180;
+const OFF = JOIN / 30; // scene B mounts as the slide starts, so its landings shift by the join
 
 const slide = Easing.inOut(Easing.cubic);
 
@@ -37,10 +38,10 @@ const Plate: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }
 const SceneA: React.FC = () => (
   <Page src={genesis} position="50% 30%">
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-      <Plate style={{ textAlign: "center", width: 1380 }}>
-        <Counter to={1455} at={2.5} dur={66} style={{ fontSize: 300, fontWeight: 700, lineHeight: 1.1 }} />
+      <Plate style={{ textAlign: "center", width: 1760 }}>
+        <Counter to={1455} at={2.5} dur={66} style={{ fontSize: 260, fontWeight: 700, lineHeight: 1.1 }} />
         <div style={{ height: 3, background: INK, opacity: 0.35, margin: "16px 0 30px" }} />
-        <Typewriter text="a primeira Bíblia impressa" at={3} cps={14} stepFps={12} style={{ fontSize: 72, fontWeight: 500 }} />
+        <Typewriter text="a primeira Bíblia impressa" at={3} cps={14} stepFps={12} style={{ fontSize: 100, fontWeight: 500 }} />
       </Plate>
     </AbsoluteFill>
   </Page>
@@ -49,16 +50,16 @@ const SceneA: React.FC = () => (
 const SceneB: React.FC = () => (
   <Page src={virgin} position="50% 20%">
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-      <Plate style={{ width: 1560, padding: "70px 90px" }}>
-        <div style={{ fontFamily: FONT_MONO, fontWeight: 600, fontSize: 110, lineHeight: 1.3 }}>
+      <Plate style={{ width: 1760, minHeight: 800, padding: "80px 100px" }}>
+        <div style={{ fontFamily: FONT_MONO, fontWeight: 600, fontSize: 140, lineHeight: 1.3 }}>
           Onde havia trevas, <br />
           fez-se{" "}
-          <CircleMark at={2.5} dur={22} seed="luz" pad={0.22} strokeWidth="0.05em">
+          <CircleMark at={2.5 + OFF} dur={22} seed="luz" pad={0.22} strokeWidth="0.05em">
             luz
           </CircleMark>
           .
         </div>
-        <Handwrite lines={["ver Gênesis 1:3", "(a primeira palavra de Deus)"]} at={4.5} dur={2.8} style={{ fontSize: 76, marginTop: 36, marginLeft: 520 }} />
+        <Handwrite lines={["ver Gênesis 1:3", "a primeira palavra de Deus"]} at={4.5 + OFF} dur={3.2} style={{ fontSize: 84, marginTop: 56, marginLeft: 380 }} />
       </Plate>
     </AbsoluteFill>
   </Page>
@@ -68,7 +69,7 @@ export const T15TypeDevices: React.FC = () => {
   const frame = useCurrentFrame();
   const [handle] = useState(() => delayRender("T15 fonts"));
   useEffect(() => {
-    Promise.all([loadFace(FONT_MONO, monoUrl, "100 800"), loadFace(FONT_FRAKTUR, frakturUrl, "700")])
+    Promise.all([loadFace(FONT_MONO, monoUrl, "100 800"), loadFace(FONT_SCRIPT, scriptUrl, "400")])
       .then(() => continueRender(handle))
       .catch((e) => cancelRender(e));
   }, [handle]);
@@ -81,9 +82,7 @@ export const T15TypeDevices: React.FC = () => {
       </AbsoluteFill>
       <Sequence from={SCENE_B - JOIN} layout="none">
         <AbsoluteFill style={{ transform: `translateX(${(1 - t) * 1920}px)` }}>
-          <Sequence from={JOIN} layout="none">
-            <SceneB />
-          </Sequence>
+          <SceneB />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>
