@@ -1,6 +1,6 @@
 ---
 name: film-animator
-description: Use when a film has a passing sheet gate (sync sheet, style bible, ready manifest, voice and word times) and needs its animatic, camera, entrances, transitions, captions and type timing, or its silent master; or when a framing, rhythm, trace or dead-frame defect (R1-R4, T0-T11, H1, P1, M1) is routed back for a fix. Owns the film's `Film.tsx`, `scene.ts` and `trace.ts`, the animatic, `out/draft.mp4` and `out/silent.mp4`.
+description: Use when a film has a passing sheet gate (sync sheet, style bible, ready manifest, voice and word times) and needs its animatic, camera, entrances, transitions, captions and type timing, or its silent master; or when a framing, rhythm, trace or dead-frame defect (R1-R4, T0-T11, H1, P1, M1) is routed back for a fix. Owns the film's `Film.tsx`, `scene.ts` and `trace.ts`, the animatic, `out/draft-<format>.mp4` and `out/silent-<format>.mp4`.
 ---
 
 # film-animator
@@ -44,7 +44,7 @@ Animator and editor: you cut the film to the voice and make it move, and you wri
 ## You deliver
 
 - `studio/films/<slug>/`: `Film.tsx`, `scene.ts`, `trace.ts`, `film.test.ts` (a copy of the example), registered in `studio/Root.tsx` as `F-<Id>`; `cues.ts` (pure sound cues) when the film has sound.
-- `out/animatic.mp4` (half size, `--scale=0.5`) + its `contact.png` / `phone.png` sheets, then `out/draft.mp4` (picture lock), then `out/silent.mp4` (final size, no sound; the sound role mixes onto it).
+- `out/animatic-<format>.mp4` (half size, `--scale=0.5`) + its `contact.png` / `phone.png` sheets, then `out/draft-<format>.mp4` (picture lock), then `out/silent-<format>.mp4` (final size, no sound; the sound role mixes onto it).
 - `crew/animation-ledger.md`, `crew/animation-notes.md`, `crew/checks-animatic.md`, `crew/checks-draft.md` (`references/templates.md`; the checks files are written by the gate).
 
 ## Process
@@ -59,7 +59,7 @@ Stage 1: animatic (the cut and the layout, no motion yet)
    - T6 on a large hero the camera travels over: register the target part as the hero while the camera travels (`part-hero`, the part's projected box), or swap heroes at the arrival frame; never leave the large hero registered with its centre outside the middle third.
 3. **Build the layout.** In `scene.ts`: grounds, hero, supports at their final composed place (world boxes), caption chunks timed to the voice (`fromWords`, `pageWindows`), **only where the line has no lettering on screen** — words already lettered in the picture are never captioned again (client, 2026-10-16: "legende só o necessário… não precisa legendar duas vezes a mesma narração"). In `Film.tsx`: lettering and marks drawn written; hard cuts at the phrase onset; frame 0 composed, hero seated from the cut frame. Devices: *hard cut on the sentence*, *caption as the motion*, *one hero on a quiet ground* (`references/devices-rhythm-camera.md` 1, `devices-type-data-life.md` 1).
 4. **Trace** every caption (`box`, `text`, `cap`, `color`), lettering, hero, support, piece, mark, ground, each row's `<row id>-target` box, and `camera.shot` after every cut, in `trace.ts`, from the same constants and pure functions the components draw from (`references/registration.md` 2-4).
-5. **Render the animatic and look** (the self-check loop below, run in full). `tools/render.sh F-<Id> studio/films/<slug>/out/animatic.mp4 --gl=angle --scale=0.5`, then `node tools/critique/sheets.mjs studio/films/<slug>/out/animatic.mp4`. Open `contact.png`, `phone.png` and a still at every row's `key[0]` as images; caption chunks, lettering and marks that land after `key[0]` are only in the mp4. Stage 1 owns the composed framing at each row's `key[0]` (where every later move must land); a framing defect seen here is fixed in the layout and the animatic re-run.
+5. **Render the animatic and look** (the self-check loop below, run in full). `tools/render.sh F-<Id> studio/films/<slug>/out/animatic-<format>.mp4 --gl=angle --scale=0.5`, then `node tools/critique/sheets.mjs studio/films/<slug>/out/animatic-<format>.mp4`. Open `contact.png`, `phone.png` and a still at every row's `key[0]` as images; caption chunks, lettering and marks that land after `key[0]` are only in the mp4. Stage 1 owns the composed framing at each row's `key[0]` (where every later move must land); a framing defect seen here is fixed in the layout and the animatic re-run.
 6. Gate `FILM_STAGE=animatic npx vitest run studio/films/<slug>`. STOP: hand to the Director; no motion before the go.
 
 Stage 2: motion (after the Director's go)
@@ -69,8 +69,8 @@ Stage 2: motion (after the Director's go)
 10. **Type and data**: a highlighter mark is drawn as one stroke WHILE the voice says the marked words, never pre-printed under them; it is the highlighter yellow (the overlay's colour), multiplied so the ink stays black (client, 2026-10-17). *caption as the motion* timing, *draw-on markup*, *count in steps*, *data that performs*, *type interleaved with the subject*, *echo stack* (`references/devices-type-data-life.md`, `devices-rhythm-camera.md` 1).
 11. **Life**: *idle life* on every hold >= 1.5 s, *pose swap*, *shape morph*, *flash train* on the one intensity beat (`references/devices-type-data-life.md` 4, `devices-rhythm-camera.md` 1).
 12. After each row: stills at the end of its move and at its key word (`npx remotion still studio/index.ts F-<Id> out/<row>-end.png --frame=N --gl=angle`), the trace box read at that frame (`traceAt(N)`), the image looked at. A framing defect found by anyone is fixed and the trace gates re-run before another row is touched (`FILM_STAGE=animatic` while there is no draft render yet; T7 and T9 run there), a deadline never reorders this (`references/worked-examples.md` 2).
-13. **Draft.** Self-check loop (below) on `tools/render.sh F-<Id> studio/films/<slug>/out/draft.mp4 --gl=angle --scale=0.5`; watch at phone size with the sheet open; gate `FILM_STAGE=draft`; `node tools/checks/run-mp4.mjs studio/films/<slug>/out/draft.mp4`; write `animation-notes.md`.
-14. After the Director confirms picture lock: `tools/render.sh F-<Id> studio/films/<slug>/out/silent.mp4 --gl=angle` (final size; `<Camera blur>` smears fast moves, shutter <= 120 deg; cuts stay sharp). It stays silent; the sound role mixes onto it (`node tools/audio/mix-remotion.mjs`).
+13. **Draft.** Self-check loop (below) on `tools/render.sh F-<Id> studio/films/<slug>/out/draft-<format>.mp4 --gl=angle --scale=0.5`; watch at phone size with the sheet open; gate `FILM_STAGE=draft`; `node tools/checks/run-mp4.mjs studio/films/<slug>/out/draft-<format>.mp4`; write `animation-notes.md`.
+14. After the Director confirms picture lock: `tools/render.sh F-<Id> studio/films/<slug>/out/silent-<format>.mp4 --gl=angle` (final size; `<Camera blur>` smears fast moves, shutter <= 120 deg; cuts stay sharp). It stays silent; the sound role mixes onto it (`tools/audio/mix.mjs`, film-sound step 7).
 
 ## Self-check loop (before returning any stage)
 
@@ -103,7 +103,7 @@ Gates read the trace, not the picture. In the S3 round all six demos needed a la
 `FILM_STAGE=animatic|draft npx vitest run studio/films/<slug>` writes `crew/checks-<stage>.md`; PASS = the run succeeds and the file has no 🔴. On the rendered mp4 also `node tools/checks/run-mp4.mjs <mp4>` (duration, black, frozen, loudness). The stages and their gates are in `docs/film-contract.md`.
 
 - Animatic: S1-S11, F1, T0-T9, T12, H1, P1, R1-R3 (events from hero id, caption id and `camera.shot`; `references/registration.md` 2).
-- Draft (the same gates run again at the final stage): the same as the animatic, minus R3 (animatic only), plus F2, M0, M1 (dead window `NORMS.frames.deadWindowS`), R4, T10 (`NORMS.caption.capHeight`), T11 (`NORMS.caption.minContrast`, read from `out/silent.mp4` pixels; render again after every change to `Film.tsx`: a stale render is caught by length, not by look). T5 (grounds excluded), T7 (per emphasis row, punch cap) and T8 already run on the animatic; they bite once the camera moves.
+- Draft (the same gates run again at the final stage): the same as the animatic, minus R3 (animatic only), plus F2 and the mp4 checks V0–V3 on the draft render (duration against `durationInFrames / fps`, black, frozen ≥ `MP4.frozenS`, stricter than the final cut's M1 dead window), R4, T10 (`NORMS.caption.capHeight`), T11 (`NORMS.caption.minContrast`, read from the draft render's pixels, `out/draft-<format>.mp4`; the final stage reads `out/silent-<format>.mp4`; render again after every change to `Film.tsx`: a stale render is caught by length, not by look). T5 (grounds excluded), T7 (per emphasis row, punch cap) and T8 already run on the animatic; they bite once the camera moves.
 - 🟠 are fixed or named in `animation-notes.md` with the reason (a dissolve's T6 is the usual one). Thresholds are `NORMS` keys (`tools/checks/norms.mjs`); this file quotes none.
 - Exit 0 is the floor. The gates do not see: the right part framed (T9 reads a box you put in the trace), pieces on the film's clock, stop-sync, shadow lift, a composed closing frame, a crisp vector mark. You check those on stills and name them in the notes.
 
