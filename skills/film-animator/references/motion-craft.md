@@ -3,7 +3,7 @@
 How a professional short-form edit moves, measured, and how to build it with this engine. Style-free:
 nothing here is a palette, a font or a subject; every number is a mechanism that works in any look.
 
-Source: the S5 study (2026-10-24/25). A 34.6 s professional reel was rebuilt from scratch, measured
+Source: the S5 study (2026-10-24). A 34.6 s professional reel was rebuilt from scratch, measured
 frame by frame against its reference with `tools/critique/motion-measure.py`, judged by the owner twice:
 first pass "bem abaixo da média — animação, física dos objetos, movimentação, filtros visuais";
 second pass, built on this file, "resultado satisfatório, 8/10". Measured misses fell 137 → 53.
