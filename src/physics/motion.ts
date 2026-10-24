@@ -107,3 +107,39 @@ export function impactShake(
   const a = 2 * Math.PI * hz * t + random(`${seed}:ph`) * 6.283;
   return { x: env * Math.cos(a), y: env * Math.sin(a), rotate: env * 0.05 * Math.sin(a * 1.3) };
 }
+
+export type Hover = {
+  from: PiecePose;
+  to: PiecePose;
+  /** Frames the carry takes; the piece is exactly on `to` from this frame on (drift then fades in). Default 24. */
+  frames?: number;
+  /** Drift amplitude in px once arrived (rotation drifts by amp * 0.1 deg, as in `drift`). Default 4. */
+  amp?: number;
+  /** Drift speed in Hz. Default 0.45. */
+  hz?: number;
+  /** Seconds the drift takes to fade in after arrival, so the float starts at rest. Default 0.5. */
+  settle?: number;
+};
+
+// Quintic smootherstep 0 -> 1: zero speed at both ends, monotone, never past 1.
+const glide = (u: number): number => {
+  const c = Math.min(1, Math.max(0, u));
+  return c * c * c * (c * (c * 6 - 15) + 10);
+};
+
+/**
+ * A piece carried slowly to a target and left floating there: it glides in (starts and ends at rest,
+ * never overshoots, unlike `throwIn`'s landing wobble), then drifts around the target within `amp`.
+ * The drift is `drift`'s seeded float, faded in over `settle` so the piece does not jump on arrival.
+ */
+export function hover(frame: number, fps: number, seed: string, { from, to, frames = 24, amp = 4, hz = 0.45, settle = 0.5 }: Hover): PiecePose {
+  const k = glide(frame / Math.max(1, frames));
+  const float = glide((frame - frames) / Math.max(1, settle * fps));
+  const d = float > 0 ? drift(frame, fps, seed, { amp, hz }) : { x: 0, y: 0, rotate: 0 };
+  return {
+    x: from.x + (to.x - from.x) * k + d.x * float,
+    y: from.y + (to.y - from.y) * k + d.y * float,
+    rotate: from.rotate + (to.rotate - from.rotate) * k + d.rotate * float,
+    scale: from.scale + (to.scale - from.scale) * k,
+  };
+}
