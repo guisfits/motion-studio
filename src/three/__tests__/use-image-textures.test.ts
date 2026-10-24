@@ -47,6 +47,11 @@ vi.mock("three", () => ({
   },
 }));
 
+const gl = vi.hoisted(() => ({ advanced: 0 }));
+vi.mock("@react-three/fiber", () => ({
+  useThree: (pick: (s: { advance: () => void }) => unknown) => pick({ advance: () => void gl.advanced++ }),
+}));
+
 const holds = vi.hoisted(() => ({ open: new Set<number>(), next: 1, cancelled: [] as unknown[] }));
 vi.mock("remotion", () => ({
   delayRender: () => {
@@ -74,14 +79,29 @@ beforeEach(() => {
   loads.done.length = loads.fail.length = 0;
   holds.open.clear();
   holds.cancelled.length = 0;
+  gl.advanced = 0;
 });
 
 describe("useImageTextures holds", () => {
-  it("holds the render until every texture has loaded, then releases", async () => {
+  it("holds the render until every texture has loaded and been drawn, then releases", async () => {
     render(["a.png", "b.png"]);
     expect(holds.open.size).toBe(1);
     loads.done.forEach((f) => f());
     await tick();
+    // Loaded, but not yet committed to the scene: the frame is still held and nothing is drawn.
+    expect(holds.open.size).toBe(1);
+    expect(gl.advanced).toBe(0);
+    render(["a.png", "b.png"]); // the re-render the new textures cause
+    expect(gl.advanced).toBe(1);
+    expect(holds.open.size).toBe(0);
+  });
+
+  it("releases a finished load's hold if the component unmounts before its textures are drawn", async () => {
+    render(["a.png"]);
+    loads.done.forEach((f) => f());
+    await tick();
+    expect(holds.open.size).toBe(1);
+    unmount();
     expect(holds.open.size).toBe(0);
   });
 
@@ -96,12 +116,14 @@ describe("useImageTextures holds", () => {
     render(["a.png"]);
     loads.done.forEach((f) => f());
     await tick();
+    render(["a.png"]);
     expect(holds.open.size).toBe(0);
     loads.done.length = 0;
     render(["b.png"]);
     expect(holds.open.size).toBe(1);
     loads.done.forEach((f) => f());
     await tick();
+    render(["b.png"]);
     expect(holds.open.size).toBe(0);
   });
 
