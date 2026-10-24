@@ -11,6 +11,7 @@ import { T08_DURATION, T08Sound } from "./demos/T08Sound";
 import { T10_DURATION, T10Three } from "./demos/T10Three";
 import { T11_DURATION, T11Puppet } from "./demos/T11Puppet";
 import { T13_DURATION, T13Fx } from "./demos/T13Fx";
+import { SHOWREEL_DURATION, Showreel } from "./demos/Showreel";
 
 // One second of plain ground: the render smoke target. `remotion compositions` also crashes on
 // an empty list (4.0.538), so the card always holds at least this one.
@@ -32,5 +33,6 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="T10-Three" component={T10Three} durationInFrames={T10_DURATION} fps={30} width={1920} height={1080} />
     <Composition id="T11-Puppet" component={T11Puppet} durationInFrames={T11_DURATION} fps={30} width={1920} height={1080} />
     <Composition id="T13-Fx" component={T13Fx} durationInFrames={T13_DURATION} fps={30} width={1920} height={1080} />
+    <Composition id="Showreel" component={Showreel} durationInFrames={SHOWREEL_DURATION} fps={30} width={1920} height={1080} />
   </Folder>
 );
