@@ -29,7 +29,7 @@ Never animate a moving piece with a linear or symmetric ease.
 | Overshoot on landing, scale pop, gesture | `bounce` | 5–30 % overshoot (damping 0.6 → ~10 %, 0.35 → ~30 %) |
 | Leaves, scraps, paper falling | `flutter` — sway, spin, 3D flip | sway 0.3–0.9 Hz; large pieces fall ≈ 0.5–0.6 frame widths per second; start the shower before frame 0 so frame 0 is already full |
 | Floating objects (clocks, frames, ornaments) | `drift` | 1–4 px amplitude, 0.3–0.5 Hz; more reads as wobble and keeps the shot from settling |
-| A slow carry to a place | `hover` (ease in, then drift) | when `throwIn` is too violent |
+| A slow carry to a place | `hover(frame, fps, seed, { from, to, frames, amp, hz })` — quintic ease, at rest on `to` at `frames`, then a seeded float faded in | when `throwIn` is too violent |
 | Hits on the beat, cuts, slams | `impactShake` | 10–40 px, decaying in ~0.2 s |
 | A thing falls out of frame | gravity (`y = ½·g·t²`) with tumble | no bounce; it leaves |
 | A support pulled from under an object | the support moves, the object keeps its place one beat (inertia), then falls | |
@@ -48,7 +48,7 @@ Secondary motion: stagger a group's arrivals 1 frame apart at 16 fps (~0.06 s); 
 - **Every held shot moves.** Pushes of 3–15 % over the shot; nothing static.
 - **Punch-ins are steps, not eases.** A punch is a 5–35 % scale jump that lands in 1–2 frames and settles (decelerating step); an end card can carry several, on the voice's beats, in and back out. A spring fits a punch poorly: use a per-frame scale table.
 - **Openings can pull back.** Many shots open close and pull out fast in the first 2–3 frames (−10 to −30 %), then push slowly.
-- **Measured camera tables.** When a target motion exists on video, `tools/critique/motion-measure.py` → `frames.csv` (`zoom_step_pct`, `tx`, `ty` per frame, native px) → `tools/critique/camera-table.py` → `tableAt` in `src/camera`. Apply about the frame centre with `transformOrigin: "0 0"` (a centred origin applies the zoom twice).
+- **Measured camera tables.** When a target motion exists on video, `tools/critique/motion-measure.py` → `frames.csv` (`zoom_step_pct`, `tx`, `ty` per frame, native px) → `tools/critique/camera-table.py <frames.csv> --from A --to B --out cam.ts [--cut F]` (rows held on `ecc`/`none`/cut frames; `--from` after a cut frame) → `<TableCamera table={TABLE} offset? depth?>` / `tableAt` in `src/camera` (scale interpolates geometrically, tx/ty linearly). It applies about the frame centre with `transformOrigin: "0 0"` (a hand-built centred origin applies the zoom twice).
 - **Whips and spins** decay over ~5 frames; smear the fast frames (motion blur or a directional blur scaled by the step).
 - The camera reads the composition's fps: a 16 fps film times its eases in seconds and holds poses on its own clock.
 
