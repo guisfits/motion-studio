@@ -90,6 +90,7 @@ Gates read the trace, not the picture. In the S3 round all six demos needed a la
    - no hold longer than ~2 s without an event, to the very last frame (the dry run had dead holds 3.0–4.5 s and 7.5–10 s);
    - type never enters under, or is clipped by, its plate;
    - the camera lands on the place the brief names, readable as that place;
+   - **motion is physical, judged at full rate** (S5 clone, owner: "bem abaixo da média — animação, física dos objetos, movimentação"): every entrance, landing, fall and float comes from `src/physics` (`throwIn`, `bounce`, `flutter`, `drift`, `impactShake`), never a lerp; objects arrive fast (a throw crosses the frame in 2-4 frames at 16 fps, 3-6 at 30) and settle with an overshoot; foreground pieces are big and depth-blurred. A 2 fps contact sheet cannot show this: open a 12-frame consecutive strip (`sheets.mjs --strip <t>`) on every entrance and every camera move. When the film copies a reference, compare with `tools/critique/motion-measure.py` (skill `film-clone`);
    - the trace boxes match the ink: draw a trace box over the still, or measure the caption's pixels against `captionBox` (the example matches to within 6 px); a drift here means a number was copied instead of read from `scene.ts`.
 5. **Fix** what any item fails, in `scene.ts` or the component, never by loosening a trace box.
 6. **Re-render, re-look** (steps 1-4) until every item passes; then gate (`FILM_STAGE=<stage> npx vitest run studio/films/<slug>`, `run-mp4.mjs`) and write what you changed in `animation-notes.md`. Only then return.
