@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { solve, type Part } from "../rig";
+import { assertImages, solve, type Part } from "../rig";
 import { interpolatePose, interpolatePoseEased, POSES, type PoseKey } from "../poses";
 
 // A three-link arm: shoulder (root) -> elbow -> wrist, 100 px apart, hanging down.
@@ -110,5 +110,13 @@ describe("poses", () => {
   it("ships named poses", () => {
     expect(Object.keys(POSES)).toContain("rest");
     expect(Object.keys(POSES).length).toBeGreaterThan(3);
+  });
+});
+
+describe("assertImages", () => {
+  it("passes when every part has an image and names the parts that have none", () => {
+    assertImages(parts, { body: "b", upper: "u", lower: "l" });
+    expect(() => assertImages(parts, { body: "b", lower: "" })).toThrow(/parts upper, lower/);
+    expect(() => assertImages(parts, { body: "b", upper: "u" })).toThrow(/part lower/);
   });
 });

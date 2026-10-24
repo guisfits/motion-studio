@@ -18,6 +18,12 @@ export type Pose = Record<string, number>;
  */
 export type Placed = { x: number; y: number; rotate: number };
 
+/** Throws naming every part that has no image URL in `images` (an <Img> with no source fails with no hint of which part). */
+export function assertImages(parts: Part[], images: Record<string, string>): void {
+  const missing = parts.filter((p) => !images[p.part]).map((p) => p.part);
+  if (missing.length) throw new Error(`rig: no image for part${missing.length > 1 ? "s" : ""} ${missing.join(", ")}`);
+}
+
 // Degrees to radians.
 const rad = (deg: number) => (deg * Math.PI) / 180;
 

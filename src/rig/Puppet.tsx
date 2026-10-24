@@ -1,7 +1,7 @@
 import React from "react";
 import { Img, useCurrentFrame, useVideoConfig } from "remotion";
 import { stepFrame } from "../paper";
-import { solve, type Part, type Pose } from "./rig";
+import { assertImages, solve, type Part, type Pose } from "./rig";
 
 export type PuppetProps = {
   parts: Part[];
@@ -25,6 +25,7 @@ export type PuppetProps = {
 export const Puppet: React.FC<PuppetProps> = ({ parts, images, poseAt, stepFps = 12, size, scale = 1, style }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  assertImages(parts, images);
   const placed = solve(parts, poseAt(stepFrame(frame, fps, stepFps)));
   return (
     <div style={{ position: "relative", width: size[0] * scale, height: size[1] * scale, ...style }}>
