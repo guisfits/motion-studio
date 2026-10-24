@@ -17,7 +17,7 @@
 // variance: no piece, no type, no texture change) for longer than 0.5 s: dead beats and empty
 // sheets that the eye reads as nothing happening.
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -173,6 +173,7 @@ export function flatRanges(
 export async function sheets(video, { out, strips = [], loop = false } = {}) {
   video = resolve(video);
   out = resolve(out ?? dirname(video));
+  mkdirSync(out, { recursive: true });
   const name = basename(video);
   const made = [];
   const temp = [];
