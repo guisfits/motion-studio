@@ -3,7 +3,7 @@ import { AbsoluteFill, cancelRender, continueRender, delayRender, useCurrentFram
 import { ThreeCanvas } from "@remotion/three";
 import { useThree } from "@react-three/fiber";
 import { CanvasTexture, DoubleSide, SRGBColorSpace } from "three";
-import { EASE_IN, F, kf, useFonts47 } from "../lib/s04-07-kit";
+import { F, tab, useFonts47 } from "../lib/s04-07-kit";
 import starryUrl from "../assets/pd/starry-night.jpg";
 import rhoneUrl from "../assets/pd/rhone.jpg";
 import wheatUrl from "../assets/pd/wheatfield.jpg";
@@ -21,12 +21,21 @@ const VH = 1920;
 // Camera: vertical fov 40 deg; at distance D the frame shows (0.728 D) x (0.409 D) units.
 const FOV = 40;
 const D0 = 9;
-const D1 = 5;
-const RING_Y = 0.8;
-const TILT = -0.62;
-/** Spiral of numerals: 36 glyphs, three turns, radius growing from the plate outwards. */
-const SPIRAL = Array.from({ length: 60 }, (_, i) => ({ n: i % 12, th: (i * Math.PI) / 6 + 0.4, r: 0.75 + i * 0.036 }));
-const glyphSize = (r: number) => 0.4 + r * 0.22;
+// Camera: the reference's measured cumulative zoom per frame (S07, frames 211-233): a fast push that
+// decelerates into a hold at ~1.4x, a small pull at f9-10, then the closing acceleration.
+const ZOOM = [1, 1.108, 1.173, 1.246, 1.308, 1.349, 1.385, 1.407, 1.432, 1.419, 1.408, 1.415, 1.427, 1.434, 1.442, 1.45, 1.458, 1.467, 1.477, 1.492, 1.516, 1.544, 1.625];
+// Camera roll (deg, cumulative) and sideways drift (px, cumulative) measured on the reference: a roll
+// that builds to ~7.5 deg, and a small left-then-right drift.
+const ROLL = [0, 0, 0.1, 0.3, 0.4, 0.5, 0.6, 1.3, 2.2, 3.2, 3.8, 3.7, 4.2, 4.6, 4.9, 5.3, 5.4, 5.7, 5.9, 6.1, 6.3, 6.4, 6.5];
+const TX = [0, -4, -8, -9, -10, -12, -14, -4, 5, 16, 26, 36, 39, 42, 45, 47, 49, 50, 52, 54, 54, 55, 57];
+// The plate/ring centre sits at screen (50 %, 55 %) at the start, depth z = 1.65 (it grows 1.9x while the camera zooms 1.63x).
+const PLATE_Z = 1.65;
+const PLATE_SCREEN_Y = 0.55;
+const PLATE_W = 0.43; // fraction of the frame width at f0
+const TILT = -0.5;
+/** One spiral of numerals: 30 glyphs, three turns, radius growing from the plate outwards (as the reference, ~40 visible). */
+const SPIRAL = Array.from({ length: 36 }, (_, i) => ({ n: i % 12, th: (i * Math.PI) / 6 + 0.4, r: 0.6 + i * 0.058 }));
+const glyphSize = (r: number) => 0.42 + r * 0.1;
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((res, rej) => {
@@ -131,7 +140,7 @@ const useAssets = (): Assets | null => {
       setAssets({
         sharp: NUMERALS.map((n) => numeralTexture(n, 0)),
         soft: NUMERALS.map((n) => numeralTexture(n, 9)),
-        frames: [frameTexture(a, "rect", 512, 400), frameTexture(b, "round", 512, 512), frameTexture(c, "oval", 400, 640), frameTexture(d, "rect", 512, 400), frameTexture(e, "rect", 400, 512), frameTexture(g, "rect", 512, 400)],
+        frames: [frameTexture(a, "rect", 512, 400), frameTexture(b, "round", 512, 512), frameTexture(d, "oval", 400, 640), frameTexture(g, "rect", 512, 400), frameTexture(e, "rect", 400, 512), frameTexture(c, "rect", 512, 400)],
         plate: plateTexture(p),
       });
     })().catch((e) => cancelRender(e));
@@ -149,19 +158,20 @@ const useAssets = (): Assets | null => {
 
 // Painting frames: screen position at the start (fractions of the frame), width fraction, depth z.
 const FRAMES = [
-  { sx: 0.2, sy: 0.12, w: 0.3, aspect: 400 / 512, z: -1.0 }, // starry night, rect, top-left
-  { sx: 0.8, sy: 0.07, w: 0.24, aspect: 1, z: -2.0 }, // round medallion, top-right
-  { sx: 0.15, sy: 0.8, w: 0.3, aspect: 640 / 400, z: 1.2 }, // tall oval, bottom-left
-  { sx: 0.84, sy: 0.78, w: 0.28, aspect: 400 / 512, z: 0.3 }, // rect, bottom-right
-  { sx: 0.62, sy: 0.2, w: 0.15, aspect: 400 / 512 * 1.0, z: -3.0 }, // cafe terrace, small, far
-  { sx: 0.4, sy: 0.93, w: 0.18, aspect: 400 / 512, z: -1.5 }, // irises, bottom
+  { sx: 0.31, sy: 0.29, w: 0.24, aspect: 512 / 400, z: 0.54 }, // starry night, rect, top-left
+  { sx: 0.72, sy: 0.19, w: 0.2, aspect: 1, z: -3.2 }, // round medallion, top-right (far)
+  { sx: 0.27, sy: 0.69, w: 0.27, aspect: 400 / 640, z: 2.85 }, // tall oval, bottom-left (nearest: grows 2.3x)
+  { sx: 0.75, sy: 0.68, w: 0.31, aspect: 512 / 400, z: 0.54 }, // rect, bottom-right
+  { sx: 0.62, sy: 0.95, w: 0.1, aspect: 400 / 512, z: -3.0 }, // cafe terrace, small, far
+  { sx: 0.4, sy: 1.02, w: 0.12, aspect: 512 / 400, z: -1.5 }, // irises, bottom
 ];
 
 const Scene: React.FC<{ f: number }> = ({ f }) => {
   const assets = useAssets();
   if (!assets) return null;
-  const dist = kf(f, [[0, D0, EASE_IN], [8, D0 - 0.9], [22, D1]]);
-  const roll = kf(f, [[0, 0], [22, 4]]);
+  const dist = D0 / tab(ZOOM, f);
+  const roll = tab(ROLL, f);
+  const camX = (-tab(TX, f) / VW) * (2 * Math.tan((FOV / 2) * (Math.PI / 180)) * VW / VH) * dist;
   const ang = (-f * 4 * Math.PI) / 180;
   const visH = 2 * Math.tan((FOV / 2) * (Math.PI / 180));
   const visW = (visH * VW) / VH;
@@ -170,17 +180,17 @@ const Scene: React.FC<{ f: number }> = ({ f }) => {
     <>
       <group position={[0, 0, 0]}>
         {/* spiral of numerals */}
-        <group position={[0, RING_Y, 0]} rotation={[TILT, 0, 0]}>
+        <group position={[0, (0.5 - PLATE_SCREEN_Y) * visH * (D0 - PLATE_Z), PLATE_Z]} rotation={[TILT, 0, 0]}>
           <group rotation={[0, 0, ang]}>
             {SPIRAL.map((it, i) => {
               const lx = it.r * Math.cos(it.th);
               const ly = it.r * Math.sin(it.th);
               const cx = lx * Math.cos(ang) - ly * Math.sin(ang);
               const cy = lx * Math.sin(ang) + ly * Math.cos(ang);
-              const zw = cy * Math.sin(TILT);
-              const yw = cy * Math.cos(TILT) + RING_Y;
+              const zw = cy * Math.sin(TILT) + PLATE_Z;
+              const yw = cy * Math.cos(TILT) + (0.5 - PLATE_SCREEN_Y) * visH * (D0 - PLATE_Z);
               const dd = Math.hypot(cx, yw, dist - zw);
-              const soft = Math.min(1, Math.max(0, (dist - 0.2 - dd) / 2.2));
+              const soft = Math.min(1, Math.max(0, (dist - dd - 2.2) / 2.0));
               const gs = glyphSize(it.r);
               return (
                 <group key={i} position={[lx, ly, 0]} rotation={[0, 0, it.th - Math.PI / 2]}>
@@ -198,8 +208,8 @@ const Scene: React.FC<{ f: number }> = ({ f }) => {
           </group>
         </group>
         {/* 1888 plate at the ring centre */}
-        <mesh position={[0, RING_Y, 0]}>
-          <planeGeometry args={[0.34 * visW * D0, 0.34 * visW * D0 * 0.625]} />
+        <mesh position={[0, (0.5 - PLATE_SCREEN_Y) * visH * (D0 - PLATE_Z), PLATE_Z]}>
+          <planeGeometry args={[PLATE_W * visW * (D0 - PLATE_Z), PLATE_W * visW * (D0 - PLATE_Z) * 0.625]} />
           <meshBasicMaterial map={assets.plate} transparent alphaTest={0.02} toneMapped={false} />
         </mesh>
         {/* paintings */}
@@ -214,18 +224,18 @@ const Scene: React.FC<{ f: number }> = ({ f }) => {
           );
         })}
       </group>
-      <CameraRig dist={dist} roll={roll} />
+      <CameraRig dist={dist} roll={roll} x={camX} />
     </>
   );
 };
 
-const CameraRig: React.FC<{ dist: number; roll: number }> = ({ dist, roll }) => {
+const CameraRig: React.FC<{ dist: number; roll: number; x: number }> = ({ dist, roll, x }) => {
   const camera = useThree((s) => s.camera);
   useMemo(() => {
-    camera.position.set(0, 0, dist);
+    camera.position.set(x, 0, dist);
     camera.rotation.set(0, 0, (roll * Math.PI) / 180);
     camera.updateProjectionMatrix();
-  }, [camera, dist, roll]);
+  }, [camera, dist, roll, x]);
   return null;
 };
 
@@ -233,7 +243,7 @@ export const S07: React.FC = () => {
   useFonts47();
   const f = useCurrentFrame();
   return (
-    <AbsoluteFill style={{ background: "linear-gradient(180deg, #2A2620 0%, #2A2620 62%, #4A3A28 100%)" }}>
+    <AbsoluteFill style={{ background: "linear-gradient(180deg, #26221c 0%, #2c261e 66%, #4a3a28 76%, #3a2c1c 100%)" }}>
       <ThreeCanvas width={VW} height={VH} camera={{ fov: FOV, position: [0, 0, D0], near: 0.1, far: 60 }}>
         <Scene f={f} />
       </ThreeCanvas>

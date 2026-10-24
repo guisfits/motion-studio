@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Easing, Img, continueRender, delayRender } from "remotion";
+import { Easing, HtmlInCanvas, Img, continueRender, delayRender } from "remotion";
+import { zoomBlur } from "@remotion/effects/zoom-blur";
 import { loadFace } from "../../../../src/type";
 import cinzelUrl from "../assets/fonts/Cinzel-VF.ttf";
 import archivoUrl from "../assets/fonts/ArchivoBlack-Regular.ttf";
@@ -137,3 +138,16 @@ export const GradText: React.FC<{
 /** Characters of `text` visible at keyed counts (linear between keys, floored). */
 export const typed = (text: string, f: number, keys: [number, number][]): string =>
   text.slice(0, Math.max(0, Math.floor(kf(f, keys.map(([a, b]) => [a, b] as Key)))));
+
+/** A measured per-frame table (camera cumulative scale, angle ...), clamped at both ends. */
+export const tab = (table: readonly number[], f: number): number => table[Math.max(0, Math.min(table.length - 1, Math.round(f)))];
+
+/** Zoom blur on the GPU (the reference's radial zoom between S04 and S05): `amount` px, from `center` in UV. */
+export const ZoomBlurLayer: React.FC<{ amount: number; center?: readonly [number, number]; children: React.ReactNode }> = ({ amount, center = [0.5, 0.5], children }) => {
+  if (amount < 0.5) return <>{children}</>;
+  return (
+    <HtmlInCanvas width={W} height={H} effects={[zoomBlur({ amount, center, samples: 32 })]}>
+      {children}
+    </HtmlInCanvas>
+  );
+};

@@ -1,5 +1,6 @@
 import { AbsoluteFill, Img, useCurrentFrame } from "remotion";
-import { EASE_OUT, F, H, Sprite, W, kf, rnd, useFonts47 } from "../lib/s04-07-kit";
+import { F, H, Sprite, W, kf, rnd, tab, useFonts47 } from "../lib/s04-07-kit";
+import { bounce } from "../../../../src/physics";
 import wallUrl from "../assets/gen/s04-wall.png";
 import clockUrl from "../assets/gen/s04-clock-cut.png";
 import figUrl from "../assets/gen/s04-vg-vines-cut.png";
@@ -22,22 +23,36 @@ const HEAD_W = 155 * FIG_SCALE;
 
 const PUNCH = 24;
 
-// Rest poses read off the reference (centre x, y in world px at zoom 1; width; rotation).
-const CLOCKS = [
-  { x: 0.84 * W, y: 0.06 * H, w: 0.36 * W, r: -12, ph: 0 },
-  { x: 0.12 * W, y: 0.32 * H, w: 0.23 * W, r: 8, ph: 1.3 },
-  { x: 0.36 * W, y: 0.11 * H, w: 0.12 * W, r: 15, ph: 2.1 },
-  { x: 0.78 * W, y: 0.41 * H, w: 0.12 * W, r: -6, ph: 0.7 },
-  { x: 0.14 * W, y: 0.86 * H, w: 0.42 * W, r: 6, ph: 2.9 },
-  { x: 0.88 * W, y: 0.72 * H, w: 0.23 * W, r: -10, ph: 1.9 },
-  { x: 0.45 * W, y: 0.97 * H, w: 0.2 * W, r: 4, ph: 3.4 },
+// Camera = the reference's measured cumulative scale per frame (frames.csv, S04): a hard push 1 -> 1.47
+// (1.19 in the first step, then decaying), a hard cut to the head at 2.22 that settles to 2.54, and the
+// wide frame again for the vertical-smear exit. K maps the reference's figure size onto our cut-out.
+const K = 0.76;
+const CUM = [
+  1, 1.19, 1.252, 1.292, 1.321, 1.343, 1.359, 1.373, 1.384, 1.391, 1.396, 1.401, 1.405, 1.404, 1.406, 1.409, 1.41, 1.412, 1.417, 1.42, 1.425, 1.434, 1.446, 1.468,
+  2.217, 2.371, 2.425, 2.458, 2.479, 2.495, 2.507, 2.515, 2.522, 2.525, 2.528, 2.531, 2.534, 2.537, 2.54, 2.541, 2.543, 2.501, 2.277,
 ];
+const K2 = 0.72; // the head close-up reads smaller than the wide scale predicts (the reference head is ~0.27 W)
+const Z_WIDE_END = K * CUM[PUNCH - 1];
+
+// Rest poses read off the reference at the end of the push (screen px at that zoom), turned into world
+// px by the zoom they were read at: centre x, y; width; rotation. Sizes vary a lot: two huge corner clocks.
+const CLOCKS_SCREEN = [
+  { x: 0.9 * W, y: 0.03 * H, w: 0.34 * W, r: -10, ph: 0 },
+  { x: 0.1 * W, y: 0.3 * H, w: 0.22 * W, r: 6, ph: 1.3 },
+  { x: 0.34 * W, y: 0.09 * H, w: 0.1 * W, r: 15, ph: 2.1 },
+  { x: 0.82 * W, y: 0.4 * H, w: 0.11 * W, r: -6, ph: 0.7 },
+  { x: 0.12 * W, y: 0.86 * H, w: 0.4 * W, r: 6, ph: 2.9 },
+  { x: 0.9 * W, y: 0.72 * H, w: 0.22 * W, r: -10, ph: 1.9 },
+  { x: 0.5 * W, y: 0.98 * H, w: 0.17 * W, r: 4, ph: 3.4 },
+  { x: 0.08 * W, y: 0.62 * H, w: 0.13 * W, r: -8, ph: 0.4 },
+];
+const CLOCKS = CLOCKS_SCREEN.map((c) => ({ ...c, x: W / 2 + (c.x - W / 2) / Z_WIDE_END, y: H / 2 + (c.y - H / 2) / Z_WIDE_END, w: c.w / Z_WIDE_END }));
 
 export const camS04 = (f: number) => {
-  if (f < PUNCH) {
-    return { zoom: kf(f, [[0, 0.64, EASE_OUT], [7, 1.0], [PUNCH - 1, 1.04]]), cx: W / 2, cy: H / 2 };
-  }
-  return { zoom: kf(f, [[PUNCH, 2.3], [42, 2.45]]), cx: HEAD_X + 12, cy: HEAD_Y - 40 };
+  if (f < PUNCH) return { zoom: K * tab(CUM, f), cx: W / 2, cy: H / 2 };
+  // head close-up: head centre at 45 % of the frame height
+  const zoom = K2 * tab(CUM, f);
+  return { zoom, cx: HEAD_X, cy: HEAD_Y + (0.08 * H) / zoom };
 };
 
 const GuideText: React.FC<{ text: string; shown: number; size: number; opacityLast: number }> = ({ text, shown, size, opacityLast }) => {
@@ -61,18 +76,20 @@ const GuideText: React.FC<{ text: string; shown: number; size: number; opacityLa
 };
 
 /** The whole shot as a pure function of its local frame (S05 re-draws it for the zoom-blur join). */
-export const S04Scene: React.FC<{ f: number }> = ({ f }) => {
+export const S04Scene: React.FC<{ f: number; exit?: boolean }> = ({ f, exit = false }) => {
   useFonts47();
-  const cam = camS04(f);
+  // exit: the reference cuts to the wide frame (figure small, text smeared) for the frame before the zoom blur
+  const cam = exit ? { zoom: K * 1.25, cx: W / 2, cy: H / 2 } : camS04(f);
   const punched = f >= PUNCH;
 
   // Skull lift: cap + hair rise 55 world px over 14 frames from local 25 (ref f131-146).
-  const lift = kf(f, [[PUNCH + 1, 0], [PUNCH + 15, 58, EASE_OUT]]);
-  const brainUp = kf(f, [[PUNCH + 1, 0], [PUNCH + 15, 30, EASE_OUT]]);
+  const lb = bounce(f - PUNCH - 1, 16, { hz: 1.7, damping: 0.5 });
+  const lift = 58 * lb;
+  const brainUp = 30 * lb;
   const capClip = `inset(0 0 ${((FIG_H - (CAP_Y - FIG_TOP)) / FIG_H) * 100}% 0)`;
   const bodyClip = `inset(${((CAP_Y - FIG_TOP) / FIG_H) * 100}% 0 0 0)`;
 
-  const textShown = Math.floor(kf(f, [[0, 0], [1, 1], [2, 2], [7, 6], [14, 8]]));
+  const textShown = Math.floor(kf(f, [[0, 0], [1, 1], [2, 2], [3, 3], [4, 5], [5, 6], [6, 7], [7, 8]]));
   const textSize = 128;
 
   return (
@@ -84,14 +101,9 @@ export const S04Scene: React.FC<{ f: number }> = ({ f }) => {
         }}
       >
         <Img src={wallUrl} style={{ position: "absolute", left: -W * 0.9, top: -H * 0.4, width: W * 2.8, height: H * 1.8, objectFit: "cover" }} />
-        {CLOCKS.map((c, i) => {
-          const settle = kf(f, [[0, 0], [8, 1, EASE_OUT]]);
-          const sx = W / 2 + (c.x - W / 2) * (0.45 + 0.55 * settle);
-          const sy = H / 2 + (c.y - H / 2) * (0.45 + 0.55 * settle);
-          return (
-            <Sprite key={i} src={clockUrl} x={sx} y={sy + 7 * Math.sin(f * 0.22 + c.ph)} w={c.w * 1.25 * (0.6 + 0.4 * settle)} rot={c.r + 2.5 * Math.sin(f * 0.15 + c.ph + rnd(i))} />
-          );
-        })}
+        {CLOCKS.map((c, i) => (
+          <Sprite key={i} src={clockUrl} x={c.x + 3 * Math.sin(f * 0.2 + c.ph)} y={c.y + 6 * Math.sin(f * 0.22 + c.ph)} w={c.w * 1.6} rot={c.r + 0.4 * Math.sin(f * 0.15 + c.ph + rnd(i))} style={{ filter: `sepia(0.45) brightness(0.62) contrast(1.15) blur(${c.w > 0.2 * W ? 1.6 : 0.6}px)` }} />
+        ))}
         {/* body (below the cap line), brain, cap */}
         <Img src={figUrl} style={{ position: "absolute", left: FIG_LEFT, top: FIG_TOP, width: FIG_W, height: FIG_H, clipPath: bodyClip, filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.5))" }} />
         {punched && (
