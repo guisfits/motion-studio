@@ -1,2 +1,6 @@
 assets/gen/
 assets/pd/
+audio/.cache/
+audio/music/
+audio/mix.mp4
+audio/silent.mp4
