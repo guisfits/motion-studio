@@ -1,10 +1,16 @@
+/**
+ * One cut-out piece of a figure. `Puppet` draws the parts in list order: a later part is drawn
+ * on top of an earlier one (a forearm after its upper arm, so it owns the elbow). The order of the
+ * list is the draw order only; the hinge chain comes from `parent`.
+ * tools/kit/cut-limbs.py writes a module of exactly these, in draw order.
+ */
 export type Part = {
   part: string;
   file: string;
-  /** Hinge point inside the part's own image, in source px. */
+  /** Hinge point inside the part's own image, in source px (not in the figure): the point the part turns about. */
   pivot: [number, number];
   parent?: string | null;
-  /** Top-left of the part in the assembled figure at rest, in source px (default 0,0). */
+  /** Top-left of the part's image in the assembled figure at rest, in source px (default 0,0). The hinge sits at `origin + pivot` in figure space. */
   origin?: [number, number];
 };
 
