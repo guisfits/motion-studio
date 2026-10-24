@@ -66,7 +66,8 @@ import { readFileSync } from "node:fs";
 const film = process.argv[1];
 const rd = (p) => JSON.parse(readFileSync(`${film}/${p}`, "utf8"));
 const { beats } = rd("crew/sync-sheet.json");
-const cues = rd("out/cues.auto.json");
+// cues.auto.json is the composition's Cue[] ({ at, sfx, gain }); sfx.mjs reads { t, type, gain } (toSfxCues).
+const cues = rd("out/cues.auto.json").map((c) => ({ t: c.at, type: c.sfx, gain: c.gain }));
 for (const b of beats) {
   const by = {};
   for (const c of cues.filter((c) => c.t >= b.t[0] && c.t < b.t[1])) by[c.type] = (by[c.type] ?? 0) + 1;

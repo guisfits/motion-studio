@@ -11,7 +11,7 @@ Sound designer (which sounds exist and why) and re-recording mixer (final balanc
 
 ## You receive
 
-- `out/silent-9x16.mp4` (locked picture, no audio) and `out/cues.auto.json` (every landing, travel and stroke the animator's `<Cue>` components in `<film>/Film.tsx` emit, exported by `node tools/audio/cues-json.mjs <file.cues.ts> <EXPORT> out/cues.auto.json`; it over-emits on purpose).
+- `out/silent-9x16.mp4` (locked picture, no audio) and `out/cues.auto.json` (every landing, travel and stroke the animator's `<Cue>` components in `<film>/Film.tsx` emit, exported by `node tools/audio/cues-json.mjs <file.cues.ts> <EXPORT> out/cues.auto.json`; it over-emits on purpose). Its rows are the composition's `Cue` `{ at, sfx, gain }`; `crew/sfx-cues.json` is `{ t, type, gain, len }` (`t` = `at`, `type` = `sfx`, as `toSfxCues` in `src/audio/cues.ts` maps them).
 - `voice/voice.wav`, `voice/words.json` (`words[]` `w`, `start`, `end`); optional `out/voices.auto.json` (extra takes). The voice is the spine; you never retime it.
 - `crew/sync-sheet.json` (per beat: `t`, `device`, `join`, `zoom.kind`) and `crew/brief.md` (the pace plan: turns, palette flips, dissolves, ending).
 - From the overlay, via the director: voice policy, music licence rules, any sonic logo. Without a licence rule, ask; never guess a licence.
