@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { stepFrame } from "../paper";
 import {
   caretVisible,
   circleMarkBox,
@@ -35,13 +36,33 @@ describe("counterValue", () => {
     expect(seen.size).toBeGreaterThan(5);
   });
   it("poses on twos at 12 fps", () => {
-    const s = { ...spec, stepFps: 12 };
-    expect(counterValue(40, s)).toBe(counterValue(41, s));
+    const s = { ...spec, stepFps: 12, steps: 400 };
+    const smooth = { ...s, stepFps: undefined };
+    // 40 and 41 share the pose that began on 40; the smooth count differs between them.
+    expect(counterValue(41, s)).toBe(counterValue(40, s));
+    expect(counterValue(41, smooth)).not.toBe(counterValue(40, smooth));
   });
   it("formats pt-BR thousands and decimals by locale", () => {
     expect(formatCount(1234567, "pt-BR")).toBe("1.234.567");
     expect(formatCount(1234.5, "pt-BR", 2)).toBe("1.234,50");
     expect(formatCount(1234567, "en-US")).toBe("1,234,567");
+  });
+});
+
+describe("the step clock", () => {
+  // Every stepped pure function reads the value at the frame its pose began (`stepFrame`), exactly:
+  // 30 fps on 15 poses a second changes pose on every even frame, frame 246 included.
+  const stepped = { stepFps: 15 };
+  it("holds a counter, a typewriter and a handwriting on the stepFrame clock", () => {
+    const counter = { from: 0, to: 100000, start: 0, dur: 900, fps, steps: 100000 };
+    const type = { text: "x".repeat(900), fps, startS: 0, cps: 30 };
+    const write = { fps, startS: 0, durS: 30, lines: 1 };
+    for (let f = 0; f < 900; f++) {
+      const at = stepFrame(f, fps, 15);
+      expect(counterValue(f, { ...counter, ...stepped })).toBe(counterValue(at, counter));
+      expect(typedCount(f, { ...type, ...stepped })).toBe(typedCount(at, type));
+      expect(handwriteProgress(f, 0, { ...write, ...stepped })).toBe(handwriteProgress(at, 0, write));
+    }
   });
 });
 
@@ -64,6 +85,22 @@ describe("typewriter", () => {
   it("steps at 12 poses per second when asked", () => {
     const s = { ...spec, stepFps: 12, cps: 30 };
     expect(typedCount(31, s)).toBe(typedCount(30, s));
+  });
+  it("names the frame the last character is struck, for any cadence", () => {
+    for (const cps of [7, 9, 11, 12, 13, 14.5]) {
+      for (const text of ["abc", "Nínive é", "a primeira Bíblia impressa"]) {
+        const sp = { text, fps, startS: 0.4, cps };
+        const done = typedDoneFrame(sp);
+        expect(typedCount(done, sp)).toBe(text.length);
+        expect(typedCount(done - 1, sp)).toBeLessThan(text.length);
+      }
+    }
+  });
+  it("names it on the held pose when stepped", () => {
+    const sp = { text: "abcdef", fps, startS: 0, cps: 11, stepFps: 12 };
+    const done = typedDoneFrame(sp);
+    expect(typedCount(done, sp)).toBe(6);
+    expect(typedCount(done - 1, sp)).toBeLessThan(6);
   });
   it("keeps the caret solid while typing and blinks after", () => {
     expect(caretVisible(35, spec)).toBe(true);

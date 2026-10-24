@@ -1,4 +1,5 @@
 import { Easing, interpolate } from "remotion";
+import { stepFrame } from "../paper/step";
 
 export type HandwriteSpec = {
   fps: number;
@@ -14,11 +15,12 @@ export type HandwriteSpec = {
 const inOut = Easing.inOut(Easing.sin);
 
 /**
- * Write-on progress of line `index` (0..1): the lines are written one after the other, each with the
- * pen easing in and out like a hand, so a short line is quick and a long one slow.
+ * Write-on progress of line `index` (0..1): the lines are written one after the other, each in an equal
+ * share (`durS / lines`) of the time with the pen easing in and out like a hand; a short line is therefore
+ * written slower than a long one.
  */
 export const handwriteProgress = (frame: number, index: number, { fps, startS, durS, lines, stepFps }: HandwriteSpec): number => {
-  const f = stepFps ? Math.floor((frame / fps) * stepFps) * (fps / stepFps) : frame;
+  const f = stepFps ? stepFrame(frame, fps, stepFps) : frame;
   const t = f / fps - startS;
   const slice = durS / lines;
   return interpolate(t, [index * slice, (index + 1) * slice], [0, 1], {

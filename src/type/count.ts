@@ -1,4 +1,5 @@
 import { Easing, interpolate } from "remotion";
+import { stepFrame } from "../paper/step";
 
 const outCubic = Easing.out(Easing.cubic);
 
@@ -23,7 +24,7 @@ export type CounterSpec = {
  */
 export const counterValue = (frame: number, spec: CounterSpec): number => {
   const { from = 0, to, start, dur, steps = 14, stepFps, fps, decimals = 0 } = spec;
-  const f = stepFps ? Math.floor((frame / fps) * stepFps) * (fps / stepFps) : frame;
+  const f = stepFps ? stepFrame(frame, fps, stepFps) : frame;
   const eased = interpolate(f, [start, start + dur], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
