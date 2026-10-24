@@ -64,7 +64,13 @@ export function throwIn(frame: number, fps: number, { from, to, frames = 4, arc 
   const hz = hzReaching(0.95, frames / fps, damping);
   const p = bounce(frame, fps, { hz, damping });
   const r = bounce(frame, fps, { hz: hz * 0.8, damping: damping * 0.8 }); // rotation lags and wobbles a little more
-  const flight = Math.min(1, Math.max(0, p));
+  // The arc lifts the piece only on the way in. A spring with damping < 1 first peaks at t = pi / wd
+  // (wd = damped frequency) and then rings around 1; letting the arc follow that ring would hop the
+  // landed piece, so progress is held at 1 (no lift) from the first peak on.
+  const t = frame / fps;
+  const wd = 2 * Math.PI * hz * Math.sqrt(Math.max(0, 1 - damping * damping));
+  const landed = damping < 1 && t >= Math.PI / wd;
+  const flight = landed ? 1 : Math.min(1, Math.max(0, p));
   return {
     x: from.x + (to.x - from.x) * p,
     y: from.y + (to.y - from.y) * p - arc * 4 * flight * (1 - flight),

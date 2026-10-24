@@ -58,6 +58,20 @@ describe("throwIn", () => {
       }
     }
   });
+  it("lifts along its arc only until the first peak: the landing ring never hops the piece", () => {
+    // Level throw (same y at both ends) so any y movement is the arc term alone; y < start is "up".
+    const level = { from: { ...from, y: 400 }, to: { ...to, y: 400 } };
+    const at = (f: number) => throwIn(f, FPS, { ...level, frames: 4, arc: 120, damping: 0.45 });
+    const progress = (f: number) => (at(f).x - level.from.x) / (level.to.x - level.from.x);
+    const step = 0.05;
+    let peak = step;
+    while (progress(peak + step) > progress(peak)) peak += step; // first peak of the landing spring
+    expect(progress(peak)).toBeGreaterThan(1); // it does overshoot, so the ring-back dips under 1 afterwards
+    const yPeak = at(peak).y;
+    let highest = Infinity;
+    for (let f = peak; f <= FPS * 3; f += step) highest = Math.min(highest, at(f).y);
+    expect(yPeak - highest).toBeLessThanOrEqual(1);
+  });
   it("overshoots its landing rotation (settle wobble)", () => {
     const rots = Array.from({ length: 24 }, (_, f) => throwIn(f, FPS, { from, to, frames: 4 }).rotate);
     expect(Math.max(...rots)).toBeGreaterThan(to.rotate + 0.5);
