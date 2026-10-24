@@ -79,3 +79,16 @@ test("an unknown SFX name fails the mix instead of passing silently", { timeout:
     /past the end/,
   );
 });
+
+test("a cue is audible in the mix at its time and nowhere else", { timeout: 60_000 }, () => {
+  const silent = join(dir, "silent-sfx.mp4");
+  ff("-f", "lavfi", "-i", "testsrc2=s=320x180:d=6:r=30", "-pix_fmt", "yuv420p", silent);
+  const music = join(dir, "music-sfx.wav");
+  ff("-f", "lavfi", "-i", "sine=f=55:d=6", "-ac", "2", "-ar", "48000", music);
+  const out = join(dir, "sfx-only.mp4");
+  mixRemotion({ video: silent, voice: undefined, music, cues: [{ at: 2, sfx: "paper-place" }], out });
+  // The 55 Hz bed has nothing above 400 Hz: what a high-pass hears is the SFX.
+  const at = rmsDb(out, "highpass=f=400,highpass=f=400", 1.9, 2.5);
+  const away = rmsDb(out, "highpass=f=400,highpass=f=400", 4, 5);
+  assert.ok(at - away >= 20, `at the cue ${at} dB, away from it ${away} dB`);
+});

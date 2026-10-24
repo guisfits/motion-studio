@@ -30,12 +30,16 @@ test("a clean moving clip passes; silent is not a fault unless sound is required
 
 test("2 s of black fails", { timeout: 60_000 }, () => {
   const black = clip("black.mp4", "drawbox=c=black:t=fill:enable='between(t,2,4.2)'");
-  assert.deepEqual(codes(checkMp4(black).findings), ["V2"]);
+  const found = checkMp4(black).findings;
+  assert.deepEqual(codes(found), ["V2"]);
+  assert.ok(Math.abs(found[0].t - 2) < 0.1, `black starts at ${found[0].t}`);
 });
 
 test("a frozen 3 s segment fails, a 2 s one does not", { timeout: 60_000 }, () => {
   const frozen3 = clip("frozen3.mp4", "split[a][b];[a][b]freezeframes=first=30:last=135:replace=29");
-  assert.ok(codes(checkMp4(frozen3).findings).includes("V3"));
+  const frozen = checkMp4(frozen3).findings.filter((f) => f.code === "V3");
+  assert.equal(frozen.length, 1);
+  assert.ok(Math.abs(frozen[0].t - 1) < 0.1, `freeze starts at ${frozen[0].t}`);
   const short = clip("frozen2.mp4", "split[a][b];[a][b]freezeframes=first=60:last=110:replace=59");
   assert.ok(!codes(checkMp4(short).findings).includes("V3"));
 });
@@ -63,6 +67,15 @@ test("text boxes outside the title-safe area are flagged, and stills are drawn",
   const f = judgeSafeArea(boxes, 1920, 1080);
   assert.equal(f.length, 1);
   assert.match(f[0].msg, /edge/);
+  // Every side of the 5 % margin (96 px across, 54 px down) is judged, and a box on the line is inside.
+  const sides = (box) => judgeSafeArea([{ t: 0, box, label: "b" }], 1920, 1080).length;
+  assert.equal(sides([1500, 200, 325, 100]), 1, "right edge past 1824");
+  assert.equal(sides([1500, 200, 324, 100]), 0, "right edge on 1824");
+  assert.equal(sides([200, 40, 100, 100]), 1, "top above 54");
+  assert.equal(sides([200, 54, 100, 100]), 0, "top on 54");
+  assert.equal(sides([200, 900, 100, 127]), 1, "bottom past 1026");
+  assert.equal(sides([200, 900, 100, 126]), 0, "bottom on 1026");
+  assert.equal(sides([90, 200, 100, 100]), 1, "left before 96");
   const stills = writeStills(clip("boxes.mp4"), boxes, 1920, 1080, dir);
   assert.ok(stills.every((s) => existsSync(s)));
 });
