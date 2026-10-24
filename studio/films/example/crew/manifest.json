@@ -1,0 +1,20 @@
+{
+  "assets": [
+    {
+      "id": "moses",
+      "kind": "hero",
+      "status": "ready",
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:039.Moses_Comes_Down_from_Mount_Sinai.jpg",
+      "file": "assets/img/dore-moses-sinai.jpg"
+    },
+    {
+      "id": "map",
+      "kind": "hero",
+      "status": "ready",
+      "licence": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:1572_Typus_Orbis_Terrarum_Ortelius.jpg",
+      "file": "assets/img/ortelius-1572-world-map.jpg"
+    }
+  ]
+}

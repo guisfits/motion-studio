@@ -7,6 +7,8 @@ import { layoutOf, type Box } from "../../../src/film";
 import { DEFAULT_DRIFT, type CamKey } from "../../../src/camera/path";
 import type { SetDownPoseOptions } from "../../../src/paper/set-down-pose";
 import film from "./film.json";
+import sheet from "./crew/sync-sheet.json";
+import voice from "./voice/words.json";
 
 export const FPS = film.fps;
 export const DURATION = film.durationInFrames;
@@ -33,7 +35,7 @@ export type Piece = {
   carry: SetDownPoseOptions;
 };
 
-export const PIECES: Piece[] = film.sheet.beats.map((b, i, beats) => {
+export const PIECES: Piece[] = sheet.beats.map((b, i, beats) => {
   const id = b.hero.asset;
   const { box, rotate } = REST[id];
   return {
@@ -71,7 +73,7 @@ export const CAPTION = {
 
 export type Chunk = { id: string; text: string; words: Caption[]; from: number; to: number };
 
-const spoken = fromWords(film.words);
+const spoken = fromWords(voice);
 const landOf = (c: Caption) => Math.round((c.startMs / 1000) * FPS);
 
 /** Each caption chunk is on screen from its first word's travel until the next chunk (or a hold after its last word). */

@@ -57,8 +57,10 @@ export type CheckFilmInput = {
   /** crew/script.md and crew/fact-check.json, for the fact-check (X1–X3). */
   script?: string;
   factCheck?: unknown;
-  /** Replaces the register's film length norm (a spot or a test film). Reported as a yellow F1 note. */
+  /** Replaces the register's film length norm (a spot or a test film). Reported as an orange F1 until `lengthReason` is given, then yellow. */
   length?: { minS: number; maxS: number };
+  /** Why the film overrides the length (a `length:` line of crew/animation-notes.md): with it the F1 note is yellow, else orange. */
+  lengthReason?: string;
   /** Rendered pixels for T11 (contrast). Without it, T11 is not run and the report says so. */
   sampler?: PixelSampler;
   /** The sound role's files and the mix reading, for the `final` stage (M2–M6). Ignored before it. */
@@ -83,7 +85,7 @@ export function gateWords(input: WordsInput): { words: { w: string; start: numbe
  * The fact-check gates the script and the final cut, never the stages between (client, 2026-10-16).
  */
 export function checkFilm(input: CheckFilmInput): Finding[] {
-  const { stage, sheet, manifest, scenes, length } = input;
+  const { stage, sheet, manifest, scenes, length, lengthReason } = input;
   const out: Finding[] = [];
   const facts = (s: Sheet | null) => checkFacts({ script: input.script ?? "", factCheck: input.factCheck, sheet: s });
   if (stage === "script") return facts(null);
@@ -107,11 +109,15 @@ export function checkFilm(input: CheckFilmInput): Finding[] {
   for (const [name, len, norm] of spans)
     if (len < norm.minS || len > norm.maxS)
       out.push(finding("red", "F1", null, `${name} is ${len.toFixed(1)} s (${norm.minS}–${norm.maxS})`));
-  if (length) out.push(finding("yellow", "F1", null, `length norm overridden by film.json: ${length.minS}–${length.maxS} s (register: ${norms.film.minS}–${norms.film.maxS} s)`));
+  if (length) {
+    const said = `length norm overridden by film.json: ${length.minS}–${length.maxS} s (register: ${norms.film.minS}–${norms.film.maxS} s)`;
+    if (lengthReason?.trim()) out.push(finding("yellow", "F1", null, `${said}; reason in crew/animation-notes.md`));
+    else out.push(finding("orange", "F1", null, `${said}; add a \`length: <reason>\` line to crew/animation-notes.md`));
+  }
 
   if (stage === "sheet") return out;
   const { trace } = input;
-  if (!trace) return [...out, finding("red", "T0", null, `stage ${stage} needs a trace (sampleTrace(traceAt, …))`)];
+  if (!trace) return [...out, finding("red", "T0", null, `stage ${stage} needs a trace: the film folder's trace.ts must export traceAt (sampleTrace(traceAt, …))`)];
   out.push(
     ...checkTrace(trace, { manifest, norms }),
     ...checkPicture(trace, sheet, manifest, norms),

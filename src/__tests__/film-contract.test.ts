@@ -2,7 +2,8 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   captionBox,
@@ -10,15 +11,14 @@ import {
   rotatedBox,
   sampleTrace,
   shotAt,
-  type Sheet,
   type TraceAt,
   type TraceItem,
 } from "../film";
-import { checkFilm, runFilmGate, stageFromEnv, writeChecks, type CheckFilmInput, type SfxCue, type SoundInput } from "../film/gate";
+import { checkFilm, lengthReason, loadFilm, runFilmGate, runStageGate, stageFromEnv, writeChecks, type CheckFilmInput, type SfxCue, type SoundInput } from "../film/gate";
 import { traceAt as exampleTraceAt } from "../../studio/films/example/trace";
-import film from "../../studio/films/example/film.json";
-
-const sheet = film.sheet as Sheet;
+const exampleDir = fileURLToPath(new URL("../../studio/films/example", import.meta.url));
+const film = loadFilm(exampleDir);
+const sheet = film.sheet;
 const OPTS = { format: "9x16", durationInFrames: film.durationInFrames, fps: film.fps } as const;
 
 // The example film is the fixture: a trace known to pass, mutated one way at a time.
@@ -34,6 +34,7 @@ const run = (traceAt: TraceAt, extra: Partial<CheckFilmInput> = {}) =>
     manifest: film.manifest,
     words: film.words,
     length: film.length,
+    lengthReason: "a test film",
     trace: sampleTrace(traceAt, OPTS),
     ...extra,
   });
@@ -117,6 +118,21 @@ describe("checkFilm", () => {
   it("holds the film to the register's length unless film.json overrides it, and says so", () => {
     expect(codes(run(exampleTraceAt, { length: undefined }), "red")).toEqual(["F1"]);
     expect(run(exampleTraceAt)).toContainEqual(expect.objectContaining({ severity: "yellow", code: "F1" }));
+  });
+
+  it("makes a length override orange until crew/animation-notes.md gives the reason", () => {
+    const f1 = (extra: Partial<CheckFilmInput>) => run(exampleTraceAt, { stage: "sheet", ...extra }).filter((f) => f.code === "F1");
+    expect(f1({ lengthReason: undefined })).toEqual([expect.objectContaining({ severity: "orange", msg: expect.stringContaining("animation-notes.md") })]);
+    expect(f1({ lengthReason: "  " })).toEqual([expect.objectContaining({ severity: "orange" })]);
+    expect(f1({ lengthReason: "a 6 s test film" })).toEqual([expect.objectContaining({ severity: "yellow" })]);
+  });
+
+  it("reads the reason from the first `length:` line of animation-notes.md", () => {
+    expect(lengthReason("# Notes\nlength: a 6 s spot\nF1: other")).toBe("a 6 s spot");
+    expect(lengthReason("Length:   spot  ")).toBe("spot");
+    expect(lengthReason("length:\nF1: length override")).toBeUndefined();
+    expect(lengthReason("F1: length: not at the line start")).toBeUndefined();
+    expect(lengthReason(null)).toBeUndefined();
   });
 
   it("says contrast was not read when there is no render, and reads the pixels when there is", () => {
@@ -311,10 +327,14 @@ describe("final sound gates", () => {
     // The draft gate judges the draft render (picture lock), not the silent master rendered after it.
     it("reads the draft render at `draft`: out/draft-<format>.mp4, else out/draft.mp4, never the silent master", () => {
       withFilm((dir) => {
-        const draft = () => runFilmGate({ dir, traceAt: exampleTraceAt, stage: "draft", write: false });
+        const draft = (requireRender = false) => runFilmGate({ dir, traceAt: exampleTraceAt, stage: "draft", write: false, requireRender });
         const f2 = () => draft().findings.filter((f) => f.code === "F2");
         tone(join(dir, "out", "silent-9x16.mp4"), 2.45);
         expect(f2()).toEqual([expect.objectContaining({ severity: "yellow", msg: expect.stringContaining("out/draft-9x16.mp4") })]);
+        // Under the gate command (FILM_STAGE=draft) the same missing render is red.
+        const gated = draft(true);
+        expect(gated.findings.filter((f) => f.code === "F2")).toEqual([expect.objectContaining({ severity: "red", msg: "missing out/draft-9x16.mp4" })]);
+        expect(gated.summary.pass).toBe(false);
         tone(join(dir, "out", "draft.mp4"), 2.45);
         expect(f2()).toEqual([]);
         rmSync(join(dir, "out", "draft.mp4"));
@@ -368,4 +388,75 @@ describe("the report", () => {
     expect(stageFromEnv("draft", { FILM_STAGE: "final" })).toBe("final");
     expect(() => stageFromEnv("draft", { FILM_STAGE: "drafts" })).toThrow(/FILM_STAGE/);
   });
+});
+
+describe("the stage gate on any folder", () => {
+  // A folder outside the repo holding only the crew's files: no film.json, no film.test.ts.
+  const crewOnly = (fn: (dir: string) => void | Promise<void>) => async () => {
+    const dir = mkdtempSync(join(tmpdir(), "film-crew-"));
+    try {
+      mkdirSync(join(dir, "crew"));
+      mkdirSync(join(dir, "voice"));
+      writeFileSync(join(dir, "crew", "sync-sheet.json"), JSON.stringify(film.sheet));
+      writeFileSync(join(dir, "crew", "manifest.json"), JSON.stringify(film.manifest));
+      writeFileSync(join(dir, "voice", "words.json"), JSON.stringify(film.words));
+      await fn(dir);
+    } finally {
+      rmSync(dir, { recursive: true });
+    }
+  };
+  const reds = (r: { findings: { severity: string; code: string }[] }) => codes(r.findings, "red");
+
+  it("runs `sheet` on crew/sync-sheet.json + manifest + words alone and writes crew/checks-sheet.md", crewOnly(async (dir) => {
+    const r = await runStageGate({ dir, stage: "sheet" });
+    expect(readFileSync(join(dir, "crew", "checks-sheet.md"), "utf8")).toBe(r.markdown);
+    // The example's six seconds are short of the register's norm; nothing else is wrong with its paper.
+    expect(reds(r)).toEqual(["F1"]);
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length }));
+    expect((await runStageGate({ dir, stage: "sheet" })).summary.pass).toBe(true);
+  }));
+
+  it("goes red on a bad sheet: a hero that is not in the manifest (S2)", crewOnly(async (dir) => {
+    writeFileSync(join(dir, "crew", "manifest.json"), JSON.stringify({ assets: [] }));
+    const r = await runStageGate({ dir, stage: "sheet" });
+    expect(reds(r)).toContain("S2");
+    expect(readFileSync(join(dir, "crew", "checks-sheet.md"), "utf8")).toContain("S2");
+  }));
+
+  it("takes FILM_DIR relative to the working directory and the stage from FILM_STAGE", crewOnly(async (dir) => {
+    const r = await runStageGate({ env: { FILM_DIR: relative(process.cwd(), dir), FILM_STAGE: "sheet" } });
+    expect(r.stage).toBe("sheet");
+    await expect(runStageGate({ env: { FILM_DIR: dir } })).rejects.toThrow(/FILM_STAGE/);
+    await expect(runStageGate({ env: { FILM_STAGE: "sheet" } })).rejects.toThrow(/FILM_DIR/);
+    await expect(runStageGate({ env: { FILM_DIR: join(dir, "nope"), FILM_STAGE: "sheet" } })).rejects.toThrow(/does not exist/);
+  }));
+
+  it("names the paper a stage cannot read: red F0, and `script` needs none of it", crewOnly(async (dir) => {
+    rmSync(join(dir, "crew", "manifest.json"));
+    const r = await runStageGate({ dir, stage: "sheet" });
+    expect(r.findings).toEqual([expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("crew/manifest.json") })]);
+    expect(reds(await runStageGate({ dir, stage: "script" }))).toEqual(["X1"]);
+    expect(reds(await runStageGate({ dir, stage: "animatic" }))).toEqual(["F0", "F0"]);
+  }));
+
+  it("refuses a sheet held twice: inline in film.json and again in crew/sync-sheet.json", crewOnly(async (dir) => {
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length, sheet: film.sheet }));
+    const r = await runStageGate({ dir, stage: "sheet" });
+    expect(r.findings).toEqual([expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("keep one copy") })]);
+  }));
+
+  it("imports <dir>/trace.ts for a trace stage, and is red T0 without it", crewOnly(async (dir) => {
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length }));
+    expect(reds(await runStageGate({ dir, stage: "animatic" }))).toEqual(["T0"]);
+    writeFileSync(join(dir, "trace.ts"), "export const traceAt = (frame: number) => ({ items: [] as never[], frame });\n");
+    const r = await runStageGate({ dir, stage: "animatic" });
+    expect(reds(r)).not.toContain("T0");
+    expect(reds(r)).toContain("T5");
+  }));
+
+  it("is red F2 at draft without a render under the gate command", crewOnly(async (dir) => {
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length }));
+    const r = await runStageGate({ dir, stage: "draft", traceAt: exampleTraceAt });
+    expect(r.findings).toContainEqual(expect.objectContaining({ severity: "red", code: "F2", msg: "missing out/draft-9x16.mp4" }));
+  }));
 });

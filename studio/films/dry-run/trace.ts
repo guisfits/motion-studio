@@ -17,9 +17,9 @@ import {
   CAMERA_DRIFT, CAMERA_KEYS, CAPTION, CHUNKS, CUT_FRAMES, DURATION, FPS, GROUND_BOX, H, INK, PARTS, PIECES, PLATE,
   PLATE_FROM, PLATE_TO, W,
 } from "./scene";
-import film from "./film.json";
+import sheet from "./crew/sync-sheet.json";
 
-const TARGET_ROW = film.sheet.beats[1];
+const TARGET_ROW = sheet.beats[1];
 const TARGET_FROM = Math.round(TARGET_ROW.key[0].t * FPS);
 const TARGET_BOX = PARTS[TARGET_ROW.zoom?.target ?? ""];
 if (!TARGET_BOX) throw new Error(`dry-run: beat ${TARGET_ROW.id} has no zoom target in PARTS`);

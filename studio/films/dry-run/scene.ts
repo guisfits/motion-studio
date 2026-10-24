@@ -5,6 +5,8 @@ import { layoutOf, type Box } from "../../../src/film";
 import { DEFAULT_DRIFT, type CamKey } from "../../../src/camera/path";
 import type { SetDownPoseOptions } from "../../../src/paper/set-down-pose";
 import film from "./film.json";
+import sheet from "./crew/sync-sheet.json";
+import voice from "./voice/words.json";
 
 export const FPS = film.fps;
 export const DURATION = film.durationInFrames;
@@ -48,7 +50,7 @@ const TOWN_H = Math.round((TOWN_INNER_W * 1274) / 1700) + 2 * SHEET_PAD;
 const TOWN_BOX: Box = [Math.round(CITY[0] - TOWN_W / 2), Math.round(CITY[1] - TOWN_H / 2), TOWN_W, TOWN_H];
 
 const T_TOWN = sec(4.2);
-const T_WORDS = sec(film.sheet.beats[1].t[0]);
+const T_WORDS = sec(sheet.beats[1].t[0]);
 
 const smooth = (dur: number): Pick<SetDownPoseOptions, "dur" | "stepFps"> => ({ dur, stepFps: 30 });
 
@@ -129,7 +131,7 @@ export const PLATE: Box = [SAFE[0] - 20, CAPTION.top - 10, SAFE[2] + 40, Math.ro
 
 export type Chunk = { id: string; text: string; words: Caption[]; from: number; to: number };
 
-const spoken = fromWords(film.words);
+const spoken = fromWords(voice);
 const landOf = (c: Caption) => Math.round((c.startMs / 1000) * FPS);
 
 export const CHUNKS: Chunk[] = film.captions.map((c, i, all) => {

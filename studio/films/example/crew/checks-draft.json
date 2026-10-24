@@ -11,7 +11,7 @@
    "severity": "yellow",
    "code": "F1",
    "t": null,
-   "msg": "length norm overridden by film.json: 4–8 s (register: 45–90 s)"
+   "msg": "length norm overridden by film.json: 4–8 s (register: 45–90 s); reason in crew/animation-notes.md"
   }
  ]
 }

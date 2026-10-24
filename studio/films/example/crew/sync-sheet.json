@@ -1,0 +1,44 @@
+{
+  "beats": [
+    {
+      "id": "b1",
+      "t": [
+        0,
+        3
+      ],
+      "says": "The law came down",
+      "hero": {
+        "asset": "moses"
+      },
+      "key": [
+        {
+          "word": "law",
+          "t": 0.5
+        }
+      ],
+      "zoom": {
+        "kind": "push-in"
+      }
+    },
+    {
+      "id": "b2",
+      "t": [
+        3,
+        6
+      ],
+      "says": "and reached the world",
+      "hero": {
+        "asset": "map"
+      },
+      "key": [
+        {
+          "word": "world",
+          "t": 4.65
+        }
+      ],
+      "zoom": {
+        "kind": "pull-out"
+      }
+    }
+  ]
+}
