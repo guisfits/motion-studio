@@ -70,7 +70,8 @@ resolution before the clipping is fitted to 1600 px on its long side.
 
 ## §4 Image request (`crew/image-requests.md`)
 
-One block per `request` row. The Director forwards the whole file to the client in one message; the
+One block per `request` row: a picture the local generator could not make (SKILL step 13 generates
+the rest itself). The Director forwards the whole file to the client in one message; the
 client generates with the tool named and drops each file as `assets/sources/<id>.png`.
 
 ```
