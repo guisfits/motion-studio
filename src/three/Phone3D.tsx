@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { CanvasTexture, ExtrudeGeometry, Shape, ShapeGeometry, SRGBColorSpace } from "three";
 import { coverUV } from "./cover-uv";
-import { textureAspect, useImageTextures } from "./textures";
+import { requireSrc, textureAspect, useImageTextures } from "./textures";
 
 /** Draws the screen on a 2D canvas (UI mock-ups); call again via `drawKey` to animate. */
 export type PhoneScreenDraw = (ctx: CanvasRenderingContext2D, width: number, height: number) => void;
@@ -66,7 +66,7 @@ export const Phone3D: React.FC<Phone3DProps> = ({
 }) => {
   const [w, h] = size;
   const isDraw = typeof screen === "function";
-  const [imgTex] = useImageTextures([isDraw ? undefined : screen]);
+  const [imgTex] = useImageTextures([isDraw ? undefined : requireSrc("Phone3D", "screen", screen)]);
   const sw = w - 0.2;
   const sh = h - 0.36;
 
@@ -97,7 +97,10 @@ export const Phone3D: React.FC<Phone3DProps> = ({
   useEffect(() => {
     if (!canvasTex || typeof screen !== "function") return;
     const c = canvasTex.image as HTMLCanvasElement;
-    screen(c.getContext("2d")!, c.width, c.height);
+    // Cleared first, so a repaint is a pure function of the draw call, never of the last frame.
+    const ctx = c.getContext("2d")!;
+    ctx.clearRect(0, 0, c.width, c.height);
+    screen(ctx, c.width, c.height);
     canvasTex.needsUpdate = true;
   }, [canvasTex, screen, drawKey]);
 

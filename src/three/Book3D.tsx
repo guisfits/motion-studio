@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
 import { coverUV } from "./cover-uv";
-import { textureAspect, useImageTextures } from "./textures";
+import { requireSrc, textureAspect, useImageTextures } from "./textures";
 
 export type Book3DProps = {
   /** Cover picture (outside face of the front board). */
@@ -57,7 +57,7 @@ export const Book3D: React.FC<Book3DProps> = ({
   const T = 0.5;
   const board = 0.07;
   const gap = T / (LEAVES + 1);
-  const srcs = [cover, ...Array.from({ length: LEAVES * 2 }, (_, i) => (pages.length ? pages[i % pages.length] : undefined))];
+  const srcs = [requireSrc("Book3D", "cover", cover), ...Array.from({ length: LEAVES * 2 }, (_, i) => (pages.length ? pages[i % pages.length] : undefined))];
   const [coverTex, ...pageTex] = useImageTextures(srcs);
 
   const mats = useMemo(() => {

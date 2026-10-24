@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
 import { coverUV } from "./cover-uv";
-import { textureAspect, useImageTextures } from "./textures";
+import { requireSrc, textureAspect, useImageTextures } from "./textures";
 
 export type Card3DProps = {
   /** Front face picture (URL from an ES import). */
@@ -37,7 +37,7 @@ export const Card3D: React.FC<Card3DProps> = ({
   size = [3, 4.2],
   thickness = 0.07,
 }) => {
-  const [front, back] = useImageTextures([image, backImage]);
+  const [front, back] = useImageTextures([requireSrc("Card3D", "image", image), backImage]);
   const [w, h] = size;
 
   const materials = useMemo(() => {

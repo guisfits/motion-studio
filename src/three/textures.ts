@@ -47,6 +47,12 @@ export const useImageTextures = (srcs: (string | undefined)[]): (Texture | null)
   return textures;
 };
 
+/** `src` when it is a non-empty URL, else throws naming the component and prop (a missing picture must fail the render, not draw nothing). */
+export const requireSrc = (component: string, prop: string, src: string | undefined): string => {
+  if (!src) throw new Error(`${component}: "${prop}" must be an image URL, got ${JSON.stringify(src)}`);
+  return src;
+};
+
 /** Aspect (w/h) of a loaded image texture. */
 export const textureAspect = (t: Texture): number => {
   const img = t.image as { width: number; height: number };
