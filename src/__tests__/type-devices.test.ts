@@ -4,6 +4,7 @@ import {
   caretVisible,
   circleMarkBox,
   circleMarkPath,
+  counterStart,
   counterValue,
   drawProgress,
   formatCount,
@@ -15,6 +16,13 @@ import {
 } from "../type";
 
 const fps = 30;
+
+describe("counterStart", () => {
+  it("is dur frames before the landing frame, rounded like the component", () => {
+    expect(counterStart(2, 30, 36)).toBe(24);
+    expect(counterStart(1.01, 30, 10)).toBe(20);
+  });
+});
 
 describe("counterValue", () => {
   const spec = { from: 0, to: 1492, start: 30, dur: 30, fps, steps: 10 };

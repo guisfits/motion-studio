@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
-import { counterValue, formatCount } from "./count";
+import { counterStart, counterValue, formatCount } from "./count";
 import { FONT_MONO } from "./fonts";
 import { type Landing, landingS } from "./timing";
 
@@ -36,7 +36,7 @@ export const Counter: React.FC<CounterProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const start = Math.round(landingS(landing) * fps) - dur;
+  const start = counterStart(landingS(landing), fps, dur);
   const v = counterValue(frame, { from, to, start, dur, steps, stepFps: stepFps || undefined, fps, decimals });
   return (
     <span style={{ fontFamily: FONT_MONO, fontVariantNumeric: "tabular-nums", whiteSpace: "pre", ...style }}>

@@ -22,6 +22,9 @@ export type CounterSpec = {
  * The number a `Counter` shows at `frame`: it eases out from `from` to `to` in `steps` clicks, so a
  * tick is a visible jump and the value lands exactly on `to`. Pure: a film's `trace.ts` reads it too.
  */
+/** The frame a `Counter` starts counting: `dur` frames before its landing, so a trace reads the same start the component draws. */
+export const counterStart = (landS: number, fps: number, dur: number): number => Math.round(landS * fps) - dur;
+
 export const counterValue = (frame: number, spec: CounterSpec): number => {
   const { from = 0, to, start, dur, steps = 14, stepFps, fps, decimals = 0 } = spec;
   const f = stepFps ? stepFrame(frame, fps, stepFps) : frame;

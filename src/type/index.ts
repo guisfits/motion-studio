@@ -16,7 +16,7 @@ export { landingS, useDraw } from "./timing";
 export type { Landing } from "./timing";
 export { Counter } from "./Counter";
 export type { CounterProps } from "./Counter";
-export { counterValue, formatCount } from "./count";
+export { counterStart, counterValue, formatCount } from "./count";
 export type { CounterSpec } from "./count";
 export { Typewriter } from "./Typewriter";
 export type { TypewriterProps } from "./Typewriter";
