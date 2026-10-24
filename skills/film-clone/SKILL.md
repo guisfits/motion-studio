@@ -32,7 +32,7 @@ Read these before anything; each is a rule below.
 2. **Pictures per shot**, matched to the reference's composition (Rule 1).
 3. **Build one shot at a time** with the engine (Rules 2–4), render that shot only (`--scale=0.5`).
 4. **Compare at full rate** (Rule 5) and with the measures; fix; at most 3 rounds per shot.
-5. **Send the shot** to the owner (side by side) as soon as it passes; then the next.
+5. **Send the shot** to the owner as soon as it passes: `tools/critique/vs.sh ref.mp4 clone.mp4 <from> <to> out.mp4 [--slow] [--audio]` (never a range cut carrying the whole reference audio: it freezes in players). Then the next.
 6. **Fold every lesson** into a skill rule, a component or a tool the same day; record gaps in `crew/notes-*.md` and in the benchmark table (✅ / 🟡 / ❌ per shot, with the cause).
 
 ## Rules
