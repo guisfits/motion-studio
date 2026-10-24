@@ -25,7 +25,7 @@ Default register A (narrated 9:16 collage explainer, grammar section 0). The bri
 | `crew/research.md` | claim, two independent sources, verbatim quote, verdict (`references/research.md`) |
 | `sources/<id>.md`, `sources/README.md` | every source opened, kept with its passages and pins (`references/research.md` "Keeping the sources"); downloaded files beside them |
 | `crew/script.md` | lines with noun ledger, lettering forms, number sequences, sources, claims dropped (`references/templates.md`) |
-| `narration.json` | the voice tool's input, at the film root (`skills/motion-engine/references/pipeline.md` section 1) |
+| `narration.json` | the voice tool's input, at the film root (`archive/engine-v1/skills/motion-engine/references/pipeline.md` section 1) |
 | `voice/voice.wav`, `voice/words.json` | the take and its word times, seconds |
 | `crew/cer.md` | ASR transcript against spoken text, CER, tool and version, take-metrics output (`references/take.md`) |
 

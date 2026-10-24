@@ -4,7 +4,7 @@ The bar is `NORMS.voice.maxCer`, an intelligibility proxy, not a measured source
 
 ## Take
 
-1. Voice the draft with the overlay's tool and narration format (`skills/motion-engine/references/pipeline.md` section 1 shows the engine's `narration.json` and `words.json` shapes). A free draft voice for every iteration; a paid final voice only after the picture is approved.
+1. Voice the draft with the overlay's tool and narration format (`archive/engine-v1/skills/motion-engine/references/pipeline.md` section 1 shows the engine's `narration.json` and `words.json` shapes). A free draft voice for every iteration; a paid final voice only after the picture is approved.
 2. Trim leading and trailing silence (~-45 dB, `silenceremove`) before aligning, so beats can hug the first and last word (`NORMS.sync.coverSlackS`, gate S9).
 3. `voice/words.json`: one entry per spoken word, seconds, from forced alignment or ASR word timestamps, never from the script. Punctuation is allowed on `w` (gates strip it at the word edges and keep accents).
 4. Run the metrics: `node <engine>/skills/film-writer/scripts/take-metrics.mjs <film>` prints F1 (last word end against `NORMS.film`), lead slack, speech speed against register A (3.0 words/s, 2.3-3.4), pauses over 0.4 s, the end of the opening line, and the caption chunks over `NORMS.caption.maxCps`. A film with a product segment passes `--app-t0 <s>` (start of the segment's first word) so F1 measures story and segment apart, as the stage gate does. Exit 1 = F1 red.
