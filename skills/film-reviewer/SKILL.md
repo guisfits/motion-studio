@@ -52,7 +52,7 @@ The rubric (`references/rubric.md`) is built from the measured grammar: the 12 d
 
 ## Gate
 
-The stated gate, not a script (the scripts ran before you: `FILM_STAGE=<stage> npx vitest run <film>`, plus `node tools/checks/run-mp4.mjs <mp4> [--audio]` for the file; you read their `checks-<stage>.md` and never rerun them):
+The stated gate, not a script (the scripts ran before you: `FILM_DIR=<film> FILM_STAGE=<stage> npx vitest run src/film/__tests__/stage-gate.test.ts`, plus `node tools/checks/run-mp4.mjs <mp4> [--audio]` for the file; you read their `checks-<stage>.md` and never rerun them):
 
 - Final: **APPROVED** only if zero 🔴, all twelve scores 8 or more, inputs complete and fresh with no 🔴 in the checks file, all three passes done. Draft: the same with D11 `not assessed (no mix)`. Animatic: **CLEAR** on zero 🔴 and every applicable score 8 or more (it clears the animatic touchpoint only).
 - Otherwise **NOT APPROVED** / **NOT CLEAR**, or **ESCALATE** after round 2. No "approved with notes". With only 🟡 left and all scores 8 or more it is APPROVED and the 🟡 are listed.

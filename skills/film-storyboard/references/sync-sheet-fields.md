@@ -84,17 +84,17 @@ The summary line goes into the hand-off.
 
 ## Sheet to film.json
 
-The sheet is not translated into new props: `film.json` carries it as it is, and the animator's `scene.ts`
+The sheet is not translated into new props: it stays in `crew/sync-sheet.json` (the one copy, which you edit; `film.json` points to it by path, never holds a second copy), and the animator's `scene.ts`
 converts seconds to frames. The contract (`docs/film-contract.md`, "film.json") and the reference film
 (`studio/films/example/film.json`) decide; when this table and they differ, they win and this table changes in the same commit.
 
 | Sheet field | In `film.json` |
 |---|---|
-| the whole table | `sheet: { beats: [...], register?, app?: { t0 } }`: one object per row with the fields above, `t`, `key[].t` and `lettering[].lands` in seconds as written |
-| the voice's word table | `words: { words: [{ w, s, e }] }` (what `tools/captions/transcribe.mjs` writes), inline or a path relative to the film |
-| `hero.asset`, `support[]` | `manifest: { assets: [{ id, kind, status, licence, source }] }`, inline or a path; the trace ids are these asset ids |
+| the whole table | `sheet: "crew/sync-sheet.json"`, the file holding `{ beats: [...], register?, app?: { t0 } }`: one object per row with the fields above, `t`, `key[].t` and `lettering[].lands` in seconds as written |
+| the voice's word table | `words: "voice/words.json"`, the file `{ words: [{ w, s, e }] }` (what `tools/captions/transcribe.mjs` writes) |
+| `hero.asset`, `support[]` | `manifest: "crew/manifest.json"`, the file `{ assets: [{ id, kind, status, licence, source }] }`; the trace ids are these asset ids |
 | closing house outro | `house: [t0, t1]` seconds, a window that puts nothing in the trace |
-| a spot or test film's length | `length: { minS, maxS }` replaces the register's norm (the report carries a yellow F1) |
+| a spot or test film's length | `length: { minS, maxS }` replaces the register's norm (the report carries an orange F1 until `crew/animation-notes.md` has a `length: <reason>` line, then yellow) |
 | composition clock | `id` (composition `F-<id>`), `format` (`9x16`, `1x1`, `16x9`), `fps`, `durationInFrames` |
 | anything the film needs beyond the sheet | film props (the example keeps its caption chunks in `captions: [{ id, words: [first, last] }]`, indices into `words`) |
 
@@ -104,7 +104,7 @@ key beyond the beat itself.
 
 ## Running the gate
 
-The manifest does not exist yet, so run on a scratch copy outside the film folder (a copy of the film folder with the sheet, `film.json`, the words and a seed manifest; delete it after) with a seed
+The manifest does not exist yet, so run on a scratch copy outside the film folder (only `crew/sync-sheet.json`, `voice/words.json` and a seed manifest; no `film.json`, so F1 reads the register's norm and is the writer's; delete it after) with a seed
 manifest of every id you used (never write `crew/manifest.json` in the film):
 
 ```sh
@@ -113,7 +113,7 @@ cd <film> && S=$(mktemp -d) && mkdir -p "$S/crew" "$S/voice" \
  && node -e 'const {beats}=JSON.parse(require("fs").readFileSync("crew/sync-sheet.json"));
 const ids=[...new Set(beats.flatMap(b=>[b.hero?.asset,...(b.support??[])]).filter(Boolean))];
 console.log(JSON.stringify({assets:ids.map(id=>({id,file:"",source:"",licence:"",status:"missing"}))}))' > "$S/crew/manifest.json" \
- && (cd <engine> && FILM_STAGE=sheet npx vitest run "$S"); cat "$S/crew/checks-sheet.md"
+ && (cd <engine> && FILM_DIR="$S" FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts); cat "$S/crew/checks-sheet.md"
 ```
 
 PASS for you: no S1–S6, S8, S9 lines. Paste the file (without S7 lines) into the hand-off and say

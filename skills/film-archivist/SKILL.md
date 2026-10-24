@@ -44,7 +44,7 @@ Devices, ranges and tells: `references/playbook.md` (section in brackets). Row a
 
 ## Gate
 
-`FILM_STAGE=sheet npx vitest run <film>` (writes `<film>/crew/checks-sheet.md`): PASS = no S7 (every row `status: "ready"` with non-empty `licence` and `source`; the gate reads exactly those three keys). Later, P1 fires when a hero, support or piece in `<film>/trace.ts` (`traceAt(frame)`) has an id that is not a `ready` row with a `licence`: the piece id is the manifest id. The gates cannot judge the subject, the licence's truth, resolution, edge or halftone survival: those are yours by eye (step 11).
+`FILM_DIR=<film> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts` (writes `<film>/crew/checks-sheet.md`): PASS = no S7 (every row `status: "ready"` with non-empty `licence` and `source`; the gate reads exactly those three keys). Later, P1 fires when a hero, support or piece in `<film>/trace.ts` (`traceAt(frame)`) has an id that is not a `ready` row with a `licence`: the piece id is the manifest id. The gates cannot judge the subject, the licence's truth, resolution, edge or halftone survival: those are yours by eye (step 11).
 
 ## Tells (ranked; grammar §11, postmortem, Moran)
 

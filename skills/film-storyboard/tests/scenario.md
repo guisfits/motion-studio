@@ -10,7 +10,7 @@
 - "Wittenberg" is a new place: a second row from 14.3 s with `wittenberg-1536-woodcut` as hero (grammar §10.2), or, if kept in one row, the woodcut as a support timed by `key[1]` at 14.6. The split is preferred.
 - Lettering = "Lutero" landing at 13.22 (a word the narrator says), never "agostiniano".
 - Zoom target is a named part of the hero (e.g. `luther-cranach-1528.eyes`); adjacent rows use different `zoom.kind`.
-- Rows tile 12.4–15.1 with no gap; at most one mark per second; valid sync-sheet JSON; names the gate `FILM_STAGE=sheet npx vitest run <scratch>` with no S1–S6, S8, S9.
+- Rows tile 12.4–15.1 with no gap; at most one mark per second; valid sync-sheet JSON; names the gate `FILM_DIR=<scratch> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts` with no S1–S6, S8, S9.
 
 ## Failure signs (baseline)
 

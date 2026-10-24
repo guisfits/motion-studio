@@ -37,7 +37,7 @@ Sound designer (which sounds exist and why) and re-recording mixer (final balanc
 
 ## Gate
 
-`FILM_STAGE=final npx vitest run <film>` (writes `crew/checks-final.md`; fails on any red) plus `node tools/checks/run-mp4.mjs <film>/out/final-9x16.mp4 --audio` for the file itself (exit 1 on any red). Codes M0 to M6, plus F2:
+`FILM_DIR=<film> FILM_STAGE=final npx vitest run src/film/__tests__/stage-gate.test.ts` (writes `crew/checks-final.md`; fails on any red) plus `node tools/checks/run-mp4.mjs <film>/out/final-9x16.mp4 --audio` for the file itself (exit 1 on any red). Codes M0 to M6, plus F2:
 
 - 🔴 `M0` file unreadable, `M1` dead frames, `M2` integrated loudness outside `NORMS.audio.lufs` ± `NORMS.audio.lufsTol`, `M4` the cue list holds at most `NORMS.audio.maxSfxPer4s` cues in a `NORMS.audio.sfxWindowS` window (more is red), `M6` `out/sfx.wav` without `crew/sfx-cues.json`, or without its `out/sfx.wav.cues.json` sidecar (written by `tools/audio/sfx.mjs`), or with a sidecar hashed from a different cue file (re-render the stem; M4/M5 read the sidecar's cues), `F2` missing `out/final-9x16.mp4`.
 - 🟠 `M3` LRA over `NORMS.audio.maxLra`; `M5` a cue whose span `[t, t+len]`, edges widened by `NORMS.audio.sfxWordMarginS`, touches a spoken word.

@@ -35,11 +35,11 @@ Animator and editor: you cut the film to the voice and make it move, and you wri
 
 ## You receive
 
-- `film.json` (storyboard): `sheet.beats` is the sync sheet, one row = one picture event; `key`, `hero`, `support`, `lettering`, `zoom {target, kind}`, optional `device`, `join` (`skills/film-storyboard/references/sync-sheet-fields.md`, "Sheet to film.json"). `words` and `manifest` sit in the same file. Times are law; `scene.ts` converts seconds to frames from `film.fps`, never retype a time.
+- `crew/sync-sheet.json` (storyboard; `film.json` points to it by path): `beats` is the sync sheet, one row = one picture event; `key`, `hero`, `support`, `lettering`, `zoom {target, kind}`, optional `device`, `join` (`skills/film-storyboard/references/sync-sheet-fields.md`, "Sheet to film.json"). `crew/manifest.json` and `voice/words.json` are the other two files `film.json` points to: import them as JSON in `scene.ts`/`trace.ts`, never copy them into `film.json`. Times are law; `scene.ts` converts seconds to frames from `film.fps`, never retype a time.
 - `crew/style-bible.md`, the manifest (all `ready`) and `assets/`; the brief and its pace plan (register, holds, joins, ending); the overlay pieces the Director passes (house outro, recurring cards).
-- The voice and its word times (`words` in `film.json`; `voice/voice.wav`). The voice is the clock.
+- The voice and its word times (`voice/words.json`; `voice/voice.wav`). The voice is the clock.
 - The engine: `docs/film-contract.md` (the film folder, `traceAt`, stages and gates), `docs/techniques.md` (component per technique), `studio/films/example/` (the reference film), `research/editing-grammar.md` (cited as `grammar §n`). Remotion's own skills are in `skills/remotion/` (a directory of skills; the ones that matter: `remotion-best-practices/SKILL.md` the router, `remotion-render/SKILL.md` rendering, `remotion-docs/SKILL.md` API lookups): cite them instead of re-deriving.
-- **No passing sheet, voice or style bible** (a dry run, a short silent piece)? Write the inputs by hand: a minimal `film.json` per `docs/film-contract.md`; `length: {minS, maxS}` to override the register's length norm (F1 measures narration as the word span, default 45–90 s; the override gives a yellow F1 note); colours from the project's identity, else neutral. Say in `animation-notes.md` that the inputs were hand-written.
+- **No passing sheet, voice or style bible** (a dry run, a short silent piece)? Write the inputs by hand: a minimal `film.json` per `docs/film-contract.md`; `length: {minS, maxS}` to override the register's length norm (F1 measures narration as the word span, default 45–90 s; the override is an orange F1 until `crew/animation-notes.md` has a line `length: <reason>`, then yellow; the director signs the reason); colours from the project's identity, else neutral. Say in `animation-notes.md` that the inputs were hand-written.
 
 ## You deliver
 
@@ -100,7 +100,7 @@ Gates read the trace, not the picture. In the S3 round all six demos needed a la
 
 `npx tsc --noEmit` must exit 0 before you return (the dry run broke it); it is part of the gate.
 
-`FILM_STAGE=animatic|draft npx vitest run studio/films/<slug>` writes `crew/checks-<stage>.md`; PASS = the run succeeds and the file has no 🔴. On the rendered mp4 also `node tools/checks/run-mp4.mjs <mp4>` (duration, black, frozen, loudness). The stages and their gates are in `docs/film-contract.md`.
+`FILM_STAGE=animatic|draft npx vitest run studio/films/<slug>` writes `crew/checks-<stage>.md` (the generic form, for any folder, is `FILM_DIR=<film> FILM_STAGE=<stage> npx vitest run src/film/__tests__/stage-gate.test.ts`; under `FILM_STAGE=draft` a missing draft render is red F2); PASS = the run succeeds and the file has no 🔴. On the rendered mp4 also `node tools/checks/run-mp4.mjs <mp4>` (duration, black, frozen, loudness). The stages and their gates are in `docs/film-contract.md`.
 
 - Animatic: S1-S11, F1, T0-T9, T12, H1, P1, R1-R3 (events from hero id, caption id and `camera.shot`; `references/registration.md` 2).
 - Draft (the same gates run again at the final stage): the same as the animatic, minus R3 (animatic only), plus F2 and the mp4 checks V0–V3 on the draft render (duration against `durationInFrames / fps`, black, frozen ≥ `MP4.frozenS`, stricter than the final cut's M1 dead window), R4, T10 (`NORMS.caption.capHeight`), T11 (`NORMS.caption.minContrast`, read from the draft render's pixels, `out/draft-<format>.mp4`; the final stage reads `out/silent-<format>.mp4`; render again after every change to `Film.tsx`: a stale render is caught by length, not by look). T5 (grounds excluded), T7 (per emphasis row, punch cap) and T8 already run on the animatic; they bite once the camera moves.

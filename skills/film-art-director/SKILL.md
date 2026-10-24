@@ -77,7 +77,7 @@ Each step names the grammar device it applies; how, ranges and tells are in `ref
 
 ## Gate
 
-`FILM_STAGE=sheet npx vitest run <film>` reads your manifest (it writes `<film>/crew/checks-sheet.md`; thresholds live in `tools/checks/norms.mjs`). Before the archivist: S7 on every row is expected; S2 (a `hero.asset` not in the manifest) must be zero, and every `support` id must have a row. After the archivist: PASS, S7 included.
+`FILM_DIR=<film> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts` reads your manifest (it writes `<film>/crew/checks-sheet.md`; thresholds live in `tools/checks/norms.mjs`). Before the archivist: S7 on every row is expected; S2 (a `hero.asset` not in the manifest) must be zero, and every `support` id must have a row. After the archivist: PASS, S7 included.
 
 The manifest lives in `crew/manifest.json`; each `ready` picture is a file in `<film>/assets/`, imported by ES import in `Film.tsx` (no public dir), and its props sit in `<film>/film.json`. Later stages hold the film to your bible: `FILM_STAGE=draft npx vitest run <film>` runs T10 (caption cap height within `NORMS.caption.capHeight`), T11 (caption contrast ≥ `NORMS.caption.minContrast` against the pixels behind it), T5 (piece coverage ≥ `NORMS.frames.minCoverage`, ground excluded), T6 (hero in `NORMS.frames.heroThird`) and P1 (every picture on screen is a `ready`, licensed manifest row). A T10, T11 or T5 caused by the bible's numbers is yours to fix.
 

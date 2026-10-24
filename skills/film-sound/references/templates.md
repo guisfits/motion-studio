@@ -108,7 +108,7 @@ This is the stricter cousin of M5 (it adds the lead-in). Every "over" row needs 
 node tools/audio/mix.mjs --video <film>/out/silent-9x16.mp4 --voice <film>/voice/voice.wav \
   --sfx <film>/out/sfx.wav --music <film>/assets/music/music.wav \
   --out <film>/out/final-9x16.mp4 --fade-out 0.3 --music-duck 0 --report
-FILM_STAGE=final npx vitest run <film>
+FILM_DIR=<film> FILM_STAGE=final npx vitest run src/film/__tests__/stage-gate.test.ts
 node tools/checks/run-mp4.mjs <film>/out/final-9x16.mp4 --audio
 ```
 

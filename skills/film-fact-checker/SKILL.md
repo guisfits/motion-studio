@@ -54,7 +54,7 @@ Every item also carries `"sources": ["<source id>", …]`. Each source you open 
 
 ## Gate
 
-`FILM_STAGE=script npx vitest run <film>` (before the voice; any later stage runs the same checks): X1 no check or not signed by you · X2 `script.md` changed after your check · X3 an item not confirmed/restated, or verdict not PASS · X4 lettering on screen you never saw. The gate proves the check happened and is current; whether a claim is true is your judgement.
+`FILM_DIR=<film> FILM_STAGE=script npx vitest run src/film/__tests__/stage-gate.test.ts` (before the voice; any later stage runs the same checks): X1 no check or not signed by you · X2 `script.md` changed after your check · X3 an item not confirmed/restated, or verdict not PASS · X4 lettering on screen you never saw. The gate proves the check happened and is current; whether a claim is true is your judgement.
 
 ## Hand-off
 

@@ -27,7 +27,7 @@ in its own decade, wharf and cranes legible", `treatment` "engraving, cut paper,
    540 screen px) ≈ 9 px.
 6. Look: at phone width with the bible's dot: cranes and masts read; edge irregular; no halo.
 7. Row filled (templates §1), `status: "ready"`; trail in `assets-notes.md`. Gate:
-   `FILM_STAGE=sheet npx vitest run <film>` no S7 for this row.
+   `FILM_DIR=<film> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts` no S7 for this row.
 
 ## §2 A document as proof: "the dig cost twice the estimate"
 

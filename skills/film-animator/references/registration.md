@@ -12,14 +12,14 @@ A film is a folder `studio/films/<slug>/` (copy `studio/films/example/`, registe
 
 | File | Holds |
 |---|---|
-| `film.json` | the sheet, word times, manifest, format, fps, duration, film props (read at import; never copy a time into code) |
+| `film.json` | format, fps, duration, the paths of the sheet (`crew/sync-sheet.json`), manifest (`crew/manifest.json`) and word times (`voice/words.json`), film props. Import the three files as JSON; never copy a time into code or a second copy of them into `film.json` |
 | `scene.ts` | geometry and timing both `Film.tsx` and `trace.ts` read: world boxes of the pieces, `CAMERA_KEYS`, caption chunks and metrics, frame landings; pure data, no images, fonts or React |
 | `Film.tsx` | the composition, built from `src/` components |
 | `trace.ts` | `traceAt(frame)`: pure, what the frame shows |
-| `film.test.ts` | `runFilmGate({ dir, traceAt })` for `FILM_STAGE` |
+| `film.test.ts` | `runFilmGate({ dir, traceAt })` for `FILM_STAGE` (the generic runner `src/film/__tests__/stage-gate.test.ts` does the same by `FILM_DIR`) |
 
 1. `Film.tsx` is pure per frame: every pose comes from `useCurrentFrame()` (or a prop derived from it). No timers, no CSS transitions or animations, no state kept between frames, no `Math.random` or `Date`; random numbers only from `random(seed)` of `remotion`. A component that must wait for a font or texture uses `delayRender` (the example loads its face this way; `skills/remotion/` covers it) `[eng]`.
-2. Time comes from `film.json`: `fromWords(film.words)` gives the spoken words as captions with `startMs`/`endMs`; a landing frame is `Math.round(s * film.fps)`. Assert at import that every derived frame is finite: `undefined + 12` is `NaN`, a `NaN` pose silently becomes "off screen" and the hero vanishes `[tested]`.
+2. Time comes from `voice/words.json`: `fromWords(words)` (`import words from "./voice/words.json"`) gives the spoken words as captions with `startMs`/`endMs`; a landing frame is `Math.round(s * film.fps)`. Assert at import that every derived frame is finite: `undefined + 12` is `NaN`, a `NaN` pose silently becomes "off screen" and the hero vanishes `[tested]`.
 3. One set of numbers. Anything both files need is exported from `scene.ts`. A number typed in `trace.ts` and also in `Film.tsx` is a defect: the trace drifts from the picture and the gates pass a film nobody sees `[eng]`.
 4. Cues: the sound role gets the landings from a pure `cues.ts` (`Cue = { at, sfx, gain? }` per sequence, flattened by `collectCues(blocks, fps)`, exported with `node tools/audio/cues-json.mjs <file.cues.ts> <EXPORT> out/cues.json`). Compute `at` from the same landing frames the picture uses, so the SFX and the picture share one timing source.
 5. The camera is `<Camera keys={CAMERA_KEYS} drift={CAMERA_DRIFT}>` in `Film.tsx` and `viewAt(CAMERA_KEYS, frame, { durationInFrames, drift })` in `trace.ts`: the same keys, the pose the component actually draws (drift folded in). `camera: cameraTrace(view, shotAt(CUT_FRAMES, frame))`; scale must be finite and > 0 or T0 stops the run. `shot` is how R1 to R3 see a hard cut as an event and how T7 avoids reading a cut's scale jump as a move; a hard cut without it is both a missed event and a false punch `[eng]`.

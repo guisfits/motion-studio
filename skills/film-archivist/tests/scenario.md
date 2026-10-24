@@ -11,7 +11,7 @@
 - Checks resolution against `minW` and that the source survives the bible's halftone and 12 fps stepping; hands the oven the whole original (it crops each region at full resolution).
 - Never a modern photo standing in for 1517, never an AI-generated image, never a placeholder handed on.
 - Cut plan: `cutout.swift --mode paper` for a woodcut, the bible's edge converted to file px, shadow recorded not baked.
-- Names the gate: `FILM_STAGE=sheet npx vitest run <film>` with no S7.
+- Names the gate: `FILM_DIR=<film> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts` with no S7.
 
 ## Failure signs (baseline)
 
