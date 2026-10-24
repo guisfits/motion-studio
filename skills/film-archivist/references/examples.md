@@ -19,7 +19,7 @@ in its own decade, wharf and cranes legible", `treatment` "engraving, cut paper,
 4. Resolution: the wharf spans 2140 px of the 3200 px scan ≥ 1512. The whole full-resolution
    original goes to the cut, never a thumbnail or a pre-cropped copy. An oven clipping is at most
    1600 px on its long side, so 1512 fits; a `minW` over 1600 could not take the torn edge.
-5. Cut: `swift <engine>/core/reference/cutout.swift <film>/assets/sources/harbour-1890-engraving.png
+5. Cut: `swift tools/kit/reference/cutout.swift <film>/assets/sources/harbour-1890-engraving.png
    <film>/assets/harbour-1890-engraving.png --mode paper` (ink kept, paper keyed, the scan's size
    kept); then the torn edge through a kit entry `cut: "regions"` on that PNG, one polygon around the
    wharf, `oven { seed: 41, rim: 9, depth: 11, paper: [244, 239, 228] }`: `regions.mjs` crops the
@@ -27,7 +27,7 @@ in its own decade, wharf and cranes legible", `treatment` "engraving, cut paper,
    540 screen px) ≈ 9 px.
 6. Look: at phone width with the bible's dot: cranes and masts read; edge irregular; no halo.
 7. Row filled (templates §1), `status: "ready"`; trail in `assets-notes.md`. Gate:
-   `node <engine>/core/checks/run.mjs <film> --stage sheet` no S7 for this row.
+   `FILM_STAGE=sheet npx vitest run <film>` no S7 for this row.
 
 ## §2 A document as proof: "the dig cost twice the estimate"
 

@@ -3,8 +3,8 @@
 ## §1 Style bible (`crew/style-bible.md`)
 
 Fill every section; a blank is a decision not made. Numbers are screen px at 1080 × 1920 or NORMS
-keys; overlay values (hex, family names) are written as the overlay's token name, with the engine
-key it fills when the overlay maps one (`<overlay token>` → `colors.accent`); never a raw hex.
+keys; overlay values (hex, family names) are written as the overlay's token name, with the `Film.tsx` token constant
+it fills when the overlay maps one (`<overlay token>` → `accent`); never a raw hex.
 
 ```markdown
 # Style bible: <film slug>  (register <A|B|C>)
@@ -14,7 +14,7 @@ key it fills when the overlay maps one (`<overlay token>` → `colors.accent`); 
 
 ## 1. Caption system
 - System: <serif caption on the quiet area | condensed caps stack + sentence caption>
-- Reading voice: <families.serif|display>, <weight/italic>; cap height <fraction> of frame height
+- Reading voice: <serif|display family>, <weight/italic>; cap height <fraction> of frame height
   (inside NORMS.caption.capHeight) = <px>; font size <px> (measured on the face)
 - Spot: <fixed y band, px>; inside the central width; outside the platform UI bands
 - Colour by ground: paper → <token>; footage → <token> + glow <px>; flat colour → <token>
@@ -33,7 +33,7 @@ key it fills when the overlay maps one (`<overlay token>` → `colors.accent`); 
 ## 3. Treatment and texture (one for every source)
 - Pieces: <halftone dot px | engraving keyed (cut paper) | tint amount | colour kept>
 - Footage: <grade, scanline, halftone>
-- Frame finish: K.finish { fringe, scan, vignette, flicker, weave, grain } = <values or off>
+- Frame finish: { fringe, scan, vignette, flicker, weave, grain } = <values or off>
 - Texture bands: fine <file>, print <file>, wash <file>; one layer per band
 
 ## 4. Cut-out finish
@@ -55,10 +55,10 @@ Director asked for; every sheet row inside one plate row of the table.
 
 ## §2 Manifest (`crew/manifest.json`)
 
-`core/checks/sync.mjs` reads `manifest.assets` (an array): S7 fires on any row whose `status` is
+`tools/checks/sync.mjs` reads `manifest.assets` (an array): S7 fires on any row whose `status` is
 not `"ready"` or whose `licence` or `source` is empty; S2 when a `hero.asset` has no row.
-`core/checks/picture.mjs` (P1) accepts an on-screen hero, support or piece only when its id is a
-`ready` row with a `licence`; trace ids are these ids. Captions, lettering and marks are not assets.
+`tools/checks/picture.mjs` (P1) accepts an on-screen hero, support or piece only when its id is a
+`ready` row with a `licence`; `trace.ts` ids are these ids. Captions, lettering and marks are not assets.
 
 ```json
 {

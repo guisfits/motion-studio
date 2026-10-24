@@ -6,13 +6,13 @@ the cut-out finish the art director specifies and you bake. Format: **when** →
 engine** → **measured range** (grammar ids; `~` = inference) → **tell and fix**. Screen px are at
 1080 × 1920.
 
-Engine: `core/reference/cutout.swift` (Vision cut, macOS, local), `core/reference/regions.mjs`
-(`cutRegions`: polygons → oven → one PNG per region), `core/reference/oven.mjs` (`tornAlpha`,
-`fibreRim`, `bake`), `core/kit.mjs` (`fetch`, `build`, `sheet`, `list` over a kit `catalog.json`),
-`core/reference/clip.mjs` (footage → frames), `core/reference/find.mjs` (`search` the open
+Engine: `tools/kit/reference/cutout.swift` (Vision cut, macOS, local), `tools/kit/reference/regions.mjs`
+(`cutRegions`: polygons → oven → one PNG per region), `tools/kit/reference/oven.mjs` (`tornAlpha`,
+`fibreRim`, `bake`), `tools/kit/kit.mjs` (`fetch`, `build`, `sheet`, `list` over a kit `catalog.json`),
+`tools/kit/reference/clip.mjs` (footage → frames), `tools/kit/reference/find.mjs` (`search` the open
 collections → candidates + numbered sheet; `add` one to a kit catalog with provenance),
-`core/reference/matte.py` (BiRefNet matte, local, for what Vision misses). Kit commands and Openverse search:
-`skills/motion-engine/references/kit-and-cutouts.md`.
+`tools/kit/reference/matte.py` (BiRefNet matte, local, for what Vision misses). Kit commands and Openverse search:
+`tools/kit/` (kit commands: `node tools/kit/kit.mjs --help`).
 
 ## §1 The right subject (postmortem C3)
 
@@ -57,7 +57,7 @@ tighter region, never retyped text.
 **Halftone or engraving sources** (halftone B&W cut-out, 57 pieces, grammar §9). **When:** the
 bible's treatment is halftone or engraving (the common case). **How:** prefer engravings, woodcuts,
 etchings and B&W photographs with strong value separation: a subject that reads as a silhouette
-in two tones. The art director's `K.halftone` dot grows with darkness, so mid-grey sources turn to
+in two tones. The art director's `printLook` halftone dot grows with darkness, so mid-grey sources turn to
 mush (`~`). Check: render the cut once through the bible's dot on its ground and look at phone width.
 **Range:** dot ~3 px at 360 w masks upscaling (`hex/DTnEO5KCawE`); engravings throughout
 (`hex/Dd0qOzpqoYf`); halftone on licensed stills (`ee/DbAnBlpTkUQ`). Moran: a high-res texture hides
@@ -67,7 +67,7 @@ a low-res image (`moran/DQpMiV_Cdpr`): that covers a support, never a hero's fac
 pieces; used on archival stills, low-res footage, paper pieces). **How:** stills survive by
 construction; footage must read in single frames: little motion blur, a subject that holds its
 place, no fast pans, no burned-in subtitles or logos (`~`). Turn footage into frames with
-`node <engine>/core/reference/clip.mjs <rec> <film>/assets/clip-<id> --fps 60 [--from s --to s]`. **Range:** archival
+`node tools/kit/reference/clip.mjs <rec> <film>/assets/clip-<id> --fps 60 [--from s --to s]`. **Range:** archival
 stills and low-res footage stepped "hides upscaling" (`hex/DQepYZ4CfSt`), "reads as archival film"
 (`hex/DO5lBJLiTni`). **Tell:** odd tell #5, low-res or mismatched footage shown raw
 (`ee/DTNgwGAjH7-`). **Fix:** a larger copy, or a clip that gets one beat under the bible's
@@ -90,7 +90,7 @@ no people, no generated content (`moran/Dcm63HBAHzT`); handycam footage reads as
 
 ## §4 The cut-out: matte, edge, shadow (grammar §9, odd tell #1)
 
-**Matte.** `swift <engine>/core/reference/cutout.swift <in> <out.png> --mode subject|paper|instances
+**Matte.** `swift tools/kit/reference/cutout.swift <in> <out.png> --mode subject|paper|instances
 [--border px]`. `subject`: people, statues, buildings, objects. `paper`: engravings, woodcuts, maps,
 printed pages (ink stays, paper goes transparent). `instances`: writes `{ regions: [{ id, poly }] }`
 (u, v in 0..1) to paste into a `cut: "regions"` kit entry and hand-edit. Check the matte on a light
@@ -110,7 +110,7 @@ varied across rows, recorded in `cut`. **Tell:** mixed rim widths read as a pack
 (`pin/350067` (D)); straight clean edges read pasted (`pin/350121` (D)); crisp edges read digital
 (`moran/DUEIdzuCUgn`). **Fix:** one recipe for the film, re-baked.
 
-**Shadow and depth.** The contact shadow is the animator's (`K.piece({ height })` draws it); you
+**Shadow and depth.** The contact shadow is the animator's (the piece draws it from its `height`); you
 record the bible's resting token in `shadow` and the plane in `depth` (`bg`, `mid`, `fg`). Separate
 pieces for parts that must move apart (a figure and its object). Pick photos with three readable
 planes when the bible plans parallax (`moran/DZsDDmvtNJP`). Never bake a shadow into the PNG.
@@ -138,7 +138,7 @@ Accept: public domain (PD, PD-old, PD-US, PDM), CC0, CC BY, CC BY-SA, read on th
 (not an aggregator, not a CDN link). Reject: NC, ND, "editorial use only", "free to use" with no
 named licence, watermarked stock, anything unclear. A living person's likeness or a modern brand is
 the Director's call. Generated images: never, for anything a viewer could take as evidence
-(`skills/motion-engine/references/kit-and-cutouts.md`). Record at download: `source` (the object's
+(`tools/kit/` (kit commands: `node tools/kit/kit.mjs --help`)). Record at download: `source` (the object's
 page), `licence` as stated, `author` (the maker, not the uploader), `date` (the work's, not the
 scan's), `credit` for CC BY/BY-SA. Spell the manifest key `licence`: the kit catalog and its
 `pieces/manifest.json` use `license`, which S7 reads as blank if copied over.

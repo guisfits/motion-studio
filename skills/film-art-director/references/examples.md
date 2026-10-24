@@ -20,12 +20,12 @@ Decisions, each from the playbook:
   unit in the caption voice; size jump ×2 on "opens" (b09); name tag two tiers (who + what) on the
   engineer (b05). Highlighter on "cost twice the estimate" in the clipping (b08), the film's only
   highlighter colour. Script voice: none (three voices would be allowed; two are enough here).
-- **Colour:** grey world, one accent = `colors.accent` meaning "the water route" (the canal line on
+- **Colour:** grey world, one accent = `accent` meaning "the water route" (the canal line on
   the map, the first barge, the tint wash on the trade route in b11). Never on dates, tags or the
   numeral. Grade: cool grey up to b08, warm from the turn at b09 (grade carries the mood).
 - **Treatment:** every picture as an engraving or a halftone print (dot 8 px on photos), so prints,
   photos and the modern clip read as one film; the modern clip gets halftone + scanline at b13.
-  `K.finish` fringe 1, vignette 0.2, grain 0.06.
+  frame finish: fringe 1, vignette 0.2, `Grain` 0.06.
 - **Finish:** torn edge with fibre, 3 px at screen size, on every print; prints tilted ±3–6°;
   light from upper left, 315°; resting shadow 3 px / 4 px blur, lifted 12 / 14.
 - **Grounds:** kraft (b01–b04), the period map as a desk surface under a top-down desk camera
@@ -44,7 +44,7 @@ Per-beat table (first five rows):
 
 Style key: b06 at its key word, the dig engraving on the map with the torn edge, the caption on its
 darkest landing spot, the grain and vignette on. The animator renders it with
-`node <engine>/core/render.mjs <film> --stills <t>`; it is signed when sections 1–4 of the bible are visible in
+`npx remotion still studio/index.ts <Id> <film>/out/style-frame.png --frame=<n> --gl=angle`; it is signed when sections 1–4 of the bible are visible in
 that one still.
 
 Manifest rows written: 11 pictures (heroes and supports), 5 grounds, 1 stage (the disc), 2 texture

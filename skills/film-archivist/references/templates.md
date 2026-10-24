@@ -62,7 +62,7 @@ route: smaller on-screen size, another subject, a storyboard change).
 }
 ```
 
-`node <engine>/core/kit.mjs build --only gazette-1891-p3 --kit <dir>` writes `pieces/page/gazette-1891-p3-clause.png`;
+`node tools/kit/kit.mjs build --only gazette-1891-p3 --kit <dir>` writes `pieces/page/gazette-1891-p3-clause.png`;
 copy or point the film at it and give it its own manifest row (`gazette-1891-p3-clause`, with
 `licence`, never `license`). Polygons from `cutout.swift --mode instances` or drawn by hand on the
 source, u, v in 0..1 from the top-left. Give it the whole scan: each region is cropped at full
