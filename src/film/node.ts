@@ -57,13 +57,15 @@ export type FilmSource = {
 
 const EMPTY = { sheet: { beats: [] }, words: { words: [] }, manifest: { assets: [] } } as const;
 const PARTS = ["sheet", "manifest", "words"] as const;
+const CLOCK = ["format", "fps", "durationInFrames"] as const;
 
 /**
  * Reads a film folder for `stage`. `film.json` is read when present; else the film is assembled
  * from `crew/sync-sheet.json`, `crew/manifest.json` and `voice/words.json`, which is all the
  * `script` and `sheet` stages need (no clock, no trace). One source of truth: film.json refers
- * to the crew files by path, and a part held inline while its crew file also exists is reported
- * in `twice`. `script` needs none of the three (the fact-check reads crew/script.md).
+ * to the crew files by path, and a part held inline (or under another path) while its crew file
+ * also exists is reported in `twice`; a clock field (`format`, `fps`, `durationInFrames`) that a
+ * trace stage needs and film.json leaves out is `missing`. `script` needs none of the three (the fact-check reads crew/script.md).
  */
 export function readFilm(dir: string, stage: Stage): FilmSource {
   const filmPath = join(dir, "film.json");
@@ -75,17 +77,25 @@ export function readFilm(dir: string, stage: Stage): FilmSource {
   const parts: Record<string, unknown> = {};
   for (const k of PARTS) {
     const v = json[k] ?? FILM_FILES[k];
+    const crewFile = resolve(dir, FILM_FILES[k]);
     if (typeof v !== "string") {
       parts[k] = v;
-      if (existsSync(resolve(dir, FILM_FILES[k]))) twice.push(k);
-    } else if (existsSync(resolve(dir, v))) parts[k] = readJson(resolve(dir, v));
-    else {
+      if (existsSync(crewFile)) twice.push(k);
+    } else if (existsSync(resolve(dir, v))) {
+      parts[k] = readJson(resolve(dir, v));
+      // film.json points at another file while the crew's own exists: the crew edits that one, the gate would read this.
+      if (resolve(dir, v) !== crewFile && existsSync(crewFile)) twice.push(k);
+    } else {
       parts[k] = EMPTY[k];
       if (needsPaper) missing.push(v);
     }
   }
   // From `animatic` on the clock (fps, length, format) is film.json's; `sheet` and `script` have no use for it.
-  if (!hasFilm && stage !== "script" && stage !== "sheet") missing.push("film.json");
+  // A field left out would silently become a default (9x16, 30 fps) the film never chose.
+  if (stage !== "script" && stage !== "sheet") {
+    if (!hasFilm) missing.push("film.json");
+    else for (const k of CLOCK) if (json[k] === undefined) missing.push(`film.json ${k}`);
+  }
   const film = {
     id: basename(resolve(dir)),
     format: "9x16" as FilmFormat,
@@ -170,7 +180,7 @@ export function runFilmGate({
   const findings: Finding[] = [];
   const paper = [
     ...missing.map((m) => finding("red", "F0", null, `missing ${m}: the ${stage} gate reads it`)),
-    ...twice.map((k) => finding("red", "F0", null, `${k} is in film.json and in ${FILM_FILES[k as keyof typeof FILM_FILES]}: keep one copy (film.json holds the path)`)),
+    ...twice.map((k) => finding("red", "F0", null, `${k} is held by film.json and again in ${FILM_FILES[k as keyof typeof FILM_FILES]}: keep one copy (film.json holds the path)`)),
   ];
   if (paper.length) return report(dir, stage, paper, write);
   const cut = stage === "draft" || stage === "final";

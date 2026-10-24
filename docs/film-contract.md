@@ -49,9 +49,9 @@ rendered ink to within 6 px.
 **One source of truth for the paper.** `sheet`, `words` and `manifest` are paths: the crew edits
 `crew/sync-sheet.json`, `crew/manifest.json` and `voice/words.json` and the gate, `Film.tsx`, `scene.ts` and
 `trace.ts` read those files (a film imports them as JSON: `import sheet from "./crew/sync-sheet.json"`). Left out
-of `film.json` each defaults to its crew file. An inline copy in `film.json` is still read, but while the crew
+of `film.json` each defaults to its crew file. An inline copy in `film.json` (or a path to another file) is still read, but while the crew
 file also exists the gate is red F0 (two copies, the gate would read the stale one). Before `film.json` exists
-(script and sheet stages) the gate assembles the film from the crew files alone; a missing file the stage reads is
+(script and sheet stages) the gate assembles the film from the crew files alone; a missing file the stage reads, or a clock field (`format`, `fps`, `durationInFrames`) that `film.json` leaves out from `animatic` on, is
 red F0.
 
 ## traceAt

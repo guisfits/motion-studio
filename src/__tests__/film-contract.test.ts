@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   captionBox,
   projectBox,
@@ -445,6 +445,26 @@ describe("the stage gate on any folder", () => {
     expect(r.findings).toEqual([expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("keep one copy") })]);
   }));
 
+  it("refuses a sheet held twice under another path: film.json points elsewhere while the crew file exists", crewOnly(async (dir) => {
+    writeFileSync(join(dir, "stale-sheet.json"), JSON.stringify(film.sheet));
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length, sheet: "stale-sheet.json" }));
+    const r = await runStageGate({ dir, stage: "sheet" });
+    expect(r.findings).toEqual([expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("keep one copy") })]);
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length, sheet: "./crew/sync-sheet.json" }));
+    expect((await runStageGate({ dir, stage: "sheet" })).summary.pass).toBe(true);
+  }));
+
+  it("names the clock a trace stage needs but film.json leaves out, instead of defaulting it", crewOnly(async (dir) => {
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", fps: 30, length: film.length }));
+    const r = await runStageGate({ dir, stage: "animatic", traceAt: exampleTraceAt });
+    expect(r.findings).toEqual([
+      expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("film.json format") }),
+      expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("film.json durationInFrames") }),
+    ]);
+    // `sheet` has no use for the clock.
+    expect((await runStageGate({ dir, stage: "sheet" })).summary.pass).toBe(true);
+  }));
+
   it("imports <dir>/trace.ts for a trace stage, and is red T0 without it", crewOnly(async (dir) => {
     writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length }));
     expect(reds(await runStageGate({ dir, stage: "animatic" }))).toEqual(["T0"]);
@@ -452,6 +472,19 @@ describe("the stage gate on any folder", () => {
     const r = await runStageGate({ dir, stage: "animatic" });
     expect(reds(r)).not.toContain("T0");
     expect(reds(r)).toContain("T5");
+  }));
+
+  it("reads the gate command from FILM_STAGE: red F2 at draft with it, yellow in a plain run", crewOnly((dir) => {
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length }));
+    const f2 = () => runFilmGate({ dir, traceAt: exampleTraceAt, stage: "draft" }).findings.filter((f) => f.code === "F2");
+    vi.stubEnv("FILM_STAGE", "");
+    expect(f2()).toEqual([expect.objectContaining({ severity: "yellow" })]);
+    vi.stubEnv("FILM_STAGE", "draft");
+    try {
+      expect(f2()).toEqual([expect.objectContaining({ severity: "red", msg: "missing out/draft-9x16.mp4" })]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   }));
 
   it("is red F2 at draft without a render under the gate command", crewOnly(async (dir) => {
