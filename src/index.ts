@@ -7,3 +7,4 @@ export * from "./texture";
 export * from "./transitions";
 export * from "./type";
 export * from "./captions";
+export * from "./audio";

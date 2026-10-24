@@ -1,0 +1,52 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { loudness } from "../../checks/media.mjs";
+
+const studio = fileURLToPath(new URL("../../..", import.meta.url));
+const vo = join(studio, "assets/audio/vo-01.wav");
+const dir = mkdtempSync(join(tmpdir(), "mix-remotion-"));
+const ff = (...a) => execFileSync("ffmpeg", ["-loglevel", "error", "-y", ...a]);
+
+// Mean RMS (dB) of `file` between from and to s, after an audio filter that isolates one stem.
+function rmsDb(file, filter, from, to) {
+  const r = spawnSync(
+    "ffmpeg",
+    ["-hide_banner", "-nostats", "-ss", String(from), "-to", String(to), "-i", file, "-af", `${filter},astats=metadata=0:reset=0`, "-f", "null", "-"],
+    { encoding: "utf8" },
+  );
+  return Number([...r.stderr.matchAll(/RMS level dB: (-?[\d.]+|-inf)/g)].at(-1)[1]);
+}
+
+test(
+  "a silent render + VO + music + cues mixes to −14 ± 1 LUFS, music ≥ 8 dB under the voice",
+  { timeout: 120_000, skip: existsSync(vo) ? false : "run tools/assets/make-vo.sh first" },
+  () => {
+    const silent = join(dir, "silent.mp4");
+    ff("-f", "lavfi", "-i", "testsrc2=s=320x180:d=6:r=30", "-pix_fmt", "yuv420p", silent);
+    // The bed is a 55 Hz tone: a band-pass at 55 Hz then reads the music alone, a high-pass at
+    // 200 Hz the voice alone (the macOS voice carries next to nothing at 55 Hz).
+    const music = join(dir, "music.wav");
+    ff("-f", "lavfi", "-i", "sine=f=55:d=6", "-ac", "2", "-ar", "48000", music);
+    const cues = join(dir, "cues.json");
+    writeFileSync(cues, JSON.stringify([{ at: 1, sfx: "paper-place" }, { at: 3, sfx: "tape", gain: 0.8 }]));
+    const out = join(dir, "mixed.mp4");
+    const r = spawnSync("node", ["tools/audio/mix-remotion.mjs", silent, vo, music, cues, out], { cwd: studio, encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+
+    const { I } = loudness(out);
+    assert.ok(Math.abs(I - -14) <= 1, `integrated ${I} LUFS`);
+    const voice = rmsDb(out, "highpass=f=200,highpass=f=200", 0.5, 2.5);
+    const bed = rmsDb(out, "bandpass=f=55:width_type=h:w=10,bandpass=f=55:width_type=h:w=10", 0.5, 2.5);
+    assert.ok(voice - bed >= 8, `voice ${voice} dB, music ${bed} dB`);
+  },
+);
+
+test("refuses missing arguments", () => {
+  const r = spawnSync("node", ["tools/audio/mix-remotion.mjs"], { cwd: studio, encoding: "utf8" });
+  assert.equal(r.status, 2);
+});
