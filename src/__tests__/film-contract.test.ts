@@ -303,6 +303,21 @@ describe("final sound gates", () => {
       });
     });
 
+    // The draft gate judges the draft render (picture lock), not the silent master rendered after it.
+    it("reads the draft render at `draft`: out/draft-<format>.mp4, else out/draft.mp4, never the silent master", () => {
+      withFilm((dir) => {
+        const draft = () => runFilmGate({ dir, traceAt: exampleTraceAt, stage: "draft", write: false });
+        const f2 = () => draft().findings.filter((f) => f.code === "F2");
+        tone(join(dir, "out", "silent-9x16.mp4"), 2.45);
+        expect(f2()).toEqual([expect.objectContaining({ severity: "yellow", msg: expect.stringContaining("out/draft-9x16.mp4") })]);
+        tone(join(dir, "out", "draft.mp4"), 2.45);
+        expect(f2()).toEqual([]);
+        rmSync(join(dir, "out", "draft.mp4"));
+        tone(join(dir, "out", "draft-9x16.mp4"), 2.45);
+        expect(f2()).toEqual([]);
+      });
+    });
+
     it("reads crew/sfx-cues.json, out/sfx.wav and its sidecar: stale hash is M6, a cue on a word is M5", () => {
       withFilm((dir) => {
         tone(join(dir, "out", "final-9x16.mp4"), 2.45);

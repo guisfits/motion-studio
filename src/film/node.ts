@@ -74,7 +74,10 @@ export type RunFilmGateOptions = {
   stage?: Stage;
   /** Write crew/checks-<stage>.{md,json}. Default: only when FILM_STAGE is set (the gate command). */
   write?: boolean;
-  /** The render the cut gates read. Default `<dir>/out/silent-<format>.mp4`, else `<dir>/out/silent.mp4`. */
+  /**
+   * The render the cut gates read. Default: at `draft` the draft render (`<dir>/out/draft-<format>.mp4`,
+   * else `<dir>/out/draft.mp4`); at `final` the silent master (`out/silent-<format>.mp4`, else `out/silent.mp4`).
+   */
   video?: string;
   /** The mixed cut the `final` sound gates read. Default `<dir>/out/final-<format>.mp4`, else `<dir>/out/final.mp4`. */
   mixed?: string;
@@ -82,7 +85,8 @@ export type RunFilmGateOptions = {
 
 /**
  * One stage of the gate over one film: loads film.json, samples `traceAt`, runs `checkFilm`, and
- * (draft, final) reads the render in `out/silent-<format>.mp4` (else `out/silent.mp4`) for contrast (T11) and the mp4 checks (V*).
+ * (draft, final) reads the stage's render for contrast (T11) and the mp4 checks (V*): the draft
+ * render (picture lock) at `draft`, the silent master rendered after the lock at `final`.
  * At `final` a missing render is red F2; at `draft` the render-based checks are skipped and the
  * report says so, so the gate can run before the first render.
  * At `final` it also reads the sound role's files (crew/sfx-cues.json, out/sfx.wav and its
@@ -93,7 +97,11 @@ export function runFilmGate({ dir, traceAt, stage = stageFromEnv(), write = !!pr
   const film = loadFilm(dir);
   const findings: Finding[] = [];
   const cut = stage === "draft" || stage === "final";
-  const mp4 = video ?? [join(dir, "out", `silent-${film.format}.mp4`), join(dir, "out", "silent.mp4")].find(existsSync) ?? join(dir, "out", "silent.mp4");
+  // The silent master only exists after picture lock, so the draft gate never reads it: a stale
+  // master from an earlier cut would be judged in place of the draft.
+  const render = stage === "draft" ? "draft" : "silent";
+  const named = join(dir, "out", `${render}-${film.format}.mp4`);
+  const mp4 = video ?? [named, join(dir, "out", `${render}.mp4`)].find(existsSync) ?? named;
   const haveMp4 = cut && existsSync(mp4);
   let sampler: PixelSampler | undefined;
   if (haveMp4) {

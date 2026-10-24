@@ -67,12 +67,12 @@ rendered ink to within 6 px.
 | `script` | fact-check only: X1–X3 |
 | `sheet` | S1–S11 sync sheet, S10 one picture of a person per scene (with `crew/scenes.json`), F1 length |
 | `animatic` | sheet + trace: T0–T9, T12, H1, P1, R1–R3 |
-| `draft` | sheet + trace with R1, R2, R4; T10 caption cap height; T11 contrast and the mp4 checks when `out/silent.mp4` exists |
-| `final` | draft + X1–X4 against the signed sheet + the sound gates below; a missing render or mixed cut is red F2 |
+| `draft` | sheet + trace with R1, R2, R4; T10 caption cap height; T11 contrast and the mp4 checks (V0–V3) on the draft render `out/draft-<format>.mp4` when it exists |
+| `final` | draft on the silent master `out/silent-<format>.mp4` + X1–X4 against the signed sheet + the sound gates below; a missing render or mixed cut is red F2 |
 
 The trace gates T0–T8 and T12 are `src/film/trace-gates.ts` (ported from the old `trace.mjs`); every other gate is `tools/checks/` and is never copied.
 
-**Contrast (T11) needs pixels.** Decision: it reads the rendered `out/silent-<format>.mp4`, else `out/silent.mp4` (any `--scale`: boxes are in format px and are cropped by ratio) with `sampleBox`, at `draft` and `final`. With no render at `draft` the gate still runs, reports a yellow T11 and F2 note, and passes; at `final` a missing render is red. A stale render is caught by its length (`checkMp4` against `durationInFrames / fps`), not by its look: render again after every change to `Film.tsx`.
+**Contrast (T11) needs pixels.** Decision: it reads the stage's render with `sampleBox` (any `--scale`: boxes are in format px and are cropped by ratio): at `draft` the draft render `out/draft-<format>.mp4` (else `out/draft.mp4`), at `final` the silent master `out/silent-<format>.mp4` (else `out/silent.mp4`), rendered after picture lock. The draft gate never reads the silent master: one from an earlier cut would be judged in place of the draft. With no render at `draft` the gate still runs, reports a yellow T11 and F2 note, and passes; at `final` a missing render is red. The same render gets the mp4 checks V0–V3 (`checkMp4`: duration, black, frozen ≥ `MP4.frozenS`). A stale render is caught by its length (`checkMp4` against `durationInFrames / fps`), not by its look: render again after every change to `Film.tsx`.
 
 **Sound (`final` only, M0–M6).** The gate reads the sound role's files: `crew/sfx-cues.json` (`{t,type,gain,len}`, `t` = when heard), `out/sfx.wav` with its sidecar `out/sfx.wav.cues.json` (written by `tools/audio/sfx.mjs`), `voice/words.json` (the film's `words`), and the mixed cut `out/final-<format>.mp4` (else `out/final.mp4`; override with `runFilmGate({ mixed })`). Same codes and severities as the old engine:
 
@@ -93,10 +93,10 @@ A film may have no SFX: no cue file and no stem is no finding. M4/M5 read the cu
 
 ```bash
 FILM_STAGE=draft npx vitest run studio/films/<slug>      # the gate; fails on any red, writes crew/checks-draft.md
-tools/render.sh F-<Id> studio/films/<slug>/out/silent.mp4 --gl=angle             # final-size render (render lock)
-tools/render.sh F-<Id> studio/films/<slug>/out/silent.mp4 --gl=angle --scale=0.5 # draft render
-node tools/checks/run-mp4.mjs studio/films/<slug>/out/silent.mp4                 # duration, black, frozen, loudness
-node tools/critique/sheets.mjs studio/films/<slug>/out/silent.mp4                # contact + phone sheets in out/
+tools/render.sh F-<Id> studio/films/<slug>/out/draft-9x16.mp4 --gl=angle --scale=0.5 # draft render (render lock)
+tools/render.sh F-<Id> studio/films/<slug>/out/silent-9x16.mp4 --gl=angle            # silent master, final size, after picture lock
+node tools/checks/run-mp4.mjs studio/films/<slug>/out/draft-9x16.mp4                 # duration, black, frozen, loudness
+node tools/critique/sheets.mjs studio/films/<slug>/out/draft-9x16.mp4                # contact + phone sheets in out/
 ```
 
 Without `FILM_STAGE`, `npx vitest run` runs the `draft` gate and writes nothing.

@@ -121,7 +121,7 @@ export function checkFilm(input: CheckFilmInput): Finding[] {
   if (stage === "draft" || stage === "final") {
     out.push(...checkCapHeight(trace));
     if (input.sampler) out.push(...checkContrast(trace, input.sampler));
-    else out.push(finding("yellow", "T11", null, "contrast not checked: no rendered out/silent.mp4 to read the pixels behind each caption"));
+    else out.push(finding("yellow", "T11", null, "contrast not checked: no render to read the pixels behind each caption"));
   }
   if (stage === "final") out.push(...checkSound(input.sound, words));
   return out;

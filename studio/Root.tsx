@@ -23,7 +23,7 @@ import { layoutOf, type FilmFormat } from "../src/film";
 const Smoke: React.FC = () => <AbsoluteFill style={{ backgroundColor: "#ece4d4" }} />;
 
 // Films: one <Composition id="F-<Id>"> per studio/films/<slug>/, sized from its film.json
-// (docs/film-contract.md). Render with tools/render.sh F-<Id> studio/films/<slug>/out/silent.mp4.
+// (docs/film-contract.md). Render with tools/render.sh F-<Id> studio/films/<slug>/out/silent-<format>.mp4.
 const example_size = layoutOf(example.format as FilmFormat);
 const dry_run_size = layoutOf(dryRun.format as FilmFormat);
 
