@@ -1,0 +1,148 @@
+{
+  "id": "Example",
+  "format": "9x16",
+  "fps": 30,
+  "durationInFrames": 180,
+  "length": {
+    "minS": 4,
+    "maxS": 8
+  },
+  "words": {
+    "words": [
+      {
+        "w": "The",
+        "s": 0.3,
+        "e": 0.5
+      },
+      {
+        "w": "law",
+        "s": 0.5,
+        "e": 0.95
+      },
+      {
+        "w": "came",
+        "s": 1.4,
+        "e": 1.7
+      },
+      {
+        "w": "down",
+        "s": 1.7,
+        "e": 2.3
+      },
+      {
+        "w": "and",
+        "s": 3.15,
+        "e": 3.35
+      },
+      {
+        "w": "reached",
+        "s": 3.35,
+        "e": 3.95
+      },
+      {
+        "w": "the",
+        "s": 4.5,
+        "e": 4.65
+      },
+      {
+        "w": "world",
+        "s": 4.65,
+        "e": 5.3
+      }
+    ]
+  },
+  "manifest": {
+    "assets": [
+      {
+        "id": "moses",
+        "kind": "hero",
+        "status": "ready",
+        "licence": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:039.Moses_Comes_Down_from_Mount_Sinai.jpg",
+        "file": "assets/img/dore-moses-sinai.jpg"
+      },
+      {
+        "id": "map",
+        "kind": "hero",
+        "status": "ready",
+        "licence": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:1572_Typus_Orbis_Terrarum_Ortelius.jpg",
+        "file": "assets/img/ortelius-1572-world-map.jpg"
+      }
+    ]
+  },
+  "sheet": {
+    "beats": [
+      {
+        "id": "b1",
+        "t": [
+          0,
+          3
+        ],
+        "says": "The law came down",
+        "hero": {
+          "asset": "moses"
+        },
+        "key": [
+          {
+            "word": "law",
+            "t": 0.5
+          }
+        ],
+        "zoom": {
+          "kind": "push-in"
+        }
+      },
+      {
+        "id": "b2",
+        "t": [
+          3,
+          6
+        ],
+        "says": "and reached the world",
+        "hero": {
+          "asset": "map"
+        },
+        "key": [
+          {
+            "word": "world",
+            "t": 4.65
+          }
+        ],
+        "zoom": {
+          "kind": "pull-out"
+        }
+      }
+    ]
+  },
+  "captions": [
+    {
+      "id": "cap-1",
+      "words": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "cap-2",
+      "words": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "cap-3",
+      "words": [
+        4,
+        5
+      ]
+    },
+    {
+      "id": "cap-4",
+      "words": [
+        6,
+        7
+      ]
+    }
+  ]
+}

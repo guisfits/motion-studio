@@ -12,13 +12,20 @@ import { T10_DURATION, T10Three } from "./demos/T10Three";
 import { T11_DURATION, T11Puppet } from "./demos/T11Puppet";
 import { T13_DURATION, T13Fx } from "./demos/T13Fx";
 import { SHOWREEL_DURATION, Showreel } from "./demos/Showreel";
+import { Film as ExampleFilm } from "./films/example/Film";
+import example from "./films/example/film.json";
+import { layoutOf, type FilmFormat } from "../src/film";
 
 // One second of plain ground: the render smoke target. `remotion compositions` also crashes on
 // an empty list (4.0.538), so the card always holds at least this one.
 const Smoke: React.FC = () => <AbsoluteFill style={{ backgroundColor: "#ece4d4" }} />;
 
+// Films: one <Composition id="F-<Id>"> per studio/films/<slug>/, sized from its film.json
+// (docs/film-contract.md). Render with tools/render.sh F-<Id> studio/films/<slug>/out/silent.mp4.
+const example_size = layoutOf(example.format as FilmFormat);
+
 // The technique card: one <Composition id="T##-Name"> per demo, all inside this folder.
-export const RemotionRoot: React.FC = () => (
+const Techniques: React.FC = () => (
   <Folder name="techniques">
     <Composition id="T00-Smoke" component={Smoke} durationInFrames={30} fps={30} width={1920} height={1080} />
     <Composition id="T01-Camera" component={T01Camera} durationInFrames={T01_DURATION} fps={30} width={1920} height={1080} />
@@ -35,4 +42,25 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="T13-Fx" component={T13Fx} durationInFrames={T13_DURATION} fps={30} width={1920} height={1080} />
     <Composition id="Showreel" component={Showreel} durationInFrames={SHOWREEL_DURATION} fps={30} width={1920} height={1080} />
   </Folder>
+);
+
+const Films: React.FC = () => (
+  <Folder name="films">
+    <Composition
+      id={`F-${example.id}`}
+      component={ExampleFilm}
+      durationInFrames={example.durationInFrames}
+      fps={example.fps}
+      width={example_size.W}
+      height={example_size.H}
+    />
+  </Folder>
+);
+
+
+export const RemotionRoot: React.FC = () => (
+  <>
+    <Techniques />
+    <Films />
+  </>
 );
