@@ -26,55 +26,55 @@
     ]
   },
   {
-    "part": "upper_arm_l",
-    "file": "puppet-upper_arm_l.png",
-    "pivot": [
-      87,
-      25
-    ],
-    "parent": "torso",
-    "origin": [
-      25,
-      180
-    ]
-  },
-  {
     "part": "lower_arm_l",
     "file": "puppet-lower_arm_l.png",
     "pivot": [
-      35,
-      23
+      38,
+      31
     ],
     "parent": "upper_arm_l",
     "origin": [
-      25,
-      282
+      70,
+      344
     ]
   },
   {
-    "part": "upper_arm_r",
-    "file": "puppet-upper_arm_r.png",
+    "part": "upper_arm_l",
+    "file": "puppet-upper_arm_l.png",
     "pivot": [
-      29,
-      29
+      38,
+      36
     ],
     "parent": "torso",
     "origin": [
-      211,
-      181
+      70,
+      189
     ]
   },
   {
     "part": "lower_arm_r",
     "file": "puppet-lower_arm_r.png",
     "pivot": [
-      73,
-      29
+      38,
+      31
     ],
     "parent": "upper_arm_r",
     "origin": [
-      227,
-      293
+      210,
+      344
+    ]
+  },
+  {
+    "part": "upper_arm_r",
+    "file": "puppet-upper_arm_r.png",
+    "pivot": [
+      38,
+      36
+    ],
+    "parent": "torso",
+    "origin": [
+      210,
+      189
     ]
   }
 ]

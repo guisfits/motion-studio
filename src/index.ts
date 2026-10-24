@@ -9,3 +9,4 @@ export * from "./type";
 export * from "./captions";
 export * from "./audio";
 export * from "./three";
+export * from "./rig";
