@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { HtmlInCanvas, useVideoConfig } from "remotion";
+import { blur } from "@remotion/effects/blur";
 import { chromaticAberration } from "@remotion/effects/chromatic-aberration";
 import { contrast } from "@remotion/effects/contrast";
 import { glow } from "@remotion/effects/glow";
@@ -20,24 +21,27 @@ export type GradeProps = {
   aberration?: number;
   /** Vignette amount 0..1. */
   vignette?: number;
+  /** Overall softness in px (AI plates upscaled and compressed read soft; S5 clone measured 2-5x sharper). 0 off. */
+  soften?: number;
   /** Lens falloff: sharp centre, blur growing to `px` at the edges from `start` (0..1 of the radius). 0 off. */
   edgeBlur?: { px: number; start?: number };
   children: ReactNode;
 };
 
 /**
- * The film look as one GPU pass over everything inside: white balance -> contrast/saturation ->
+ * The film look as one GPU pass over everything inside: soften -> white balance -> contrast/saturation ->
  * bloom -> lens edge blur -> chromatic aberration -> vignette (@remotion/effects through HtmlInCanvas; renders need
  * `--gl=angle`, set in remotion.config.ts). Grain stays a separate overlay (`Grain`), stepped.
  */
 export const Grade: React.FC<GradeProps> = ({
-  contrast: c = 1.18,
+  contrast: c = 1.0,
   saturation: s = 1.1,
   warmth = 0.12,
   bloom = { intensity: 0.35, radius: 24, threshold: 0.72 },
   aberration = 1.5,
   vignette: v = 0.35,
-  edgeBlur = { px: 8, start: 0.45 },
+  soften = 0,
+  edgeBlur = { px: 14, start: 0.35 },
   children,
 }) => {
   const { width, height } = useVideoConfig();
@@ -46,6 +50,7 @@ export const Grade: React.FC<GradeProps> = ({
       width={width}
       height={height}
       effects={[
+        blur({ radius: soften, disabled: soften === 0 }),
         whiteBalance({ temperature: warmth, disabled: warmth === 0 }),
         contrast({ amount: c }),
         saturation({ amount: s }),

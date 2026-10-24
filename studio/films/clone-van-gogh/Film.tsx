@@ -19,23 +19,26 @@ import { S14 } from "./shots/S14";
 import { S15 } from "./shots/S15";
 import { S16 } from "./shots/S16";
 
+// Base grain opacity; each shot scales it by its measured `look.grain` (scene.ts).
+const BASE_GRAIN = 0.65;
+
 const SHOT: Record<ShotId, React.FC> = { S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13, S14, S15, S16 };
 
 // One Sequence per shot, in cut order: an overlapping later shot draws on top and owns the
-// transition. The reference's look: one Grade pass (warmth, contrast, bloom, aberration, vignette) and stepped grain.
+// transition. Each shot carries its own look, measured on the reference: a Grade pass and stepped grain.
 export const Film: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: "#000" }}>
-    <Grade>
-      {SHOTS.map(({ id, from, to }) => {
-        const Shot = SHOT[id];
-        return (
-          <Sequence key={id} from={from} durationInFrames={to - from} name={id}>
+    {SHOTS.map(({ id, from, to, look }) => {
+      const Shot = SHOT[id];
+      return (
+        <Sequence key={id} from={from} durationInFrames={to - from} name={id}>
+          <Grade {...(look?.edgeBlur ? { edgeBlur: look.edgeBlur } : {})} {...(look?.soften !== undefined ? { soften: look.soften } : {})}>
             <Shot />
-          </Sequence>
-        );
-      })}
-    </Grade>
-    <Grain opacity={0.3} stepFps={16} />
+          </Grade>
+          <Grain opacity={BASE_GRAIN * (look?.grain ?? 1)} size={1.3} stepFps={16} />
+        </Sequence>
+      );
+    })}
     <Audio src={mixUrl} />
   </AbsoluteFill>
 );

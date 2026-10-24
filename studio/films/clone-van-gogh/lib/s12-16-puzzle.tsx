@@ -40,11 +40,21 @@ export const Piece: React.FC<{ spec: PieceSpec; size: number; pitch: [number, nu
     >
       <defs>
         <clipPath id={`cp-${spec.id}`}><path d={d} /></clipPath>
+        {/* glossy embossed jigsaw: soft bevel from a raking light + clipped to the piece silhouette */}
+        <filter id={`bev-${spec.id}`} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="h" />
+          <feSpecularLighting in="h" surfaceScale="4" specularConstant="0.9" specularExponent="22" lightingColor="#fff6e0" result="spec">
+            <fePointLight x="-40" y="-70" z="110" />
+          </feSpecularLighting>
+          <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn" />
+          <feMerge><feMergeNode in="SourceGraphic" /><feMergeNode in="specIn" /></feMerge>
+        </filter>
         <linearGradient id={`g-${spec.id}`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor={spec.base} /><stop offset="1" stopColor={spec.dark} />
         </linearGradient>
       </defs>
-      <path d={d} transform="translate(6 10)" fill="rgba(0,0,0,0.3)" style={{ filter: "blur(5px)" }} />
+      <path d={d} transform="translate(5 9)" fill="rgba(0,0,0,0.42)" style={{ filter: "blur(4px)" }} />
+      <g filter={`url(#bev-${spec.id})`}>
       <path d={d} fill={`url(#g-${spec.id})`} />
       <g clipPath={`url(#cp-${spec.id})`}>
         <image href={spec.img} x={-10} y={-10} width={120} height={120} preserveAspectRatio={spec.imgPos} opacity={0.28} style={{ mixBlendMode: "luminosity" }} />
@@ -52,6 +62,7 @@ export const Piece: React.FC<{ spec: PieceSpec; size: number; pitch: [number, nu
         {spec.extra}
       </g>
       <path d={d} fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth={1.4} />
+      </g>
       <text x={50} y={36} textAnchor="middle" fontFamily={CINZEL} fontWeight={700} fontSize={11} fill="#fff" style={{ letterSpacing: "0.04em" }}>{spec.label}</text>
     </svg>
   );

@@ -1,5 +1,6 @@
 import type React from "react";
 import { Solid, useCurrentFrame, useVideoConfig } from "remotion";
+import { blur } from "@remotion/effects/blur";
 import { noise } from "@remotion/effects/noise";
 import { grainSeed } from "./grainStep";
 
@@ -10,6 +11,9 @@ export type GrainProps = {
   readonly seed?: number;
   /** Noise re-deals per second. Baseline: 24 (a film-grain step). */
   readonly stepFps?: number;
+  /** Grain clump size in px (a blur over the noise). 0 = single-pixel noise. Video-compressed grain, as
+   * in downloaded reels, is soft and clumpy (~1-1.5 px); single-pixel noise reads 2-5x sharper (S5). */
+  readonly size?: number;
   /** CSS blend with what lies below. "overlay" is the film-grain feel. */
   readonly blendMode?: React.CSSProperties["mixBlendMode"];
 };
@@ -20,7 +24,7 @@ export type GrainProps = {
  * frame shows the same grain every render). Needs WebGL (angle renderer, see remotion.config.ts).
  * Place it last in the composition, above all layers.
  */
-export const Grain: React.FC<GrainProps> = ({ opacity = 0.06, seed = 0, stepFps = 24, blendMode = "overlay" }) => {
+export const Grain: React.FC<GrainProps> = ({ opacity = 0.06, seed = 0, stepFps = 24, size = 0, blendMode = "overlay" }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   return (
@@ -28,7 +32,7 @@ export const Grain: React.FC<GrainProps> = ({ opacity = 0.06, seed = 0, stepFps 
       width={width}
       height={height}
       color="#808080"
-      effects={[noise({ amount: opacity, seed: grainSeed(frame, fps, stepFps, seed) })]}
+      effects={[noise({ amount: opacity, seed: grainSeed(frame, fps, stepFps, seed) }), blur({ radius: size, disabled: size === 0 })]}
       style={{ position: "absolute", inset: 0, mixBlendMode: blendMode, pointerEvents: "none" }}
     />
   );
