@@ -35,7 +35,7 @@ export const Film: React.FC = () => (
         );
       })}
     </Grade>
-    <Grain opacity={0.08} stepFps={16} />
+    <Grain opacity={0.3} stepFps={16} />
     <Audio src={mixUrl} />
   </AbsoluteFill>
 );

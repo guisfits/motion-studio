@@ -55,12 +55,12 @@ type Item = {
 // Thrown in from far off-frame (reference f33-36): big, spinning, landing in 3-4 frames with an
 // overshoot wobble, staggered one frame apart; the portrait is already landing at the cut.
 const ITEMS: Item[] = [
-  { kind: "oval", painting: selfUrl, w: 0.43, rest: [0.5, 0.46], restRot: 0, from: [0.62, 0.52], fromRot: -14, fromScale: 1.35, start: -4, end: 0, sway: 0 },
-  { kind: "rect", painting: cafeUrl, w: 0.35, rest: [0.76, 0.15], restRot: 2, from: [1.45, -0.25], fromRot: 48, fromScale: 1.4, start: -4, end: 0, sway: 1 },
-  { kind: "heart", painting: irisUrl, w: 0.36, rest: [0.79, 0.75], restRot: 3, from: [1.5, 1.05], fromRot: -42, fromScale: 1.4, start: -3, end: 1, sway: 2 },
-  { kind: "oval", painting: wheatUrl, w: 0.27, rest: [0.2, 0.17], restRot: -2, from: [-0.5, -0.3], fromRot: -55, fromScale: 1.45, start: -2, end: 2, sway: 3 },
-  { kind: "round", painting: rhoneUrl, w: 0.2, rest: [0.06, 0.42], restRot: 0, from: [-0.55, 0.5], fromRot: -35, fromScale: 1.4, start: -2, end: 2, sway: 4 },
-  { kind: "rect", painting: remyUrl, w: 0.43, rest: [0.28, 0.79], restRot: -4, from: [0.1, 1.55], fromRot: -38, fromScale: 1.45, start: -1, end: 3, sway: 5 },
+  { kind: "oval", painting: selfUrl, w: 0.43, rest: [0.5, 0.46], restRot: 0, from: [0.62, 0.52], fromRot: -14, fromScale: 1.35, start: -2, end: 0, sway: 0 },
+  { kind: "rect", painting: cafeUrl, w: 0.35, rest: [0.76, 0.15], restRot: 2, from: [1.45, -0.25], fromRot: 48, fromScale: 1.4, start: -1, end: 1, sway: 1 },
+  { kind: "heart", painting: irisUrl, w: 0.36, rest: [0.79, 0.75], restRot: 3, from: [1.5, 1.05], fromRot: -42, fromScale: 1.4, start: -1, end: 1, sway: 2 },
+  { kind: "oval", painting: wheatUrl, w: 0.27, rest: [0.2, 0.17], restRot: -2, from: [-0.5, -0.3], fromRot: -55, fromScale: 1.45, start: 0, end: 2, sway: 3 },
+  { kind: "round", painting: rhoneUrl, w: 0.2, rest: [0.06, 0.42], restRot: 0, from: [-0.55, 0.5], fromRot: -35, fromScale: 1.4, start: 0, end: 2, sway: 4 },
+  { kind: "rect", painting: remyUrl, w: 0.43, rest: [0.28, 0.79], restRot: -4, from: [0.1, 1.55], fromRot: -38, fromScale: 1.45, start: 1, end: 3, sway: 5 },
 ];
 
 // The reference's frames are ~35 % bigger than the first pass measured (portrait ~0.42 W wide).
@@ -71,8 +71,9 @@ export const SOMEHOW_FONT = 128;
 export const S02: React.FC = () => {
   useFonts();
   const f = useCurrentFrame();
-  // push in on the portrait over the whole shot (reference: ~1.0 -> 1.15)
-  const cam = keys(f, [[0, 1], [27, 1.15]], (t) => 1 - (1 - t) ** 2);
+  // measured on the reference (motion-measure S02): opens close on the portrait and pulls back fast
+  // (peak 10.9 %/f over the first 3 frames, total -12 %), then a slow push.
+  const cam = f < 3 ? keys(f, [[0, 1.3], [3, 1.0]], (t) => 1 - (1 - t) ** 3) : keys(f, [[3, 1.0], [27, 1.06]]);
   const word = "SOMEHOW";
   return (
     <AbsoluteFill style={{ background: "#2b1a10", overflow: "hidden" }}>
@@ -84,10 +85,11 @@ export const S02: React.FC = () => {
           const pose = throwIn(f - it.start, 16, {
             from: { x: it.from[0] * W, y: it.from[1] * H, rotate: it.fromRot, scale: it.fromScale ?? 1 },
             to: { x: it.rest[0] * W, y: it.rest[1] * H, rotate: it.restRot, scale: 1 },
-            frames: Math.max(3, it.end - it.start),
+            frames: Math.max(2, it.end - it.start),
             arc: 90,
+            damping: 0.6, // lands and settles in ~4 frames (reference settle: 4 f)
           });
-          const float = drift(f, 16, `s02-${i}`, { amp: 4, hz: 0.4 });
+          const float = drift(f, 16, `s02-${i}`, { amp: 1.2, hz: 0.3 });
           return (
             <GiltFrame key={i} kind={it.kind} painting={it.painting} w={it.w * W * FRAME_SCALE}
               cx={pose.x + float.x} cy={pose.y + float.y}
