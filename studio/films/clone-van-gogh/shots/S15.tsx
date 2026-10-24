@@ -37,7 +37,7 @@ const Paper: React.FC = () => (
   <div
     style={{
       position: "absolute", left: -3000, top: -4000, width: 6000, height: 8000,
-      background: "repeating-linear-gradient(0deg, transparent 0 39px, rgba(52,92,86,0.78) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, rgba(52,92,86,0.78) 39px 40px), #9a9e98",
+      background: "repeating-linear-gradient(0deg, transparent 0 52px, rgba(70,88,84,0.6) 52px 54px), repeating-linear-gradient(90deg, transparent 0 52px, rgba(70,88,84,0.6) 52px 54px), #c9ccc7", // reference f470: light grey paper, ~54 px cells, 2 px lines
     }}
   />
 );
