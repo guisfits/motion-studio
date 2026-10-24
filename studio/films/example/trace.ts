@@ -17,7 +17,7 @@ import { revealWord } from "../../../src/type/reveal";
 import { CAMERA_DRIFT, CAMERA_KEYS, CAPTION, CHUNKS, DURATION, FPS, H, INK, PIECES, W } from "./scene";
 
 export const traceAt: TraceAt = (frame) => {
-  const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT });
+  const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT, fps: FPS });
   const items: TraceItem[] = [];
 
   for (const p of PIECES) {

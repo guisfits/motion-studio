@@ -1,5 +1,5 @@
 import type { CamKey, CamPose } from "../camera";
-import { viewAt } from "../camera";
+import { DEFAULT_FPS, viewAt } from "../camera";
 import type { CamEase } from "../camera";
 
 /** A box on the page as fractions of its width and height. */
@@ -62,11 +62,12 @@ export function docZoomKeys(g: DocZoomGeometry, t: DocZoomTiming): CamKey[] {
   ];
 }
 
-/** The camera pose a doc zoom draws at `frame` (what a trace reads). */
+/** The camera pose a doc zoom draws at `frame` (what a trace reads); `fps` = the composition's rate, as `Camera` reads it. */
 export const docZoomPose = (
   g: DocZoomGeometry,
   t: DocZoomTiming,
   frame: number,
   durationInFrames: number,
   drift = 0,
-): CamPose => viewAt(docZoomKeys(g, t), frame, { durationInFrames, drift });
+  fps = DEFAULT_FPS,
+): CamPose => viewAt(docZoomKeys(g, t), frame, { durationInFrames, drift, fps });

@@ -25,7 +25,7 @@ const TARGET_BOX = PARTS[TARGET_ROW.zoom?.target ?? ""];
 if (!TARGET_BOX) throw new Error(`dry-run: beat ${TARGET_ROW.id} has no zoom target in PARTS`);
 
 export const traceAt: TraceAt = (frame) => {
-  const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT });
+  const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT, fps: FPS });
   const items: TraceItem[] = [{ id: "ground-1", role: "ground", box: GROUND_BOX }];
 
   for (const p of PIECES) {

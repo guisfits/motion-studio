@@ -22,7 +22,7 @@ A film is a folder `studio/films/<slug>/` (copy `studio/films/example/`, registe
 2. Time comes from `voice/words.json`: `fromWords(words)` (`import words from "./voice/words.json"`) gives the spoken words as captions with `startMs`/`endMs`; a landing frame is `Math.round(s * film.fps)`. Assert at import that every derived frame is finite: `undefined + 12` is `NaN`, a `NaN` pose silently becomes "off screen" and the hero vanishes `[tested]`.
 3. One set of numbers. Anything both files need is exported from `scene.ts`. A number typed in `trace.ts` and also in `Film.tsx` is a defect: the trace drifts from the picture and the gates pass a film nobody sees `[eng]`.
 4. Cues: the sound role gets the landings from a pure `cues.ts` (`Cue = { at, sfx, gain? }` per sequence, flattened by `collectCues(blocks, fps)`, exported with `node tools/audio/cues-json.mjs <file.cues.ts> <EXPORT> out/cues.json`). Compute `at` from the same landing frames the picture uses, so the SFX and the picture share one timing source.
-5. The camera is `<Camera keys={CAMERA_KEYS} drift={CAMERA_DRIFT}>` in `Film.tsx` and `viewAt(CAMERA_KEYS, frame, { durationInFrames, drift })` in `trace.ts`: the same keys, the pose the component actually draws (drift folded in). `camera: cameraTrace(view, shotAt(CUT_FRAMES, frame))`; scale must be finite and > 0 or T0 stops the run. `shot` is how R1 to R3 see a hard cut as an event and how T7 avoids reading a cut's scale jump as a move; a hard cut without it is both a missed event and a false punch `[eng]`.
+5. The camera is `<Camera keys={CAMERA_KEYS} drift={CAMERA_DRIFT}>` in `Film.tsx` and `viewAt(CAMERA_KEYS, frame, { durationInFrames, drift, fps })` in `trace.ts`: the same keys, the pose the component actually draws (drift folded in). `camera: cameraTrace(view, shotAt(CUT_FRAMES, frame))`; scale must be finite and > 0 or T0 stops the run. `shot` is how R1 to R3 see a hard cut as an event and how T7 avoids reading a cut's scale jump as a move; a hard cut without it is both a missed event and a false punch `[eng]`.
 6. One clock. When the register asks for stepped motion (SKILL step 1) the pieces and the trace read `stepFrame(frame, fps, 12)` (a function of the frame, so it stays pure; the `Camera` stays smooth, `devices-rhythm-camera.md` 2): the gate sees the poses the viewer sees `[tested]`.
 
 ## 2. What to put in the trace
@@ -61,7 +61,7 @@ A film that closes on the project's house outro (an imported, pre-approved closi
 `Camera` draws `translate(W/2, H/2) rotate(r) scale(z) translate(-x, -y)` over world coordinates (px on the table; the frame shows the world at zoom 1 centred on the camera's `x`, `y`). The trace applies the same transform with the helpers, in this order:
 
 ```ts
-const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT });
+const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT, fps: FPS });
 const pose = setDownPose(frame - p.start, FPS, W, H, p.carry);          // entrance offset and tilt
 const world = rotatedBox(shiftBox(p.rest, pose.dx, pose.dy), pose.rotate);
 const box = projectBox(world, view, W, H);                              // frame px, after the camera

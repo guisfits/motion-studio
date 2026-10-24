@@ -1,4 +1,4 @@
-import { cameraAt, type CamKey } from "./path";
+import { cameraAt, DEFAULT_FPS, type CamKey } from "./path";
 
 export type PeakOptions = {
   /**
@@ -7,6 +7,8 @@ export type PeakOptions = {
    * cuts where that is fastest.
    */
   metric?: "screen" | "scale";
+  /** The composition rate the keys are timed at (`useVideoConfig().fps`); default 30, as `cameraAt`. */
+  fps?: number;
 };
 
 const SAMPLE = 0.05; // frames
@@ -16,11 +18,16 @@ const SAMPLE = 0.05; // frames
  * the cut ("cut on the curve"). Built on `cameraAt`, so it follows the same easing as the render.
  * Returns a whole frame (a cut sits on one); the first of equals wins.
  */
-export function cutAtPeak(keys: CamKey[], from: number, to: number, { metric = "screen" }: PeakOptions = {}): number {
+export function cutAtPeak(
+  keys: CamKey[],
+  from: number,
+  to: number,
+  { metric = "screen", fps = DEFAULT_FPS }: PeakOptions = {},
+): number {
   const speed = (f: number): number => {
-    if (metric === "screen") return cameraAt(keys, f).velocity;
-    const a = cameraAt(keys, f - 1);
-    const b = cameraAt(keys, f + 1);
+    if (metric === "screen") return cameraAt(keys, f, fps).velocity;
+    const a = cameraAt(keys, f - 1, fps);
+    const b = cameraAt(keys, f + 1, fps);
     return Math.abs(Math.log(b.zoom) - Math.log(a.zoom));
   };
   let best = from;
