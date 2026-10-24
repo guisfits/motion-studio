@@ -16,8 +16,9 @@ import paintingUrl from "../assets/pd/saint-remy.jpg";
 const HOLE = { x: 433, y: 781 }; // keyhole centre inside the 864x1536 plate
 const HOLE_SCREEN = { x: WIDTH / 2, y: HEIGHT * 0.45 };
 
-// plate scale per local frame (1 = 864 px wide): hole 21 % W at f0, 36 % W at f2, then past the frame
-const PLATE_S = [0.8, 1.1, 1.47, 1.9, 2.4, 3.1, 4.0, 5.2, 6.8, 8.8, 11.5, 15, 20];
+// plate scale per local frame (1 = 864 px wide): the plate fills the frame from f0 (>= 1.25 covers
+// 1080 px), the mat already visible through the hole as in the reference, then past the frame
+const PLATE_S = [1.4, 1.6, 1.85, 2.2, 2.6, 3.2, 4.0, 5.2, 6.8, 8.8, 11.5, 15, 20];
 const plateScale = (f: number) => {
   const i = Math.min(PLATE_S.length - 1, Math.floor(f));
   const a = PLATE_S[i];
@@ -186,9 +187,6 @@ export const S11: React.FC = () => {
       <AbsoluteFill style={{ transform: `scale(${sceneScale})`, filter: sceneBlur > 0.3 ? `blur(${sceneBlur}px)` : undefined }}>
         <Mat f={f} />
       </AbsoluteFill>
-      {plateOn && (
-        <AbsoluteFill style={{ background: f < 2 ? "#3a3126" : "transparent", opacity: f < 2 ? 1 : 0 }} />
-      )}
       {plateOn && (
         <AbsoluteFill>
           {plate(`inset(0 ${(1 - 433 / 864) * 100}% 0 0)`, -split * 700)}

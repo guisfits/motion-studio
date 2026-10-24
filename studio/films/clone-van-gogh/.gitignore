@@ -1,5 +1,5 @@
 assets/gen/
-assets/pd/
+assets/pd/*.jpg
 audio/.cache/
 audio/music/
 audio/mix.mp4
