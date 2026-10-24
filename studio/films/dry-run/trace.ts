@@ -21,6 +21,8 @@ import film from "./film.json";
 
 const TARGET_ROW = film.sheet.beats[1];
 const TARGET_FROM = Math.round(TARGET_ROW.key[0].t * FPS);
+const TARGET_BOX = PARTS[TARGET_ROW.zoom?.target ?? ""];
+if (!TARGET_BOX) throw new Error(`dry-run: beat ${TARGET_ROW.id} has no zoom target in PARTS`);
 
 export const traceAt: TraceAt = (frame) => {
   const view = viewAt(CAMERA_KEYS, frame, { durationInFrames: DURATION, drift: CAMERA_DRIFT });
@@ -35,7 +37,7 @@ export const traceAt: TraceAt = (frame) => {
   }
 
   if (frame >= TARGET_FROM) {
-    items.push({ id: `${TARGET_ROW.id}-target`, role: "target", box: projectBox(PARTS[TARGET_ROW.zoom.target], view, W, H) });
+    items.push({ id: `${TARGET_ROW.id}-target`, role: "target", box: projectBox(TARGET_BOX, view, W, H) });
   }
 
   if (frame >= PLATE_FROM && frame < PLATE_TO) items.push({ id: "ground-plate", role: "ground", box: PLATE });
