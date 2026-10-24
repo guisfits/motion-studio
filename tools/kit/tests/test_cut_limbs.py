@@ -114,6 +114,10 @@ def test_torso_loses_the_limb_but_keeps_a_stub():
     assert a[SHOULDER[1], 160] == 255  # inside the block, untouched
     assert a[ELBOW[1], ELBOW[0]] == 0  # the elbow is gone from the torso
     assert a[HAND[1], HAND[0]] == 0
+    # the cut starts `stub` (20) px along the upper arm and its round end reaches R + margin (18) back:
+    # the torso keeps 2 px of limb past the shoulder
+    assert a[SHOULDER[1], SHOULDER[0] + 1] == 255
+    assert a[SHOULDER[1], SHOULDER[0] + 4] == 0
     assert a.shape == (H, W) and images["torso"].size == (W, H)  # the torso keeps the figure's frame
 
 

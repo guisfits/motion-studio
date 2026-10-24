@@ -14,13 +14,18 @@ Puppet reads (src/rig).
         "joints": [[300, 450], [185, 480], [60, 310]],         // shoulder, elbow, hand tip (figure px)
         "radii": [[56, 48], [44, 48]],                         // per link: capsule radius at its start and its end
         "names": ["ua_l", "fa_l"],                             // optional; default <limb>_0, <limb>_1, ...
-        "stub": 34,                                            // optional; px of the first link left on the torso
+        "stub": 34,                                            // optional; px along the first link where the torso cut starts
         "tip_extend": 22,                                      // optional; the last link runs this far past its tip
         "margin": 4,                                           // optional; how much wider than the limb the torso is cut
         "extra": [[[565, 262], [735, 271], 26, 22]]            // optional; capsules (a, b, ra, rb) welded to the LAST link (brush, fingers)
       }
     }
   }
+
+The torso cut is the limb's capsule grown by `margin`; for the first link it starts `stub` px along the
+link, and its round end reaches back `radius + margin` from there, so the torso keeps `stub - radius -
+margin` px of the limb past the hinge; a shorter stub keeps none and bites `radius + margin - stub` px
+behind the hinge, mostly under the first link's own disc about that hinge.
 
 Joint k is the hinge of link k: link k runs from joint k to joint k+1. Each link part keeps the figure's
 pixels inside its capsule, cropped to their bounds (+3 px). The capsule's far end is a disc, so a link
