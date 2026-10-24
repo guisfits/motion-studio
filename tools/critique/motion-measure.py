@@ -665,6 +665,27 @@ def _cell(mode, ref, clone, eps):
     return f"{_num(ref)} → {_num(clone)}{tail} {flag}".strip(), flag
 
 
+def _mismatch_warnings(ref_doc, clone_doc):
+    """Warning lines when the two videos are not on the same clock or pixel grid.
+
+    Every speed is per frame and every px is native, and both videos are cut by the same frame
+    numbers: a clone at another rate or size flags differences that are only the units."""
+    out = []
+    rf, cf = ref_doc.get("fps"), clone_doc.get("fps")
+    if rf and cf and abs(rf - cf) > 0.005 * rf:
+        out.append(
+            f"⚠️ Frame rates differ ({rf:g} vs {cf:g} fps): per-frame speeds, settle frames and the shot "
+            "spans are not comparable. Render the clone at the reference's rate before reading this."
+        )
+    rw, cw = ref_doc.get("width"), clone_doc.get("width")
+    if rw and cw and rw != cw:
+        out.append(
+            f"⚠️ Frame sizes differ ({rw} vs {cw} px wide): px metrics are native, so pan and object "
+            f"speeds read ×{cw / rw:.2f} from size alone."
+        )
+    return out + [""] if out else []
+
+
 def build_compare(ref_doc, clone_doc):
     ref = {s["id"]: s for s in ref_doc["shots"]}
     clone = {s["id"]: s for s in clone_doc["shots"]}
@@ -678,6 +699,7 @@ def build_compare(ref_doc, clone_doc):
         "Small additive floors keep near-zero metrics from exploding the ratio.",
         "",
     ]
+    lines += _mismatch_warnings(ref_doc, clone_doc)
     overview = [
         "## Overview",
         "",

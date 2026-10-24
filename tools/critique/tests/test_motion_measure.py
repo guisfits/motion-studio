@@ -272,6 +272,17 @@ def test_flag_thresholds():
     assert mm.flag_for("diff", 10, 40, 0)[1] == "🔴"
 
 
+def test_compare_warns_when_rates_or_sizes_differ():
+    shot = {"id": "S1", "name": "a", "from": 0, "to": 10, "pan_speed_mean": 4.0}
+    doc = lambda fps, w: {"video": "v.mp4", "n_frames": 10, "fps": fps, "width": w, "height": w * 16 // 9, "shots": [shot]}
+    same, _ = mm.build_compare(doc(16, 1080), doc(16.0, 1080))
+    assert "⚠️" not in same
+    text, _ = mm.build_compare(doc(16, 1080), doc(30, 1080))
+    assert "frame rates differ" in text.lower() and "16" in text and "30" in text
+    text, _ = mm.build_compare(doc(16, 720), doc(16, 1080))
+    assert "sizes differ" in text.lower() and "720" in text and "1080" in text
+
+
 def write_video(path, frames):
     wr = cv2.VideoWriter(str(path), cv2.VideoWriter_fourcc(*"mp4v"), 16, (W, H))
     for f in frames:
