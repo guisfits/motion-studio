@@ -17,7 +17,7 @@ Only these, from the Director:
 - `<film>/crew/sync-sheet.json` (what picture and lettering are meant to say, with word times);
 - `<film>/crew/checks-<stage>.md` for the render's stage and earlier ones: the deterministic gates, run before you;
 - `<film>/crew/style-bible.md`, only its limits (accents, type voices, caption spec): the spec the picture is held to;
-- the scene files (`<film>/scenes/*.js` or `index.html`), read only for the entrance audit (tell 0): when each piece becomes visible;
+- `<film>/Film.tsx` and `<film>/trace.ts` (`traceAt(frame)`, pure; `docs/film-contract.md`), read only for the entrance audit (tell 0): the frame at which each piece becomes visible;
 - this skill's `references/`.
 
 You do not read: code (beyond the entrance audit's appear times), the engine, the brief, other roles' notes, the conversation, or any message explaining what the film "meant". A pointer from the Director ("check 1:20") is an extra place to look, never the defect list.
@@ -52,7 +52,7 @@ The rubric (`references/rubric.md`) is built from the measured grammar: the 12 d
 
 ## Gate
 
-The stated gate, not a script (the scripts ran before you: `node <engine>/core/checks/run.mjs <film> --stage <stage>`; you read their `checks-<stage>.md` and never rerun them):
+The stated gate, not a script (the scripts ran before you: `FILM_STAGE=<stage> npx vitest run <film>`, plus `node tools/checks/run-mp4.mjs <mp4> [--audio]` for the file; you read their `checks-<stage>.md` and never rerun them):
 
 - Final: **APPROVED** only if zero 🔴, all twelve scores 8 or more, inputs complete and fresh with no 🔴 in the checks file, all three passes done. Draft: the same with D11 `not assessed (no mix)`. Animatic: **CLEAR** on zero 🔴 and every applicable score 8 or more (it clears the animatic touchpoint only).
 - Otherwise **NOT APPROVED** / **NOT CLEAR**, or **ESCALATE** after round 2. No "approved with notes". With only 🟡 left and all scores 8 or more it is APPROVED and the 🟡 are listed.
@@ -62,7 +62,7 @@ The stated gate, not a script (the scripts ran before you: `node <engine>/core/c
 
 What reviewers miss, ranked.
 
-0. **A piece that appears instead of arriving** (client, 2026-10-19, draft v17 1:13: a background sheet appeared in place, missed by a review watched at 3–4 fps; "tome cuidado com isso nos reviews!"). Contact sheets at a few fps cannot see it. Audit every entrance and exit: list each piece that becomes visible after the scene's first frame (from the scene code: display toggles, opacity, scale, spring start poses), then look at stills at its appear time −0.05/+0.05/+0.15 s. Its first visible frame must touch the frame edge (dragged in from outside) or emerge from under a piece already on screen; anything else is 🔴.
+0. **A piece that appears instead of arriving** (client, 2026-10-19, draft v17 1:13: a background sheet appeared in place, missed by a review watched at 3–4 fps; "tome cuidado com isso nos reviews!"). Contact sheets at a few fps cannot see it. Audit every entrance and exit: list each piece that becomes visible after the scene's first frame (from `Film.tsx` and `traceAt(frame)`: sequence starts, opacity, scale, spring start poses), then look at stills at its appear time −0.05/+0.05/+0.15 s (`npx remotion still studio/index.ts <Id> <png> --frame=N --gl=angle`, or the mp4's `node tools/critique/sheets.mjs <mp4>`); look at them as images. Its first visible frame must touch the frame edge (dragged in from outside) or emerge from under a piece already on screen; anything else is 🔴.
 1. Passing on a green gate. The gates are a floor; the failed first film passed every count and was never watched on a phone with sound.
 2. Giving in to pressure ("basically done", the deadline, "it was intentional", the client is waiting). Only a changed render moves a score.
 3. Flagging what the evidence shows is fine: a cut on stillness, a rare 2x punch, no 12 fps stepping, a small caption with no box, a quiet ground, an opening not cut faster than the body (`rubric.md` "Not a defect"). A false positive costs a fix round.

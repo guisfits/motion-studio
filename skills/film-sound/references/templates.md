@@ -1,6 +1,6 @@
 # Templates and snippets
 
-Run every snippet from the engine root (`/path/to/motion-studio`), with the film directory as the argument.
+Run every snippet from the studio root (`/path/to/motion-studio`), with the film directory as the argument.
 
 ## `crew/sfx-cues.json`
 
@@ -12,8 +12,8 @@ Run every snippet from the engine root (`/path/to/motion-studio`), with the film
 ]
 ```
 
-- `t` = seconds heard, on the contact frame, 1-2 frames early at most (`NORMS.fps`); `type` = a `core/audio/sfx-library.json` action; `gain` linear per cue; `len` = seconds the sound lasts after its anchor. Always write `len`: M5 tests `[t, t+len]`, and the render falls back to the action's tail (else 0.6 s).
-- This list is the render: `node <engine>/core/audio/sfx.mjs <film>/crew/sfx-cues.json <film>/out/sfx.wav --dur <film seconds> --no-thin`. Thinning exists for the animator's over-emitted `cues.auto.json`; your list is already chosen.
+- `t` = seconds heard, on the contact frame, 1-2 frames early at most (`NORMS.fps`); `type` = a `tools/audio/sfx-library.json` action; `gain` linear per cue; `len` = seconds the sound lasts after its anchor. Always write `len`: M5 tests `[t, t+len]`, and the render falls back to the action's tail (else 0.6 s).
+- This list is the render: `node tools/audio/sfx.mjs <film>/crew/sfx-cues.json <film>/out/sfx.wav --dur <film seconds> --no-thin` Thinning exists for the animator's over-emitted `cues.auto.json`; your list is already chosen.
 
 ## `crew/sound.md`
 
@@ -81,14 +81,14 @@ Read it against the device map (`device-playbook.md` §3): a row with `device`, 
 ```bash
 node --input-type=module -e '
 import { readFileSync } from "node:fs";
-import { NORMS } from "<engine>/core/checks/norms.mjs";
-import { ONE_SHOT_TAIL } from "<engine>/core/audio/sfx.mjs";
+import { NORMS } from "./tools/checks/norms.mjs";
+import { ONE_SHOT_TAIL } from "./tools/audio/sfx.mjs";
 const film = process.argv[1];
 const rd = (p) => JSON.parse(readFileSync(p, "utf8"));
 const cues = rd(`${film}/crew/sfx-cues.json`);
 const words = rd(`${film}/voice/words.json`).words;
-const lib = rd("<engine>/core/audio/sfx-library.json");
-const PRE = { contact: 0.25, peak: 0.45 }; // MAX_PRE in core/audio/sfx.mjs: lead-in before `t`
+const lib = rd("./tools/audio/sfx-library.json");
+const PRE = { contact: 0.25, peak: 0.45 }; // MAX_PRE in tools/audio/sfx.mjs: lead-in before `t`
 const m = NORMS.audio.sfxWordMarginS;
 for (const c of cues) {
   const a = lib[c.type];
@@ -104,10 +104,11 @@ This is the stricter cousin of M5 (it adds the lead-in). Every "over" row needs 
 ## Mix and gate
 
 ```bash
-node <engine>/core/audio/mix.mjs --video <film>/out/silent-9x16.mp4 --voice <film>/voice/voice.wav \
+node tools/audio/mix.mjs --video <film>/out/silent-9x16.mp4 --voice <film>/voice/voice.wav \
   --sfx <film>/out/sfx.wav --music <film>/assets/music/music.wav \
   --out <film>/out/final-9x16.mp4 --fade-out 0.3 --music-duck 0 --report
-node <engine>/core/checks/run.mjs <film> --stage final
+FILM_STAGE=final npx vitest run <film>
+node tools/checks/run-mp4.mjs <film>/out/final-9x16.mp4 --audio
 ```
 
 `--music-duck 0` is the default recipe: a fixed bed `MUSIC_FIXED_BELOW_VOICE` dB under the speech, no swell in the pauses; use `--music-duck <dB>` (default `MUSIC_DUCK`) only for the minority choice of a bed that rises in the pauses. `--fade-out 0` holds the bed to the cut. Add `--voice-level` only after M3 names the voice. `--voice-takes <film>/out/voices.auto.json` when the film declares more than one take.

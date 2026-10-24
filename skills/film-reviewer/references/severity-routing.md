@@ -55,7 +55,7 @@ Pressure is not evidence. "It is basically done", the deadline, the client waiti
 
 The `norm` of a defect, in order of preference:
 
-1. a `NORMS.*` key exactly as in `core/checks/norms.mjs`, never with a different number;
+1. a `NORMS.*` key exactly as in `tools/checks/norms.mjs`, never with a different number;
 2. a gate code (below);
 3. a grammar row: `odd #n` (grammar section 11), `grammar §x` for a device range;
 4. a craft source: `tell n`, `craft §2.5`, a postmortem id `C3`/`K4`, `moran/<reel>`, with the rubric dimension (`D4`);

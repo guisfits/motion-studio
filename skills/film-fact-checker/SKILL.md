@@ -25,7 +25,7 @@ You run in a fresh context, never the writer's. The gate refuses a check signed 
 ```json
 {
   "checker": "film-fact-checker",
-  "script": "<output of: node <engine>/core/checks/facts.mjs hash <film>>",
+  "script": "<output of: node tools/checks/facts.mjs hash <film>>",
   "verdict": "PASS | FAIL",
   "claims":   [{ "id": "C01", "line": "L3", "text": "…as spoken…", "verdict": "confirmed | restated | wrong | unverified", "note": "…", "fix": "…wording the sources support…" }],
   "lettering":[{ "text": "1517", "beat": "b2", "verdict": "confirmed", "note": "" }],
@@ -54,7 +54,7 @@ Every item also carries `"sources": ["<source id>", …]`. Each source you open 
 
 ## Gate
 
-`node <engine>/core/checks/run.mjs <film> --stage script` (before the voice; any later stage runs the same checks): X1 no check or not signed by you · X2 `script.md` changed after your check · X3 an item not confirmed/restated, or verdict not PASS · X4 lettering on screen you never saw. The gate proves the check happened and is current; whether a claim is true is your judgement.
+`FILM_STAGE=script npx vitest run <film>` (before the voice; any later stage runs the same checks): X1 no check or not signed by you · X2 `script.md` changed after your check · X3 an item not confirmed/restated, or verdict not PASS · X4 lettering on screen you never saw. The gate proves the check happened and is current; whether a claim is true is your judgement.
 
 ## Hand-off
 
