@@ -53,7 +53,7 @@ export const traceAt: TraceAt = (frame) => {
     const box = captionBox(
       c.words.map((w) => w.text.trim()),
       CAPTION.size,
-      { centerX: CAPTION.centerX, top: CAPTION.top, lineHeight: CAPTION.lineHeight },
+      { centerX: CAPTION.centerX, top: CAPTION.top, lineHeight: CAPTION.lineHeight, maxWidth: CAPTION.width },
     );
     items.push(captionItem(c.id, c.text, box, { size: CAPTION.size, color: INK, alpha }));
   }

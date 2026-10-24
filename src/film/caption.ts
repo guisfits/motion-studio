@@ -12,15 +12,25 @@ export type CaptionMetrics = { advance: number; capHeight: number };
 
 /**
  * Box of a one-line `RevealWords` caption set in a monospaced face, centred on `centerX` with its
- * top at `top`: `lineHeight` is the CSS line height as a multiple of `size`.
+ * top at `top`: `lineHeight` is the CSS line height as a multiple of `size`. `maxWidth` is the
+ * width of the box `RevealWords` is drawn in: a line wider than it wraps on screen, so the one-line
+ * box would describe a caption nobody sees, and it throws instead (chunk shorter or set smaller).
  */
 export function captionBox(
   words: string[],
   size: number,
-  { centerX, top, lineHeight = 1.3, metrics = MONO }: { centerX: number; top: number; lineHeight?: number; metrics?: CaptionMetrics },
+  {
+    centerX,
+    top,
+    lineHeight = 1.3,
+    metrics = MONO,
+    maxWidth,
+  }: { centerX: number; top: number; lineHeight?: number; metrics?: CaptionMetrics; maxWidth?: number },
 ): Box {
   const chars = words.reduce((n, w) => n + w.length, 0);
   const w = chars * metrics.advance * size + Math.max(0, words.length - 1) * REVEAL_GAP.column * size;
+  if (maxWidth !== undefined && w > maxWidth + 0.5)
+    throw new Error(`caption "${words.join(" ")}" is ${Math.round(w)} px wide in a ${maxWidth} px box: RevealWords would wrap it`);
   return [centerX - w / 2, top, w, lineHeight * size];
 }
 

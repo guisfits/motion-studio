@@ -79,6 +79,11 @@ describe("geometry", () => {
     expect(w).toBeCloseTo(2 * 2 * 0.6 * 100 + 0.3 * 100);
     expect(x).toBeCloseTo(500 - w / 2);
     expect(h).toBeCloseTo(130);
+    // RevealWords wraps a line wider than its box: a one-line trace box would then describe a
+    // caption nobody sees, so captionBox refuses it.
+    const long = "porque Deus amou o mundo".split(" ");
+    expect(() => captionBox(long, 68, { centerX: 540, top: 0, maxWidth: 845 })).toThrow(/wrap/);
+    expect(captionBox(["The", "law"], 68, { centerX: 540, top: 0, maxWidth: 845 })[2]).toBeLessThan(845);
     expect(shotAt([30, 90], 29)).toBe(0);
     expect(shotAt([30, 90], 30)).toBe(1);
     expect(shotAt([30, 90], 120)).toBe(2);

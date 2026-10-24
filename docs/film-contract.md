@@ -50,7 +50,7 @@ rendered ink to within 6 px.
 | `role` | Means |
 |---|---|
 | `hero` / `support` / `piece` | a picture; `id` is its manifest asset id. One hero at a time; a hero that is covered becomes a `support` (same id) |
-| `caption` | a subtitle chunk, `alpha` (legible from 0.95), `text`, `cap` (cap height in frame px), `color` (`#rgb`, `#rrggbb`, `rgb()`); helpers `captionBox`, `captionItem` |
+| `caption` | a subtitle chunk, `alpha` (legible from 0.95), `text`, `cap` (cap height in frame px), `color` (`#rgb`, `#rrggbb`, `rgb()`); helpers `captionBox` (one line; pass `maxWidth`, the box `RevealWords` is drawn in, and a chunk that would wrap throws), `captionItem` |
 | `lettering` | display words; `bleed: true` for a word cropped by the edge on purpose |
 | `mark` | a drawn mark (underline, circle) |
 | `ground` | paper or ground under the pieces; never coverage |
