@@ -2,8 +2,8 @@
 
 One file, `crew/sync-sheet.json`: `{ "beats": [ ... ] }`. The key stays `beats` (the engine reads
 it); each entry is one **picture row**: one picture event on one phrase. Fields marked **gate** are
-read by `core/checks/sync.mjs` (S1–S9), `core/checks/picture.mjs` (H1) and `core/animatic.mjs`
-(stills at `key[0].t`); their names and shapes are the contract and never change. The other fields
+read by `tools/checks/sync.mjs` (S1–S9) and `tools/checks/picture.mjs` (H1), and by the
+composition through `film.json` (see "Sheet to film.json" below); their names and shapes are the contract and never change. The other fields
 are read by the art director, archivist, animator and reviewer; add no field not listed here.
 
 ## Fields
@@ -21,7 +21,7 @@ are read by the art director, archivist, animator and reviewer; add no field not
 | `device` | optional, one of: `hold` `breath-card` `word-card` `one-prop` `container` `crowd` `position-swap` `evidence-board` `grid` `scale-contrast` (see `device-playbook.md`) | art director (what to build), animator |
 | `join` | optional: `cut` (default when absent), `match`, `dissolve`. The join *into* this row. `dissolve` only where the brief's pace plan lists one | animator, reviewer |
 
-Matching details that bite (`core/checks/words.mjs`): case and edge punctuation are ignored, accents
+Matching details that bite (`tools/checks/words.mjs`): case and edge punctuation are ignored, accents
 and digits are not (`você` ≠ `voce`, `95` ≠ `noventa e cinco`: use the lettering's `says`). When a
 word repeats in a row, `lands` / `key.t` pick the occurrence nearest the time given: give the right
 one.
@@ -82,9 +82,26 @@ console.log(`rows ${beats.length} · words/row median ${med} · same-plate ${sam
 A row marked `<- long row` is a candidate to split on its next noun, unless it is a planned hold.
 The summary line goes into the hand-off.
 
+## Sheet to film.json
+
+The storyboard owns the mapping: the composition (`Film.tsx`) reads `film.json` props, and each
+sheet field becomes one prop the composition (and `trace.ts` `traceAt(frame)`) reads, in seconds
+converted to frames at the composition's fps. The sheet stays the human-readable source for the
+gates; `film.json` carries the same rows for the render. Prop names follow
+`docs/film-contract.md`; when that document and this table differ, the contract wins and this
+table changes in the same commit.
+
+| Sheet field | Becomes (in `film.json`) |
+|---|---|
+| `t`, `says`, `key` | the row's timing: start/end frame, the key words' frames |
+| `hero`, `support` | the row's asset ids (the manifest resolves the files) |
+| `lettering` | the row's lettering items with `lands` as a frame |
+| `zoom` | the camera target and kind for the row |
+| `device`, `join` | the row's device and its join |
+
 ## Running the gate
 
-The manifest does not exist yet, so run on a scratch copy outside the film folder with a seed
+The manifest does not exist yet, so run on a scratch copy outside the film folder (a copy of the film folder with the sheet, `film.json`, the words and a seed manifest; delete it after) with a seed
 manifest of every id you used (never write `crew/manifest.json` in the film):
 
 ```sh
@@ -93,7 +110,7 @@ cd <film> && S=$(mktemp -d) && mkdir -p "$S/crew" "$S/voice" \
  && node -e 'const {beats}=JSON.parse(require("fs").readFileSync("crew/sync-sheet.json"));
 const ids=[...new Set(beats.flatMap(b=>[b.hero?.asset,...(b.support??[])]).filter(Boolean))];
 console.log(JSON.stringify({assets:ids.map(id=>({id,file:"",source:"",licence:"",status:"missing"}))}))' > "$S/crew/manifest.json" \
- && node <engine>/core/checks/run.mjs "$S" --stage sheet; cat "$S/crew/checks-sheet.md"
+ && (cd <engine> && FILM_STAGE=sheet npx vitest run "$S"); cat "$S/crew/checks-sheet.md"
 ```
 
 PASS for you: no S1–S6, S8, S9 lines. Paste the file (without S7 lines) into the hand-off and say

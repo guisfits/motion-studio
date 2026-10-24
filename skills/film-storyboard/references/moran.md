@@ -5,7 +5,7 @@ Every lesson below was extracted from the reel's transcript and its on-screen pa
 Values are his (After Effects units); `~` = read uncertainly; "not stated" = he gave none. `Build` says how this engine does it.
 Lessons marked *(shared)* are owned by another role; know them, do not execute them.
 
-Where a lesson and `core/checks/norms.mjs` disagree, the norm gates the render; raise the conflict to the Director.
+Where a lesson and `tools/checks/norms.mjs` disagree, the norm gates the render; raise the conflict to the Director.
 
 ## Structure, pacing, retention
 

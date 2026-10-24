@@ -1,7 +1,7 @@
 // node skills/film-writer/scripts/take-metrics.mjs <film-dir | words.json> [--hook-s 3] [--app-t0 73.7]
 // Measures a voice take from its word times: F1 length, speech speed, pauses, the opening line,
 // and the caption reading load the animator will meet (NORMS.caption.*). Read-only; prints a report.
-// A film that closes on a product segment is measured in two parts, like run.mjs F1: the story up to
+// A film that closes on a product segment is measured in two parts, like the stage gate's F1: the story up to
 // the segment's start against NORMS.film, the segment against NORMS.appSegment. The start is
 // `--app-t0 <s>` (the first word of the segment's first line), else the film's sheet `app.t0`.
 import { readFileSync, existsSync, statSync } from "node:fs";
@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const { NORMS } = await import(
-  pathToFileURL(resolve(here, "../../../core/checks/norms.mjs")).href
+  pathToFileURL(resolve(here, "../../../tools/checks/norms.mjs")).href
 );
 
 const target = process.argv[2];

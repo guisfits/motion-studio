@@ -57,7 +57,7 @@ Storyboard artist and script supervisor: decides what the viewer sees on every p
 
 ## Gate
 
-`node <engine>/core/checks/run.mjs <scratch> --stage sheet` on a scratch copy (the manifest does not exist yet; the art director writes it from your sheet). Recipe in `references/sync-sheet-fields.md` ("Running the gate"). PASS for you = no **S1, S2, S3, S4, S5, S6, S8, S9, S10** in `<scratch>/crew/checks-sheet.md`. S7 (assets missing) is the archivist's list; F1 is the writer's. Read the file, not the exit code.
+`FILM_STAGE=sheet npx vitest run <scratch>` (from `<engine>`) on a scratch copy of the film folder (the manifest does not exist yet; the art director writes it from your sheet). Recipe in `references/sync-sheet-fields.md` ("Running the gate"). PASS for you = no **S1, S2, S3, S4, S5, S6, S8, S9, S10** in `<scratch>/crew/checks-sheet.md`. S7 (assets missing) is the archivist's list; F1 is the writer's. Read the file, not the exit code.
 
 Later gates read your sheet: **H1** (hero on screen at `key[0].t`, `NORMS.sync.heroWindowFrames`), **R1–R3** on the animatic (`NORMS.rhythm`), **R4** on the draft, **T7** (punch cap, `NORMS.camera.punchMax`), **T9** (zoom target box inside the safe box from `key[0]` to the row end). A defect there in rows, keys, targets or devices comes back to you through the director.
 

@@ -29,10 +29,10 @@ turn; this file only indexes). Newest first.
 | 2026-10-16 | Scene 1: open on the bare ground; a portrait is dragged in, never placed centred and tidy; tears may run diagonal; every torn edge shows white paper fibre | art director "Torn paper always shows its fibre"; this ledger |
 | 2026-10-16 | Every film opens with a curiosity question ("Você sabia…", "Já parou pra pensar…") | writer step 4 (W1); overlay brand-and-audience |
 | 2026-10-16 | Close: wax seal with the logo stamped on the name; app features shown by the screen, no side writing; store stickers below the app, never on it | overlay house-pieces (new close) |
-| 2026-10-16 | Fact-check only at the script and at the final cut; mid-way checks prove nothing | director steps 7, 10; engine run.mjs (X only at script/final) |
+| 2026-10-16 | Fact-check only at the script and at the final cut; mid-way checks prove nothing | director steps 7, 10; stage gate (X only at script/final) |
 | 2026-10-16 | Caption only what is not already lettered on screen; never caption the narration twice | animator step 3 |
 | 2026-10-16 | Calendar scene "ok… porém nada demais": an invented prop passes but does not land | `film-creative` tell 7 |
-| 2026-10-16 | "Evite reutilizar a mesma imagem base… Fotos de objetos/livros é ok até. O que pega mais é de pessoas": one picture of a person, one scene (documents, books, objects may repeat) | gate S10 (`core/checks/scenes.mjs`); storyboard step 4; archivist step 4c |
+| 2026-10-16 | "Evite reutilizar a mesma imagem base… Fotos de objetos/livros é ok até. O que pega mais é de pessoas": one picture of a person, one scene (documents, books, objects may repeat) | gate S10 (`tools/checks/scenes.mjs`); storyboard step 4; archivist step 4c |
 | 2026-10-16 | The film sells the app: ~90 s story + ~30 s on the app (what to say, show, which features tie to the topic) | director step 3 "Product segment"; `NORMS.appSegment` + F1; overlay brand-and-audience "Film shape" |
 | 2026-10-16 | Scene of typed words + a torn word is not creative; find the picture of the claim or merge with the neighbour scene | `film-creative` tell 6 |
 | 2026-10-15 | "Ir além do óbvio… conectar os pontos, insights do mundo e cultura" (Prodigal Son, Creation of Adam) | `film-creative` (new skill); director 5b; storyboard 3b |
@@ -46,10 +46,10 @@ turn; this file only indexes). Newest first.
 | 2026-10-15 | Never delete a picture the client did not name; show candidates first | archivist 4a; memory |
 | 2026-10-15 | AI pictures allowed; client-sent pictures used as sent, first | overlay SKILL.md + elements.md; memory |
 | 2026-10-15 | Board = one scene in its final state, one at a time; animatic only after all boards | director C6–C8 |
-| 2026-10-15 | Board page is a stack/feed: AGORA, CENAS, newest first; no old template | engine core/board (feed); director "Board" |
+| 2026-10-15 | Board page is a stack/feed: AGORA, CENAS, newest first; no old template | board feed (old engine `core/board`, archived); director "Board" |
 | 2026-10-15 | Dispatch the board intern on every landed step, unasked | director "Board" |
 | 2026-10-15 | Same tape on everything; repetitive elements. Vary fixings and lettering per plate | art director "No repeated component" |
-| 2026-10-15 | Every row acts (hammer the theses, a letter travels and spreads); cut rigs | storyboard 6b; animator; archivist 5; engine core/reference/rig.mjs |
+| 2026-10-15 | Every row acts (hammer the theses, a letter travels and spreads); cut rigs | storyboard 6b; animator; archivist 5; engine `src/rig` (rig; old `core/reference/rig.mjs` archived) |
 | 2026-10-15 | Texture is a real scanned material, not a digital fill; depth: objects on a surface | art director "Look first" rules; animator; archivist 5 |
 | 2026-10-15 | Texturelabs and free-for-commercial texture libraries allowed, no licence questions | archivist 5; overlay; videos/AGENTS.md |
 | 2026-10-15 | Show every step's artifact and stop for the OK; never hours without feedback | director "Client checkpoints" C1–C8 |

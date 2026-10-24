@@ -37,7 +37,7 @@ Director and producer: owns the register, the pace, the order of work, every gat
 
 ## Paths
 
-Every crew command names its roots; none assumes a working directory. `<engine>` is the motion-studio checkout: its root when you work in the engine repo; in a project, the submodule path the overlay or the project's `AGENTS.md` names (else `git submodule status` lists it, e.g. `videos/studio`). `<film>` is the film's folder. Resolve both to absolute paths once and put them in every briefing (`Engine:`, `Film:`). Film files (`crew/…`, `voice/…`, `assets/…`, `out/…`) are under `<film>`; engine files (`core/…`, `research/…`, `skills/…`) are under `<engine>`.
+Every crew command names its roots; none assumes a working directory. `<engine>` is the motion-studio checkout: its root when you work in the engine repo; in a project, the submodule path the overlay or the project's `AGENTS.md` names (else `git submodule status` lists it, e.g. `videos/studio`). `<film>` is the film's folder: `studio/films/<slug>/` in the engine, or the project's Remotion folder (`film.json` + `Film.tsx` + `trace.ts` + `film.test.ts`, registered in the Remotion root; contract in `docs/film-contract.md`, start from `studio/films/example/`). Resolve both to absolute paths once and put them in every briefing (`Engine:`, `Film:`). Film files (`crew/…`, `voice/…`, `assets/…`, `out/…`) are under `<film>`; engine files (`tools/…`, `src/…`, `research/…`, `skills/…`) are under `<engine>`.
 
 ## You deliver
 
@@ -45,7 +45,7 @@ Every crew command names its roots; none assumes a working directory. `<engine>`
 - One briefing per specialist step (`references/briefing-specialists.md`), one fresh subagent per role.
 - The fix-round routing (`references/briefing-specialists.md`, "Fix rounds").
 - The client checkpoints (below): every step that makes something the client can see or hear ends with that thing in the client's hands and a stop.
-- The film board, `<film>/out/board/index.html`: the client's one page, a stacked feed (`node <engine>/core/board/build.mjs <film> --lang <overlay lang>`); it shows the title, AGORA (what the client must do now), CENAS (the scenes in film order) and the updates, newest first. Nothing else.
+- The film board, the client's one page (the project's report page; the old `core/board` builder has no Remotion equivalent, so you assemble it with stills from `node <engine>/tools/critique/sheets.mjs <mp4>`): a stacked feed; it shows the title, AGORA (what the client must do now), CENAS (the scenes in film order) and the updates, newest first. Nothing else.
 
 ## Client checkpoints
 
@@ -59,7 +59,7 @@ The client judges results, not status. A step that produces something visible or
 | C4 | Style frame | one still of one beat, side by side with the target (`out/target-vs-frame.png`) and the art director's score | client scores ≥ 8; else redo, nothing else starts |
 | C5 | Motion test | 3–5 s of that beat moving, with its SFX | client OK |
 | C6 | Boards, **one at a time** | one board = one **scene**, shown as its event in 3 keyframes plus the end frame ("The core" above) (a distinct composition: sheet rows that continue the same plate, or a burst that builds one plate, are ONE board), shown in its **final state** — every element of the scene in place, as the scene ends; never a transition or an in-between of the previous board (client, 2026-10-15). With it: all the words spoken over the scene and the pictures used (ids + thumbnails). The inspirations are the crew's idea bank: every board draws its ideas (the act, the composition, the device, the type treatment) from those pieces, on the crew's own initiative — the client never has to suggest them (client, 2026-10-15: "se eu tiver que ficar te dando ideias, qual é o ponto?"). The board does not need to show the piece it borrowed from. The board is an overview of how the film looks, not an approval of animation; animation adds motion and elements later. Then stop for the client's note | client OK per board |
-| C7 | Animatic, low fidelity | only after every board is approved: the whole film animated with voice, SFX and music at low fidelity. The animatic plays at 12 fps, so the client approves a stepped cadence: before asking for the OK, show 3–5 s at the final cadence (`render.mjs --from --to` at the film's final `--fps`/`--sub`) beside the same seconds of the animatic, and the client picks; the pick is the final's cadence (second film, 2026-10-19: v20 was approved at 12 fps while the render contract is 60 fps with blur, found only before the final) | client OK |
+| C7 | Animatic, low fidelity | only after every board is approved: the whole film animated with voice, SFX and music at low fidelity. The animatic plays at 12 fps, so the client approves a stepped cadence: before asking for the OK, show 3–5 s at the final cadence (`<engine>/tools/render.sh <CompositionId> <film>/out/cadence.mp4 --frames=<a>-<b>` at full scale and the composition's final fps) beside the same seconds of the animatic, and the client picks; the pick is the final's cadence (second film, 2026-10-19: v20 was approved at 12 fps while the render contract is 60 fps with blur, found only before the final) | client OK |
 | C8 | Final | the full-fidelity render with the fine adjustments | client OK |
 
 C3 and C4 come before any other picture work: taste is set on one frame against one target, then repeated. A frame the client scores ≥ 8 goes on the project's approved-frames shelf, and a film the client scores 10 on its reference-films list (the overlay names both); every later film reads them first.
@@ -92,10 +92,10 @@ A step starts only when the gate of the step before reads PASS in its report fil
 5b. **film-creative**, before the storyboard places anything: for every scene, the idea under the line, the connected image (art, scripture, culture) and its paper event (`skills/film-creative/SKILL.md`). The storyboard and art director build from it; you reject any scene idea a viewer would call obvious.
 6. **film-storyboard** → `crew/sync-sheet.json` + the picture list. Gate: `--stage sheet` (runs S1–S10, F1) with no S1–S6, S8–S10 (its scratch copy; S7 expected until the archivist). You read the sheet against the pace plan: holds, breath cards, joins and the end where you put them; words per picture row inside grammar §10 "new picture every".
 7. **film-art-director**, look first: target candidates (C3), then the style frame against the chosen target with the animator (C4), then the motion test (C5). Only after C5: **film-art-director** → `crew/style-bible.md`, `crew/manifest.json`, written from the approved frame; then **film-archivist** → `assets/`, `crew/assets-notes.md`, manifest provenance fields. If the archivist leaves rows as `request` (`crew/image-requests.md`), send the whole file to the client in one message, the prompts ready to paste, and wait for the files; the archivist then cuts them. Gate: `--stage sheet` PASS. No fact-check here: pictures and lettering still change until the cut, so the fact-check runs only on the script and on the final cut (client, 2026-10-16).
-8. **film-animator**, stage 1 → `index.html`, `out/animatic-9x16.mp4` (`node <engine>/core/animatic.mjs <film>`): a 12 fps render of the page's `draw(t)` on the voice (through the house window when `FILM.house` is declared), plus the contact sheet `out/animatic-9x16.png` with one still per beat. Gate: `--stage animatic` PASS (adds T0–T9, H1, P1, R1–R3). Then **film-reviewer** on the animatic. **Stop. The client sees the low-fidelity animatic (C7), built only after every board (C6) is approved one at a time.** Pace is fixed here, never after render.
+8. **film-animator**, stage 1 → the composition (`Film.tsx`, `trace.ts` `traceAt(frame)`, `film.test.ts`, props in `film.json`, registered in the Remotion root), `out/animatic-9x16.mp4` (`<engine>/tools/render.sh <CompositionId> <film>/out/animatic-9x16.mp4 --scale=0.5`, the machine render lock; never raw `npx remotion render`): a low-fidelity render of the composition on the voice, plus the contact sheet from `node <engine>/tools/critique/sheets.mjs <film>/out/animatic-9x16.mp4`. Gate: `--stage animatic` PASS (adds T0–T9, H1, P1, R1–R3). Then **film-reviewer** on the animatic. **Stop. The client sees the low-fidelity animatic (C7), built only after every board (C6) is approved one at a time.** Pace is fixed here, never after render.
 9. **film-animator**, stage 2 → `out/draft-9x16.mp4` (picture lock). Gate: `--stage draft` PASS (adds F2, M0, M1, R4, T10, T11; keeps T0–T9, H1, P1, R1, R2; R3 is animatic only). You confirm the lock; the animator renders the silent master `out/silent-9x16.mp4`.
 10. **film-fact-checker**, final pass on the picture-locked draft: every claim, lettering text and picture on screen against its line (X1–X4). The second and last fact-check; the first was the script (client, 2026-10-16).
-10b. **film-sound** → `out/final-9x16.mp4` (`<engine>/core/audio/mix.mjs`). Gate: `--stage final` PASS (adds M2–M6 on `out/final-9x16.mp4`; M5 is orange, M6 is a stem without its cue list).
+10b. **film-sound** → `out/final-9x16.mp4` (`node <engine>/tools/audio/mix-remotion.mjs <silent.mp4> <vo.wav> <music.wav> <cues.json> <film>/out/final-9x16.mp4`). Gate: `FILM_STAGE=final` PASS (adds M2–M6; also `node <engine>/tools/checks/run-mp4.mjs <film>/out/final-9x16.mp4`; M5 is orange, M6 is a stem without its cue list).
 11. **film-reviewer**, fresh context → `crew/review.md`. Route every ranked defect to its owning role; at most **2 fix rounds** per review (`references/briefing-specialists.md`); client note rounds are not counted — each client note starts its own round (the 10/10 film took 18 drafts). Gate: zero 🔴, every score ≥ 8.
 12. **Stop. The client sees the cut.** Paid finishing (final voice, licensed music) only after approval; then re-run `--stage final`.
 13. **Client note rounds** (each draft the client answers with timestamped notes):
@@ -105,9 +105,9 @@ A step starts only when the gate of the step before reads PASS in its report fil
 
 ## Gate
 
-`node <engine>/core/checks/run.mjs <film> --stage script|sheet|animatic|draft|final` writes `crew/checks-<stage>.md`; PASS = exit 0 and no 🔴 in that file. You sign by reading the file, never a claim.
+`FILM_STAGE=script|sheet|animatic|draft|final npx vitest run <film>` (from `<engine>`) writes `<film>/crew/checks-<stage>.md` with the same gate codes; on a rendered file also `node <engine>/tools/checks/run-mp4.mjs <mp4>`. `--stage X` in this skill means `FILM_STAGE=X`; PASS = exit 0 and no 🔴 in that file. You sign by reading the file, never a claim.
 
-Stages as `core/checks/run.mjs` runs them: X1–X4 run only at script (X1–X3) and final (X1–X4), never between (client, 2026-10-16: a check mid-way proves nothing); script = X1–X3 alone (before the voice: no sheet, manifest or words needed); sheet = S1–S10, F1; animatic = sheet + T0–T9, H1, P1, R1–R3; draft = animatic without R3, + R4, T10, T11, F2, M0, M1; final = draft (on the final render) + M2–M6.
+Stages as `film.test.ts` runs them under `FILM_STAGE`: X1–X4 run only at script (X1–X3) and final (X1–X4), never between (client, 2026-10-16: a check mid-way proves nothing); script = X1–X3 alone (before the voice: no sheet, manifest or words needed); sheet = S1–S10, F1; animatic = sheet + T0–T9, H1, P1, R1–R3; draft = animatic without R3, + R4, T10, T11, F2, M0, M1; final = draft (on the final render) + M2–M6.
 
 | Code | Stage | Checks | Fix goes to |
 |---|---|---|---|
@@ -125,7 +125,7 @@ Stages as `core/checks/run.mjs` runs them: X1–X4 run only at script (X1–X3) 
 | M2, M3 | final | loudness, loudness range (`NORMS.audio`) | sound |
 | M4, M5, M6 | final | SFX density (`NORMS.audio.maxSfxPer4s`); a cue span over a word (orange, a judgment); `out/sfx.wav` without `crew/sfx-cues.json` | sound |
 
-Every threshold lives in `core/checks/norms.mjs`; quote the key, never the number.
+Every threshold lives in `tools/checks/norms.mjs`; quote the key, never the number.
 
 ## Tells (yours, ranked)
 
