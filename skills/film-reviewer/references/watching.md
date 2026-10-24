@@ -80,6 +80,15 @@ Read it against the model (grammar section 10; the gate values are `NORMS.rhythm
 
 The ending: the cut times of the last 5 s against the body mean above, and the length of the last shot (last cut to `D`).
 
+## 4b. Motion feel at full rate (S5: a film passed every gate and the client called its motion "bem abaixo da média")
+
+A contact sheet (2 fps) shows layout, never speed, overshoot, settle or blur. For every entrance, landing, punch-in and camera move, cut a 12-frame consecutive strip (`node tools/critique/sheets.mjs <mp4> --strip <t>`) and read it frame by frame. Facts to write, with frame numbers:
+- arrival: frames from first appearance to rest (a throw crosses in 0.12–0.25 s; more than ~0.4 s reads as drift); overshoot present or not; a constant speed with no settle is a lerp (`film-animator` `references/motion-craft.md` §1);
+- scale and depth: hero share of frame height; foreground pieces big and blurred or small and sharp (§2);
+- camera: steps (punch) vs eases; frame 0 already moving;
+- look: grain clumpy or single-pixel, a centre spotlight from bloom/vignette on flat ground, plates soft from upscaling (§4).
+When the brief names a target video, attach `tools/critique/motion-measure.py --compare` (per-shot rows, 🔴 > 2x off; px are native; rows on cuts and blur transitions are tracker noise) and copy every 🔴 shot row as a defect owned by the animator. The client's comparison is `tools/critique/vs.sh`.
+
 ## 5. Order of writing
 
 1. Cold read (before the sync sheet). 2. Pass A findings with `t` and frame. 3. Pass B. 4. Pass C. 5. Measures. 6. Scores (rubric). 7. Rank (`severity-routing.md`). 8. Verdict. 9. Self-check: for every 🔴 the evidence frame exists in `review-frames/`; every row names an owner; no row says how to fix.
