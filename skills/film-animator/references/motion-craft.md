@@ -77,7 +77,7 @@ Transitions measured on the pro reel: burn/tear holes growing over ~8 frames (0.
 
 ## 7. People in motion
 
-A cut-out rig (`src/rig`) gets camera, composition and gesture timing close but reads as puppets: no head turns, rigid sleeves past ~35°, a static face. Generate each figure with its arms held clear of the body, cut limbs with `tools/kit/cut-limbs.py`, put gesture beats on the voice with `bounce`, idle sway with `drift`, pass `stepFps` = the film's rate (the default 12 steps the pose). A walk away from camera: scale growth + 2 steps/s bob + weight shift + slight roll. Say in the review what the rig cannot do; AI video is not an option.
+A cut-out rig (`src/rig`) gets camera, composition and gesture timing close but reads as puppets: no head turns, rigid sleeves past ~35°, a static face. Generate each figure with its arms held clear of the body, cut limbs with `tools/kit/cut-limbs.py`, put gesture beats on the voice with `bounce`, idle sway with `drift`, pass `stepFps` = the film's rate for full-rate motion (the default 12 steps the pose; a film on the *stepped motion* device keeps its one step clock for the rig too, `devices-rhythm-camera.md`). A walk away from camera: scale growth + 2 steps/s bob + weight shift + slight roll. Say in the review what the rig cannot do; AI video is not an option.
 
 ## 7b. Remotion traps that cost renders
 
