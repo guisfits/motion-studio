@@ -60,6 +60,7 @@ const TAG_AT: [number, number][] = [[-215, -30], [-300, -50], [-195, -25], [-120
 const ARRIVE = [1.5, 2.6, 3.7, 4.9, 6.0];
 const LEG = 0.85;
 
+// Share of the route length (0..1) at which each stop sits, from the segment lengths in px.
 const stopProgress = (): number[] => {
   const px = ROUTE.map(([x, y]) => [x * MAP.w, y * MAP.h]);
   const seg = px.slice(1).map((p, i) => Math.hypot(p[0] - px[i][0], p[1] - px[i][1]));
@@ -67,6 +68,7 @@ const stopProgress = (): number[] => {
   return seg.reduce<number[]>((acc, s) => [...acc, acc[acc.length - 1] + s / total], [0]);
 };
 
+// Scene 1 itself: the map carried in, the route head waiting at each stop while its tag lands.
 const VoyageScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();

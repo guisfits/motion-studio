@@ -21,6 +21,7 @@ export const T13_DURATION = SCENES.reduce((a, b) => a + b, 0) - 2 * JOIN;
 const PAPER = "#e6dcc6";
 const SHEET = "#f1e9d6";
 const INK = "#15110c";
+// Seconds to whole frames.
 const s = (sec: number) => Math.round(sec * T13_FPS);
 
 /** Passage 1: a paper sheet, an ink stain blooming across it (paper left showing round it), the title over it. */
@@ -100,9 +101,11 @@ function useFraktur(): void {
   }, [handle]);
 }
 
+// Plain ground colour under a scene.
 const Ground: React.FC<{ children: React.ReactNode }> = ({ children }) => <AbsoluteFill style={{ backgroundColor: PAPER }}>{children}</AbsoluteFill>;
 const timing = linearTiming({ durationInFrames: JOIN });
 
+// The demo: ink, water and smoke scenes joined by torn wipes.
 export const T13Fx: React.FC = () => {
   useFraktur();
   return (

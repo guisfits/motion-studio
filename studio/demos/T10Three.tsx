@@ -14,6 +14,7 @@ import map from "../../assets/img/ortelius-1572-world-map.jpg";
 type V3 = [number, number, number];
 const FPS = 30;
 export const T10_DURATION = 16.5 * FPS;
+// Seconds to frames at the demo's fps.
 const sec = (s: number) => s * FPS;
 
 const ease = Easing.bezier(0.45, 0, 0.2, 1);
@@ -163,6 +164,7 @@ const Scene: React.FC = () => {
   );
 };
 
+// The demo: a 3D canvas of full-frame size holding the scene.
 export const T10Three: React.FC = () => {
   const { width, height } = useVideoConfig();
   return (

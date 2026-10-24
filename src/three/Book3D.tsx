@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
+import { clamp01 } from "../shared/math";
 import { coverUV } from "./cover-uv";
 import { requireSrc, textureAspect, useImageTextures } from "./textures";
 
@@ -26,7 +27,7 @@ const LEAVES = 8;
 const FLIPPED_WHEN_OPEN = 3;
 // The last leaf stays down so the back board never shows during the extra turn.
 const TURNABLE = LEAVES - FLIPPED_WHEN_OPEN - 1;
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+// Smoothstep: 0..1 easing with zero slope at both ends.
 const easeInOut = (t: number) => t * t * (3 - 2 * t);
 
 /** Hinge angle of leaf i (radians, 0 = lying on the right, PI = lying on the left). */

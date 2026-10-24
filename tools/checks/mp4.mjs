@@ -17,6 +17,7 @@ export const MP4 = Object.freeze({
   safeMargin: 0.05,
 });
 
+// ffmpeg's log for `args`, or null when it could not read the input (so a check never passes on an empty log).
 function ffmpegLog(args) {
   const r = spawnSync("ffmpeg", ["-hide_banner", "-nostats", ...args], { encoding: "utf8" });
   if (r.error?.code === "ENOENT") throw new Error("ffmpeg not found on PATH");

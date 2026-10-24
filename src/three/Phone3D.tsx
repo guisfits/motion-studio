@@ -24,6 +24,7 @@ export type Phone3DProps = {
   depth?: number;
 };
 
+// Outline of a w x h rectangle with corner radius r, centred on the origin.
 const roundedRect = (w: number, h: number, r: number): Shape => {
   const s = new Shape();
   const x = -w / 2;

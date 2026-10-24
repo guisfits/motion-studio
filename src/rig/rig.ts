@@ -18,6 +18,7 @@ export type Pose = Record<string, number>;
  */
 export type Placed = { x: number; y: number; rotate: number };
 
+// Degrees to radians.
 const rad = (deg: number) => (deg * Math.PI) / 180;
 
 /**

@@ -46,6 +46,7 @@ export const P2_TAPE_A = 4.5;
 export const P2_TAPE_B = 6.0;
 export const P2_CLOSE = 7.1;
 
+// Passage-2 local seconds to composition seconds.
 const p2 = (t: number) => P2_FROM + t;
 
 export const T08_CUES: Cue[] = [

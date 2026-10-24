@@ -24,6 +24,7 @@ export type WaterProps = {
   readonly style?: React.CSSProperties;
 };
 
+// One copy of the engraving at its place in the window, optionally with the ripple effects on it.
 const Plate: React.FC<{ src: string; image: WaterProps["image"]; effects?: React.ComponentProps<typeof Img>["effects"] }> = ({ src, image, effects }) => (
   <Img src={src} effects={effects} style={{ position: "absolute", ...image }} />
 );

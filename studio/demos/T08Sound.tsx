@@ -38,6 +38,7 @@ const FPS = 30;
 const INK = "#1d1a16";
 const CARD = "#f4efe3";
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+// Seconds to frames at the demo's fps.
 const sec = (s: number) => s * FPS;
 
 // A printed sheet with a paper margin.
@@ -95,6 +96,7 @@ const WordCard: React.FC<{ word: string; w: number; h: number; size: number; at:
 // settle with a clear gap and a pale fibre rim along both edges.
 const H = { x: 90, y: 150, w: 1100, h: 770 };
 const SPLIT = tornSplitClips("t08-hero", 50, 2.8);
+// Draws the hero sheet whole until P1_TEAR, then as two torn halves that kick apart and settle.
 const TornSheet: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -202,6 +204,7 @@ const PassageTwo: React.FC = () => (
   </Stage>
 );
 
+// The demo: the two passages joined by a torn wipe; the render is silent, the mix adds the sound.
 export const T08Sound: React.FC = () => {
   const [handle] = useState(() => delayRender("T08 fonts"));
   useEffect(() => {

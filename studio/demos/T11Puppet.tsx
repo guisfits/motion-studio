@@ -28,7 +28,9 @@ const IMAGES: Record<string, string> = {
 const SCALE = 0.95; // 886 px figure -> ~842 px, 78% of the frame height
 const FIG = { x: 800, y: 100 };
 
+// Seconds to frames at the demo's fps.
 const sec = (s: number) => s * FPS;
+// A pose key at `at` seconds.
 const hold = (at: number, pose: Pose): PoseKey => ({ at: sec(at), pose });
 
 // Wave: the forearm swings in and out, each leg 0.35 s.
@@ -75,6 +77,7 @@ const Boil: React.FC<{ seed: string; children: React.ReactNode }> = ({ seed, chi
   return <div style={{ transform: `translate(${w.x}px, ${w.y}px) rotate(${w.rotate * 0.25}deg)` }}>{children}</div>;
 };
 
+// An engraving on a paper mount.
 const Print: React.FC<{ src: string; w: number; h: number }> = ({ src, w, h }) => (
   <div style={{ width: w, height: h, padding: 14, boxSizing: "border-box", background: "#f4efe3" }}>
     <Img src={src} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(0.4) contrast(1.05)" }} />
