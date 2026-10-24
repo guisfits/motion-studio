@@ -35,8 +35,9 @@ are missing, and `npm run render` runs it first (npm `prerender` hook).
 ## Repository
 
 ```
-src/          technique library entry (`src/index.ts`); tests in `src/__tests__/`
+src/          technique library entry (`src/index.ts`); `src/film/` the film contract; tests in `src/__tests__/`
 studio/       Remotion Studio root and the technique demo compositions
+studio/films/ films: film.json + Film.tsx + trace.ts + film.test.ts per film (`docs/film-contract.md`; `example/` is the reference)
 assets/       public-domain fixtures for the demos (`assets/README.md` lists source and licence)
 tools/        audio, kit (+ reference/), checks, critique (each with tests/); assets/make-vo.sh; skills/sync-remotion-skills.sh
 skills/       the film crew (start at skills/film-director)
