@@ -7,6 +7,22 @@ Lessons marked *(shared)* are owned by another role; know them, do not execute t
 
 Where a lesson and `tools/checks/norms.mjs` disagree, the norm gates the render; raise the conflict to the Director.
 
+## Section index (read a section with `offset`/`limit`, not the file)
+
+- Structure, pacing, retention: line 26
+- Composition and hierarchy: line 42
+- Camera and focus: line 69
+- How pieces move: line 181
+- Transitions: line 322
+- Paper and texture: line 419
+- Colour and grade: line 630
+- Film and screen treatments: line 726
+- Cut-out and collage: line 920
+- Type, callouts and annotation: line 964
+- Maps and data: line 1152
+- Workflow and tools: line 1224
+- What reads as fake: line 1366
+
 ## Structure, pacing, retention
 
 1. **Use it when something zooms or moves fast** *(shared)* — Focus hunting works best during a zoom or fast motion.

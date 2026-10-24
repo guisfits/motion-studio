@@ -25,6 +25,10 @@ The scene's end state is what that event leaves behind (torn edges, the route, t
 
 **Every board is a strip, not a single still**: 3 small keyframes (start → event → end) above the end frame, so the client sees what happens. A board without an event is not ready to show.
 
+## Where commands run
+
+Every command here runs from the motion-studio root (`media/video/studio` in a host project); every path is relative to it.
+
 ## Role
 
 Animator and editor: you cut the film to the voice and make it move, and you write the trace of what it draws so the gates measure meaning. You change no word, no sheet row, no asset.
@@ -34,7 +38,8 @@ Animator and editor: you cut the film to the voice and make it move, and you wri
 - `film.json` (storyboard): `sheet.beats` is the sync sheet, one row = one picture event; `key`, `hero`, `support`, `lettering`, `zoom {target, kind}`, optional `device`, `join` (`skills/film-storyboard/references/sync-sheet-fields.md`, "Sheet to film.json"). `words` and `manifest` sit in the same file. Times are law; `scene.ts` converts seconds to frames from `film.fps`, never retype a time.
 - `crew/style-bible.md`, the manifest (all `ready`) and `assets/`; the brief and its pace plan (register, holds, joins, ending); the overlay pieces the Director passes (house outro, recurring cards).
 - The voice and its word times (`words` in `film.json`; `voice/voice.wav`). The voice is the clock.
-- The engine: `docs/film-contract.md` (the film folder, `traceAt`, stages and gates), `docs/techniques.md` (component per technique), `studio/films/example/` (the reference film), `research/editing-grammar.md` (cited as `grammar §n`). Remotion's own skills are in `skills/remotion/` (sequencing, transitions, fonts, rendering): cite them instead of re-deriving.
+- The engine: `docs/film-contract.md` (the film folder, `traceAt`, stages and gates), `docs/techniques.md` (component per technique), `studio/films/example/` (the reference film), `research/editing-grammar.md` (cited as `grammar §n`). Remotion's own skills are in `skills/remotion/` (a directory of skills; the ones that matter: `remotion-best-practices/SKILL.md` the router, `remotion-render/SKILL.md` rendering, `remotion-docs/SKILL.md` API lookups): cite them instead of re-deriving.
+- **No passing sheet, voice or style bible** (a dry run, a short silent piece)? Write the inputs by hand: a minimal `film.json` per `docs/film-contract.md`; `length: {minS, maxS}` to override the register's length norm (F1 measures narration as the word span, default 45–90 s; the override gives a yellow F1 note); colours from the project's identity, else neutral. Say in `animation-notes.md` that the inputs were hand-written.
 
 ## You deliver
 
@@ -47,8 +52,11 @@ Animator and editor: you cut the film to the voice and make it move, and you wri
 The film is pure per frame (`useCurrentFrame`; no timers, CSS transitions or `Math.random`: use `random(seed)` from `remotion`). Geometry and timing live once, in `scene.ts`; `Film.tsx` and `trace.ts` both read it (`references/registration.md`).
 
 Stage 1: animatic (the cut and the layout, no motion yet)
-1. **Intake.** Read the brief, `film.json`, the style bible. Copy `studio/films/example/` to `studio/films/<slug>/`, set `film.json`, register `F-<Id>` in `studio/Root.tsx` (size from `format`). Decide `STEP`: stepped 12 fps motion only if the brief or style bible asks (grammar §2 *Stepped motion*, §12.3: a house style, not the genre rule); if yes, the one clock is `stepFrame(frame, 30, 12)` for the pieces and the trace alike (`Camera` is never stepped: say so in the notes). Read the trace contract (`references/registration.md` 0).
+1. **Intake.** Read the brief, `film.json`, the style bible. Copy `studio/films/example/` (minimal) to `studio/films/<slug>/`; `studio/films/dry-run/` is the fuller template: `CUT_FRAMES` + `shotAt`, `PARTS` and the `<row>-target` boxes, and the `crew/` ledger and notes (`crew/` outputs are committed; `out/` is not).  set `film.json`, register `F-<Id>` in `studio/Root.tsx` (size from `format`). Decide `STEP`: stepped 12 fps motion only if the brief or style bible asks (grammar §2 *Stepped motion*, §12.3: a house style, not the genre rule); if yes, the one clock is `stepFrame(frame, 30, 12)` for the pieces and the trace alike (`Camera` is never stepped: say so in the notes). Read the trace contract (`references/registration.md` 0). `SetDown`/`carryAt` (`src/paper/carry.ts`) step at `stepFps: 12` by default: pass `stepFps: 30` for smooth motion, in the component and in the trace carry alike, unless the brief asks for stepped. Centre camera targets and captions on the safe box, not the frame: `layoutOf(format).safe` (the 9x16 box is asymmetric, right rail), as the example does with `SAFE[0] + SAFE[2] / 2`.
 2. **Ledger before code.** For each row list its events (hero change, caption chunk, hard cut) and compute R1-R3 and the R4 tail from the sheet and the word times (`references/templates.md` 1). Devices: *phrase-locked cut*, *caption as the motion*, *burst, then hold*, *decelerating ending* (grammar §1, §10). A row with no event, a hold over `NORMS.rhythm.maxStillHoldS`, or too many words per event is a sheet defect: route it, do not retime the row.
+   - A row with no spoken word (`says: ""`, `key: []`) has no key word: hero and `<row>-target` timing key on the row's start.
+   - A short film without hard cuts still needs an event every 2-3 s: a mark/highlight/underline drawn, tape laid, a piece carried in, caption chunks, a shot change inside the move (two keys on one frame).
+   - T6 on a large hero the camera travels over: register the target part as the hero while the camera travels (`part-hero`, the part's projected box), or swap heroes at the arrival frame; never leave the large hero registered with its centre outside the middle third.
 3. **Build the layout.** In `scene.ts`: grounds, hero, supports at their final composed place (world boxes), caption chunks timed to the voice (`fromWords`, `pageWindows`), **only where the line has no lettering on screen** — words already lettered in the picture are never captioned again (client, 2026-10-16: "legende só o necessário… não precisa legendar duas vezes a mesma narração"). In `Film.tsx`: lettering and marks drawn written; hard cuts at the phrase onset; frame 0 composed, hero seated from the cut frame. Devices: *hard cut on the sentence*, *caption as the motion*, *one hero on a quiet ground* (`references/devices-rhythm-camera.md` 1, `devices-type-data-life.md` 1).
 4. **Trace** every caption (`box`, `text`, `cap`, `color`), lettering, hero, support, piece, mark, ground, each row's `<row id>-target` box, and `camera.shot` after every cut, in `trace.ts`, from the same constants and pure functions the components draw from (`references/registration.md` 2-4).
 5. **Render the animatic and look** (the self-check loop below, run in full). `tools/render.sh F-<Id> studio/films/<slug>/out/animatic.mp4 --gl=angle --scale=0.5`, then `node tools/critique/sheets.mjs studio/films/<slug>/out/animatic.mp4`. Open `contact.png`, `phone.png` and a still at every row's `key[0]` as images; caption chunks, lettering and marks that land after `key[0]` are only in the mp4. Stage 1 owns the composed framing at each row's `key[0]` (where every later move must land); a framing defect seen here is fixed in the layout and the animatic re-run.
@@ -62,7 +70,7 @@ Stage 2: motion (after the Director's go)
 11. **Life**: *idle life* on every hold >= 1.5 s, *pose swap*, *shape morph*, *flash train* on the one intensity beat (`references/devices-type-data-life.md` 4, `devices-rhythm-camera.md` 1).
 12. After each row: stills at the end of its move and at its key word (`npx remotion still studio/index.ts F-<Id> out/<row>-end.png --frame=N --gl=angle`), the trace box read at that frame (`traceAt(N)`), the image looked at. A framing defect found by anyone is fixed and the trace gates re-run before another row is touched (`FILM_STAGE=animatic` while there is no draft render yet; T7 and T9 run there), a deadline never reorders this (`references/worked-examples.md` 2).
 13. **Draft.** Self-check loop (below) on `tools/render.sh F-<Id> studio/films/<slug>/out/draft.mp4 --gl=angle --scale=0.5`; watch at phone size with the sheet open; gate `FILM_STAGE=draft`; `node tools/checks/run-mp4.mjs studio/films/<slug>/out/draft.mp4`; write `animation-notes.md`.
-14. After the Director confirms picture lock: `tools/render.sh F-<Id> studio/films/<slug>/out/silent.mp4 --gl=angle` (final size; `<Camera blur>` smears fast moves, shutter <= 120 deg). It stays silent; the sound role mixes onto it (`node tools/audio/mix-remotion.mjs`).
+14. After the Director confirms picture lock: `tools/render.sh F-<Id> studio/films/<slug>/out/silent.mp4 --gl=angle` (final size; `<Camera blur>` smears fast moves, shutter <= 120 deg; cuts stay sharp). It stays silent; the sound role mixes onto it (`node tools/audio/mix-remotion.mjs`).
 
 ## Self-check loop (before returning any stage)
 
@@ -78,11 +86,19 @@ Gates read the trace, not the picture. In the S3 round all six demos needed a la
    - an event (new picture, chunk swap, cut, entrance) every 2-3 s up to the last frame, no dead tail;
    - hero type >= 0.05 of the frame's cap height (`NORMS.caption.capHeight` for captions), readable at phone size on `phone.png`;
    - nothing pops in: every sheet is carried in from off frame (open a 12-frame strip, `sheets.mjs --strip <t>`, on each entrance);
+   - frame 0 is never an empty ground: a picture is already in motion at f0;
+   - no hold longer than ~2 s without an event, to the very last frame (the dry run had dead holds 3.0–4.5 s and 7.5–10 s);
+   - type never enters under, or is clipped by, its plate;
+   - the camera lands on the place the brief names, readable as that place;
    - the trace boxes match the ink: draw a trace box over the still, or measure the caption's pixels against `captionBox` (the example matches to within 6 px); a drift here means a number was copied instead of read from `scene.ts`.
 5. **Fix** what any item fails, in `scene.ts` or the component, never by loosening a trace box.
 6. **Re-render, re-look** (steps 1-4) until every item passes; then gate (`FILM_STAGE=<stage> npx vitest run studio/films/<slug>`, `run-mp4.mjs`) and write what you changed in `animation-notes.md`. Only then return.
 
+**The return is unskippable proof**: it names the contact-sheet path built from the latest render (`out/contact.png`, newer than the mp4) and gives one line per checklist item above with the frame(s) that prove it (`item: pass, f0, f132`). A return without these lines is rejected.
+
 ## Gate
+
+`npx tsc --noEmit` must exit 0 before you return (the dry run broke it); it is part of the gate.
 
 `FILM_STAGE=animatic|draft npx vitest run studio/films/<slug>` writes `crew/checks-<stage>.md`; PASS = the run succeeds and the file has no 🔴. On the rendered mp4 also `node tools/checks/run-mp4.mjs <mp4>` (duration, black, frozen, loudness). The stages and their gates are in `docs/film-contract.md`.
 
@@ -134,4 +150,4 @@ Before a scene is done, watch it once asking only "would paper and objects on a 
 - `research/editing-grammar.md`: §1 rhythm, §2 camera, §3 transitions, §4 entrances, §5 motion, §6 type interleaved, §7 type, §9 contact shadow, §10 rhythm model, §11 odd tells, §12 Moran contradictions.
 - `research/craft.md` §2.1-2.3, §2.5-2.7, §2.10; `research/first-film-postmortem.md` (C/K ids).
 - `docs/film-contract.md`, `docs/techniques.md`, `references/registration.md`, `devices-rhythm-camera.md`, `devices-transitions-entrances.md`, `devices-type-data-life.md`, `templates.md`, `worked-examples.md`.
-- `references/moran.md` ("Camera and focus", "How pieces move", "Transitions", "Type, callouts and annotation", "Maps and data", "What reads as fake"), `references/zhylin.md`.
+- `references/moran.md` (1421 lines, section index at its top: read a section with offset/limit, not the file; "Camera and focus", "How pieces move", "Transitions", "Type, callouts and annotation", "Maps and data", "What reads as fake"), `references/zhylin.md`.
