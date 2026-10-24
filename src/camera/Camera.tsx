@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { CameraMotionBlur } from "@remotion/motion-blur";
 import { shutterAngleFor } from "./blur";
-import { cameraAt, type CamKey } from "./path";
+import { cameraAt, DEFAULT_DRIFT, viewAt, type CamKey } from "./path";
 
 export type CameraProps = {
   keys: CamKey[];
@@ -17,16 +17,15 @@ const BLUR_SAMPLES = 16;
 
 // The world reads the frame itself: CameraMotionBlur re-renders its children at sub-frame
 // offsets, so a transform computed outside it would be the same in every sample (no smear).
-const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = 0.02, children }) => {
+const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = DEFAULT_DRIFT, children }) => {
   const frame = useCurrentFrame();
   const { width, height, durationInFrames } = useVideoConfig();
-  const cam = cameraAt(keys, frame);
-  const zoom = cam.zoom * (1 + drift * (frame / Math.max(1, durationInFrames)));
+  const cam = viewAt(keys, frame, { durationInFrames, drift });
   return (
     <AbsoluteFill
       style={{
         transformOrigin: "0 0",
-        transform: `translate(${width / 2}px, ${height / 2}px) rotate(${cam.rotate}deg) scale(${zoom}) translate(${-cam.x}px, ${-cam.y}px)`,
+        transform: `translate(${width / 2}px, ${height / 2}px) rotate(${cam.rotate}deg) scale(${cam.zoom}) translate(${-cam.x}px, ${-cam.y}px)`,
       }}
     >
       {children}
@@ -38,7 +37,7 @@ const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = 0.02, childr
  * Children live in world coordinates (px on the table); the frame shows 1920x1080 of it at zoom 1,
  * centred on the camera's (x, y). Never stepped, never shaken.
  */
-export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = 0.02, children }) => {
+export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = DEFAULT_DRIFT, children }) => {
   const frame = useCurrentFrame();
   const world = (
     <World keys={keys} drift={drift}>

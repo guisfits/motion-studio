@@ -1,16 +1,9 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
-import { carryAt, type CarryOptions } from "./carry";
-import { setDownTravel } from "./set-down-travel";
+import type { CarryOptions } from "./carry";
+import { setDownPose, type Side } from "./set-down-pose";
 
-export type Side = "top" | "bottom" | "left" | "right";
-
-const DIR: Record<Side, [number, number]> = {
-  top: [0, -1],
-  bottom: [0, 1],
-  left: [-1, 0],
-  right: [1, 0],
-};
+export type { Side } from "./set-down-pose";
 
 export type SetDownProps = Partial<Omit<CarryOptions, "delay">> & {
   /** Seconds into the current sequence before the sheet starts moving. */
@@ -51,17 +44,15 @@ export const SetDown: React.FC<SetDownProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
-  const { remaining, lift } = carryAt(frame, fps, { delay, dur, over, stepFps });
-  const [dx, dy] = DIR[from];
-  const travel = setDownTravel(from, width, height, { size, margin });
-  const tilt = Math.max(0, remaining) * 5 * (dx !== 0 ? dx : 1);
+  const pose = setDownPose(frame, fps, width, height, { delay, from, rotate, margin, size, dur, over, stepFps });
+  const { lift } = pose;
   const rest = 4 * shadow;
   return (
     <div
       style={{
         position: "absolute",
         ...style,
-        transform: `translate(${dx * remaining * travel}px, ${dy * remaining * travel}px) rotate(${rotate + tilt}deg)`,
+        transform: `translate(${pose.dx}px, ${pose.dy}px) rotate(${pose.rotate}deg)`,
         filter:
           shadow > 0
             ? `drop-shadow(${rest + 14 * lift}px ${rest + 18 * lift}px ${3 + 10 * lift}px rgba(20,12,6,${0.36 * shadow}))`

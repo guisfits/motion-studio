@@ -52,3 +52,20 @@ export function cameraAt(keys: CamKey[], frame: number): CamState {
     travel + Math.abs(after.zoom - before.zoom) * ZOOM_PX + Math.abs(after.rotate - before.rotate) * ROLL_PX;
   return { ...pose, velocity };
 }
+
+/** Slow zoom breathing across the whole composition, as a fraction of the zoom (baseline 0.02-0.03). */
+export const DEFAULT_DRIFT = 0.02;
+
+/**
+ * The pose the `Camera` actually draws at `frame`: `cameraAt`'s pose with the drift folded into
+ * the zoom. `Camera` and a film's `traceAt` both read this one function, so the trace can never
+ * describe a different camera than the one on screen.
+ */
+export function viewAt(
+  keys: CamKey[],
+  frame: number,
+  { durationInFrames, drift = DEFAULT_DRIFT }: { durationInFrames: number; drift?: number },
+): CamPose {
+  const { x, y, zoom, rotate } = cameraAt(keys, frame);
+  return { x, y, zoom: zoom * (1 + drift * (frame / Math.max(1, durationInFrames))), rotate };
+}

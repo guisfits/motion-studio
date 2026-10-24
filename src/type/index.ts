@@ -6,6 +6,7 @@ export type { HighlightProps } from "./Highlight";
 export { Ransom } from "./Ransom";
 export type { RansomProps } from "./Ransom";
 export { RevealWords } from "./RevealWords";
+export { revealWord, type WordReveal } from "./reveal";
 export type { RevealWordsProps } from "./RevealWords";
 export { Strike } from "./Strike";
 export { Stroke } from "./Stroke";
