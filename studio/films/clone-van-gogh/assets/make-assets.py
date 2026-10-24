@@ -8,7 +8,7 @@ tools/render.sh: parallel agents queue instead of fighting over the GPU.
 import glob, json, os, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LOCK = "/tmp/clone-van-gogh-gen.lock"
+LOCK = "/tmp/motion-studio-render.lock"  # the one heavy-job lock, shared with tools/render.sh
 spec = {"steps": 9, "items": []}
 for f in sorted(glob.glob(os.path.join(HERE, "prompts*.json"))):
     part = json.load(open(f))
