@@ -10,7 +10,8 @@ export type CamKey = { frame: number; x: number; y: number; zoom: number; rotate
 export type CamPose = { x: number; y: number; zoom: number; rotate: number };
 export type CamState = CamPose & { velocity: number };
 
-const FPS = 30;
+/** The rate camera keys are timed at when a caller gives none (the studio's demos). */
+export const DEFAULT_FPS = 30;
 // Screen-space weights for zoom and roll, from the engine's whoosh heuristic (archive/engine-v1/core/lib/table.js).
 const ZOOM_PX = 900;
 const ROLL_PX = 14;
@@ -18,7 +19,7 @@ const ROLL_PX = 14;
 const keyPose = (k: CamKey): CamPose => ({ x: k.x, y: k.y, zoom: k.zoom, rotate: k.rotate ?? 0 });
 
 /** Pose at `frame`: pure, clamped outside the keys, exact on them. */
-function poseAt(keys: CamKey[], frame: number): CamPose {
+function poseAt(keys: CamKey[], frame: number, fps: number): CamPose {
   if (keys.length === 0) return { x: 0, y: 0, zoom: 1, rotate: 0 };
   if (frame <= keys[0].frame) return keyPose(keys[0]);
   const last = keys[keys.length - 1];
@@ -28,7 +29,7 @@ function poseAt(keys: CamKey[], frame: number): CamPose {
   while (keys[i + 1].frame <= frame) i++;
   const a = keys[i];
   const b = keys[i + 1];
-  const p = easeProgress(a.ease ?? DEFAULT_EASE, frame - a.frame, b.frame - a.frame, FPS);
+  const p = easeProgress(a.ease ?? DEFAULT_EASE, frame - a.frame, b.frame - a.frame, fps);
   const pa = keyPose(a);
   const pb = keyPose(b);
   return {
@@ -55,9 +56,9 @@ const CUT_EPSILON = 1e-6;
  * across one, so the cut frame reports the new shot's own speed and the last frames of a shot
  * never see the next cut coming.
  */
-export function cameraAt(keys: CamKey[], frame: number): CamState {
+export function cameraAt(keys: CamKey[], frame: number, fps: number = DEFAULT_FPS): CamState {
   keys = [...keys].sort((a, b) => a.frame - b.frame);
-  const pose = poseAt(keys, frame);
+  const pose = poseAt(keys, frame, fps);
 
   let shotStart = -Infinity;
   let shotEnd = Infinity;
@@ -69,8 +70,8 @@ export function cameraAt(keys: CamKey[], frame: number): CamState {
   const to = Math.min(frame + 0.5, shotEnd - CUT_EPSILON);
   const span = to - from;
   if (!(span > 0)) return { ...pose, velocity: 0 };
-  const before = poseAt(keys, from);
-  const after = poseAt(keys, to);
+  const before = poseAt(keys, from, fps);
+  const after = poseAt(keys, to, fps);
 
   const travel = (Math.hypot(after.x - before.x, after.y - before.y) * pose.zoom) / span;
   const velocity =
@@ -83,9 +84,9 @@ export function cameraAt(keys: CamKey[], frame: number): CamState {
  * The frame the camera is read at when it moves in held steps (`stepFps` poses per second, off
  * when unset). A hard cut is never held across: from the cut frame on, the new shot shows at once.
  */
-export function steppedCamFrame(keys: CamKey[], frame: number, stepFps?: number): number {
+export function steppedCamFrame(keys: CamKey[], frame: number, stepFps?: number, fps: number = DEFAULT_FPS): number {
   if (!stepFps) return frame;
-  const held = stepFrame(frame, FPS, stepFps);
+  const held = stepFrame(frame, fps, stepFps);
   const cut = cutFrames(keys).filter((c) => c <= frame);
   return cut.length ? Math.max(held, ...cut) : held;
 }
@@ -101,9 +102,14 @@ export const DEFAULT_DRIFT = 0.02;
 export function viewAt(
   keys: CamKey[],
   frame: number,
-  { durationInFrames, drift = DEFAULT_DRIFT, stepFps }: { durationInFrames: number; drift?: number; stepFps?: number },
+  {
+    durationInFrames,
+    drift = DEFAULT_DRIFT,
+    stepFps,
+    fps = DEFAULT_FPS,
+  }: { durationInFrames: number; drift?: number; stepFps?: number; fps?: number },
 ): CamPose {
-  const f = steppedCamFrame(keys, frame, stepFps);
-  const { x, y, zoom, rotate } = cameraAt(keys, f);
+  const f = steppedCamFrame(keys, frame, stepFps, fps);
+  const { x, y, zoom, rotate } = cameraAt(keys, f, fps);
   return { x, y, zoom: zoom * (1 + drift * (f / Math.max(1, durationInFrames))), rotate };
 }

@@ -19,8 +19,8 @@ export type CameraProps = {
 // offsets, so a transform computed outside it would be the same in every sample (no smear).
 const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = DEFAULT_DRIFT, stepFps, children }) => {
   const frame = useCurrentFrame();
-  const { width, height, durationInFrames } = useVideoConfig();
-  const cam = viewAt(keys, frame, { durationInFrames, drift, stepFps });
+  const { width, height, durationInFrames, fps } = useVideoConfig();
+  const cam = viewAt(keys, frame, { durationInFrames, drift, stepFps, fps });
   return (
     <AbsoluteFill
       style={{
@@ -39,12 +39,13 @@ const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = DEFAULT_DRIF
  */
 export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = DEFAULT_DRIFT, stepFps, children }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const world = (
     <World keys={keys} drift={drift} stepFps={stepFps}>
       {children}
     </World>
   );
-  const shutterAngle = shutterAt(keys, frame, BLUR_SAMPLES, stepFps);
+  const shutterAngle = shutterAt(keys, frame, BLUR_SAMPLES, stepFps, fps);
   if (!blur || shutterAngle < BLUR_MIN_ANGLE) return <AbsoluteFill style={{ overflow: "hidden" }}>{world}</AbsoluteFill>;
   return (
     <AbsoluteFill style={{ overflow: "hidden" }}>

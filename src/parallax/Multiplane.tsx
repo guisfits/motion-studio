@@ -28,10 +28,10 @@ const BLUR_SAMPLES = 12;
 // Planes read the frame themselves: CameraMotionBlur re-renders its children at sub-frame offsets.
 const Planes: React.FC<Omit<MultiplaneProps, "motionBlur">> = ({ camKeys, layers, focus = 0, dof = 0 }) => {
   const frame = useCurrentFrame();
-  const { width, height } = useVideoConfig();
-  const cam = cameraAt(camKeys, frame);
+  const { width, height, fps } = useVideoConfig();
+  const cam = cameraAt(camKeys, frame, fps);
   // The opening pose: the earliest key, whatever order the caller wrote them in.
-  const origin = cameraAt(camKeys, camKeys.length ? Math.min(...camKeys.map((k) => k.frame)) : 0);
+  const origin = cameraAt(camKeys, camKeys.length ? Math.min(...camKeys.map((k) => k.frame)) : 0, fps);
   return (
     <AbsoluteFill>
       {layers.map((layer, i) => {
@@ -62,7 +62,8 @@ const Planes: React.FC<Omit<MultiplaneProps, "motionBlur">> = ({ camKeys, layers
  */
 export const Multiplane: React.FC<MultiplaneProps> = ({ motionBlur = false, ...rest }) => {
   const frame = useCurrentFrame();
-  const angle = shutterAt(rest.camKeys, frame, BLUR_SAMPLES);
+  const { fps } = useVideoConfig();
+  const angle = shutterAt(rest.camKeys, frame, BLUR_SAMPLES, undefined, fps);
   const planes = <Planes {...rest} />;
   if (!motionBlur || angle < 1) return <AbsoluteFill style={{ overflow: "hidden" }}>{planes}</AbsoluteFill>;
   return (

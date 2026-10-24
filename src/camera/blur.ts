@@ -1,4 +1,4 @@
-import { cameraAt, cutFrames, type CamKey } from "./path";
+import { cameraAt, cutFrames, DEFAULT_FPS, type CamKey } from "./path";
 
 // shutterAngle (degrees) per px/frame of camera velocity, and its ceiling: a whip smears but
 // never melts the frame into a wash.
@@ -21,9 +21,15 @@ export const shutterAngleFor = (velocity: number): number => Math.min(BLUR_MAX_A
  * 4.0.538), so when a cut falls inside that span some samples show the old shot and some the
  * new one. Such a frame is drawn sharp.
  */
-export function shutterAt(keys: CamKey[], frame: number, samples = BLUR_SAMPLES, stepFps?: number): number {
+export function shutterAt(
+  keys: CamKey[],
+  frame: number,
+  samples = BLUR_SAMPLES,
+  stepFps?: number,
+  fps: number = DEFAULT_FPS,
+): number {
   if (stepFps) return 0; // held poses are not smeared
-  const angle = shutterAngleFor(cameraAt(keys, frame).velocity);
+  const angle = shutterAngleFor(cameraAt(keys, frame, fps).velocity);
   const w = angle / 360;
   const first = frame + 1 - w;
   const last = frame + 1 - w / samples;
