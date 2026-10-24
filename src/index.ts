@@ -14,3 +14,4 @@ export * from "./diagram";
 export * from "./fx";
 export * from "./film";
 export * from "./devices";
+export * from "./physics";

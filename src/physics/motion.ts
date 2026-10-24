@@ -1,0 +1,109 @@
+import { random } from "remotion";
+
+// Closed-form object physics for collage motion: every function is pure in (frame, fps, seed), so
+// any frame renders alone and a film's trace can call the same maths. Times are in seconds through
+// `fps`, so a 16 fps clone and a 30 fps film move alike.
+
+export type Pose = { x: number; y: number; rotate: number; scale: number };
+export type Offset = { x: number; y: number; rotate: number };
+
+/**
+ * Damped-spring step response 0 -> 1 (After Effects "inertial bounce" as a closed form).
+ * `hz` = natural frequency, `damping` = ratio (<1 overshoots: 0.35 ~ 30 % over, 0.6 ~ 10 %).
+ */
+export function bounce(frame: number, fps: number, { hz = 2.2, damping = 0.35 }: { hz?: number; damping?: number } = {}): number {
+  if (frame <= 0) return 0;
+  const t = frame / fps;
+  const w = 2 * Math.PI * hz;
+  if (damping >= 1) return 1 - Math.exp(-w * t) * (1 + w * t);
+  const wd = w * Math.sqrt(1 - damping * damping);
+  return 1 - Math.exp(-damping * w * t) * (Math.cos(wd * t) + ((damping * w) / wd) * Math.sin(wd * t));
+}
+
+// Natural frequency at which `bounce` first reaches `target` after `seconds` (bisection: monotone in hz).
+function hzReaching(target: number, seconds: number, damping: number): number {
+  let lo = 0.05;
+  let hi = 40;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (bounce(seconds, 1, { hz: mid, damping }) >= target) hi = mid;
+    else lo = mid;
+  }
+  return hi;
+}
+
+export type ThrowIn = {
+  from: Pose;
+  to: Pose;
+  /** Frames until the piece is ~95 % of the way (the throw itself); the settle rings on after. */
+  frames?: number;
+  /** Peak height of the flight arc in px (upward), 0 = straight. */
+  arc?: number;
+  /** Spring damping of the landing: lower = more wobble. */
+  damping?: number;
+};
+
+/** A piece thrown onto the set: fast arc, lands, its rotation and scale wobble and settle. */
+export function throwIn(frame: number, fps: number, { from, to, frames = 4, arc = 0, damping = 0.45 }: ThrowIn): Pose {
+  if (frame <= 0) return { ...from };
+  const hz = hzReaching(0.95, frames / fps, damping);
+  const p = bounce(frame, fps, { hz, damping });
+  const r = bounce(frame, fps, { hz: hz * 0.8, damping: damping * 0.8 }); // rotation lags and wobbles a little more
+  const flight = Math.min(1, Math.max(0, p));
+  return {
+    x: from.x + (to.x - from.x) * p,
+    y: from.y + (to.y - from.y) * p - arc * 4 * flight * (1 - flight),
+    rotate: from.rotate + (to.rotate - from.rotate) * r,
+    scale: from.scale + (to.scale - from.scale) * p,
+  };
+}
+
+export type Flutter = {
+  x: number;
+  y: number;
+  /** Fall speed, px per second. */
+  fall: number;
+  /** Side-to-side sway amplitude, px. */
+  sway: number;
+  swayHz: number;
+  /** Mean spin, degrees per second (sign from the seed). */
+  spin: number;
+};
+
+/** A falling leaf or scrap of paper: falls, sways, spins, and tumbles in depth (`flip` = rotateY deg). */
+export function flutter(frame: number, fps: number, seed: string, o: Flutter): Offset & { flip: number } {
+  const t = frame / fps;
+  const ph = random(`${seed}:ph`) * Math.PI * 2;
+  const dir = random(`${seed}:dir`) < 0.5 ? -1 : 1;
+  const w = 2 * Math.PI * o.swayHz;
+  return {
+    x: o.x + o.sway * Math.sin(w * t + ph),
+    y: o.y + o.fall * t,
+    // the leaf leans into its swing, plus its slow spin
+    rotate: dir * o.spin * t + 25 * Math.cos(w * t + ph),
+    flip: (180 * o.swayHz * 1.3 * t + random(`${seed}:flip`) * 360) % 360,
+  };
+}
+
+/** Slow floating drift (clocks, frames, ornaments): two incommensurate sines, never above `amp`. */
+export function drift(frame: number, fps: number, seed: string, { amp, hz }: { amp: number; hz: number }): Offset {
+  const t = frame / fps;
+  const s = (axis: string, k: number) =>
+    0.6 * Math.sin(2 * Math.PI * hz * k * t + random(`${seed}:${axis}:a`) * 6.283) +
+    0.4 * Math.sin(2 * Math.PI * hz * 1.7 * k * t + random(`${seed}:${axis}:b`) * 6.283);
+  return { x: amp * s("x", 1), y: amp * s("y", 0.83), rotate: amp * 0.1 * s("r", 0.61) };
+}
+
+/** Camera/object shake from an impact at `at`: strongest on the hit, decaying exponentially. */
+export function impactShake(
+  frame: number,
+  fps: number,
+  seed: string,
+  { at, amp, hz = 9, decay = 6 }: { at: number; amp: number; hz?: number; decay?: number },
+): Offset {
+  if (frame < at) return { x: 0, y: 0, rotate: 0 };
+  const t = (frame - at) / fps;
+  const env = amp * Math.exp(-decay * t);
+  const a = 2 * Math.PI * hz * t + random(`${seed}:ph`) * 6.283;
+  return { x: env * Math.cos(a), y: env * Math.sin(a), rotate: env * 0.05 * Math.sin(a * 1.3) };
+}
