@@ -294,6 +294,15 @@ describe("final sound gates", () => {
       });
     });
 
+    it("reads the silent render as out/silent-<format>.mp4, the name the crew skills write", () => {
+      withFilm((dir) => {
+        const silentF2 = () => gate(dir).findings.filter((f) => f.code === "F2" && f.msg.includes("silent"));
+        expect(silentF2()).not.toEqual([]);
+        tone(join(dir, "out", "silent-9x16.mp4"), 2.45);
+        expect(silentF2()).toEqual([]);
+      });
+    });
+
     it("reads crew/sfx-cues.json, out/sfx.wav and its sidecar: stale hash is M6, a cue on a word is M5", () => {
       withFilm((dir) => {
         tone(join(dir, "out", "final-9x16.mp4"), 2.45);

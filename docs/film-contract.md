@@ -72,7 +72,7 @@ rendered ink to within 6 px.
 
 The trace gates T0–T8 and T12 are `src/film/trace-gates.ts` (ported from the old `trace.mjs`); every other gate is `tools/checks/` and is never copied.
 
-**Contrast (T11) needs pixels.** Decision: it reads the rendered `out/silent.mp4` (any `--scale`: boxes are in format px and are cropped by ratio) with `sampleBox`, at `draft` and `final`. With no render at `draft` the gate still runs, reports a yellow T11 and F2 note, and passes; at `final` a missing render is red. A stale render is caught by its length (`checkMp4` against `durationInFrames / fps`), not by its look: render again after every change to `Film.tsx`.
+**Contrast (T11) needs pixels.** Decision: it reads the rendered `out/silent-<format>.mp4`, else `out/silent.mp4` (any `--scale`: boxes are in format px and are cropped by ratio) with `sampleBox`, at `draft` and `final`. With no render at `draft` the gate still runs, reports a yellow T11 and F2 note, and passes; at `final` a missing render is red. A stale render is caught by its length (`checkMp4` against `durationInFrames / fps`), not by its look: render again after every change to `Film.tsx`.
 
 **Sound (`final` only, M0–M6).** The gate reads the sound role's files: `crew/sfx-cues.json` (`{t,type,gain,len}`, `t` = when heard), `out/sfx.wav` with its sidecar `out/sfx.wav.cues.json` (written by `tools/audio/sfx.mjs`), `voice/words.json` (the film's `words`), and the mixed cut `out/final-<format>.mp4` (else `out/final.mp4`; override with `runFilmGate({ mixed })`). Same codes and severities as the old engine:
 
