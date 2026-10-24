@@ -1,5 +1,5 @@
 import { AbsoluteFill, Audio, Sequence } from "remotion";
-import { Grade, Grain } from "../../../src/texture";
+import { Grade, GRADE_REEL, Grain } from "../../../src/texture";
 import mixUrl from "./audio/mix.wav";
 import { SHOTS, type ShotId } from "./scene";
 import { S01 } from "./shots/S01";
@@ -32,7 +32,7 @@ export const Film: React.FC = () => (
       const Shot = SHOT[id];
       return (
         <Sequence key={id} from={from} durationInFrames={to - from} name={id}>
-          <Grade {...(look?.edgeBlur ? { edgeBlur: look.edgeBlur } : {})} {...(look?.soften !== undefined ? { soften: look.soften } : {})}>
+          <Grade {...GRADE_REEL} {...(look?.edgeBlur ? { edgeBlur: look.edgeBlur } : {})} {...(look?.soften !== undefined ? { soften: look.soften } : {})}>
             <Shot />
           </Grade>
           <Grain opacity={BASE_GRAIN * (look?.grain ?? 1)} size={1.3} stepFps={16} />

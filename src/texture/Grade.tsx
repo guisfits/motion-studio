@@ -29,19 +29,35 @@ export type GradeProps = {
 };
 
 /**
+ * The warm AI-collage reel look measured in S5 (the "Van Gogh" clone), as `<Grade {...GRADE_REEL}>`.
+ * `Grade` itself is neutral; spread this preset first and override per shot.
+ */
+export const GRADE_REEL: Required<Omit<GradeProps, "children">> = {
+  contrast: 1.0,
+  saturation: 1.1,
+  warmth: 0.12,
+  bloom: { intensity: 0.22, radius: 24, threshold: 0.82 },
+  aberration: 1.5,
+  vignette: 0.15,
+  soften: 0,
+  edgeBlur: { px: 14, start: 0.35 },
+};
+
+/**
  * The film look as one GPU pass over everything inside: soften -> white balance -> contrast/saturation ->
  * bloom -> lens edge blur -> chromatic aberration -> vignette (@remotion/effects through HtmlInCanvas; renders need
  * `--gl=angle`, set in remotion.config.ts). Grain stays a separate overlay (`Grain`), stepped.
+ * Every default is neutral, so a bare `<Grade>` changes nothing; a look comes from props or a preset (`GRADE_REEL`).
  */
 export const Grade: React.FC<GradeProps> = ({
   contrast: c = 1.0,
-  saturation: s = 1.1,
-  warmth = 0.12,
-  bloom = { intensity: 0.22, radius: 24, threshold: 0.82 },
-  aberration = 1.5,
-  vignette: v = 0.15,
+  saturation: s = 1.0,
+  warmth = 0,
+  bloom = { intensity: 0 },
+  aberration = 0,
+  vignette: v = 0,
   soften = 0,
-  edgeBlur = { px: 14, start: 0.35 },
+  edgeBlur = { px: 0 },
   children,
 }) => {
   const { width, height } = useVideoConfig();
