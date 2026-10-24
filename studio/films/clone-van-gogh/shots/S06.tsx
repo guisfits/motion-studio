@@ -6,8 +6,16 @@ import brainUrl from "../assets/gen/s05-brain-gold-cut.png";
 
 // Shot 6a/6b (local 0 = scene frame 181 = breakdown f182). Hard punch at local 16 (f198).
 const PUNCH = 16;
-const BRAIN_W = 0.4 * W * (832 / 641);
+const BRAIN_W = 0.5 * W * (832 / 641);
 const ORN_W = 832 / 665;
+
+// Gilt scrollwork ornaments, as the reference: big one bottom-left, smaller bottom-right, corners top-left and mid-right.
+const ORNS = [
+  { x: 0.22, y: 0.88, w: 0.64, r: -6, flip: false },
+  { x: 0.99, y: 0.9, w: 0.42, r: -22, flip: true },
+  { x: 0.0, y: 0.1, w: 0.32, r: 30, flip: false },
+  { x: 1.0, y: 0.52, w: 0.22, r: 15, flip: true },
+];
 
 export const S06: React.FC = () => {
   useFonts47();
@@ -27,9 +35,9 @@ export const S06: React.FC = () => {
     <AbsoluteFill style={{ background: "#3B0A18", overflow: "hidden" }}>
       <AbsoluteFill style={{ transform: `scale(${zoom})`, transformOrigin: "50% 50%" }}>
         <Img src={velvetUrl} style={{ position: "absolute", inset: 0, width: W, height: H, objectFit: "cover" }} />
-        <Sprite src={ornUrl} x={0.3 * W} y={0.8 * H + drift(0)} w={0.35 * W * ORN_W} rot={-4} style={{ filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.5))" }} />
-        <Sprite src={ornUrl} x={0.9 * W} y={0.84 * H + drift(2)} w={0.24 * W * ORN_W} rot={-25} flip style={{ filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.5))" }} />
-        <Sprite src={ornUrl} x={0.0 * W} y={0.08 * H + drift(4)} w={0.22 * W * ORN_W} rot={35} style={{ filter: "drop-shadow(0 12px 14px rgba(0,0,0,0.5))" }} />
+        {ORNS.map((o, i) => (
+          <Sprite key={i} src={ornUrl} x={o.x * W + 14 * Math.sin(f * 0.17 + i)} y={o.y * H + drift(i * 2)} w={o.w * W * ORN_W} rot={o.r + 3 * Math.sin(f * 0.13 + i)} flip={o.flip} style={{ filter: "drop-shadow(0 14px 16px rgba(0,0,0,0.55)) saturate(1.1)" }} />
+        ))}
         <div style={{ position: "absolute", left: 0, width: W, top: 0.3 * H - 50 }}>
           <GradText text={typed("THOUGH THE", f, [[0, 0], [4, 10]])} size={100} top="#FFFFFF" bottom="#B4B4B4" />
         </div>

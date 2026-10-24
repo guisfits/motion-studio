@@ -8,6 +8,8 @@ import starryUrl from "../assets/pd/starry-night.jpg";
 import rhoneUrl from "../assets/pd/rhone.jpg";
 import wheatUrl from "../assets/pd/wheatfield.jpg";
 import saintUrl from "../assets/pd/saint-remy.jpg";
+import cafeUrl from "../assets/pd/cafe-terrace.jpg";
+import irisUrl from "../assets/pd/irises.jpg";
 import plateUrl from "../assets/gen/s07-plate-cut.png";
 
 // Shot 7 (local 0 = scene frame 211 = breakdown f212): 1888 plate inside a ring of Roman numerals
@@ -21,9 +23,10 @@ const FOV = 40;
 const D0 = 9;
 const D1 = 5;
 const RING_Y = 0.8;
-const TILT = -1.0;
-const RING_R = 1.45;
-const GLYPH = 0.62;
+const TILT = -0.62;
+/** Spiral of numerals: 36 glyphs, three turns, radius growing from the plate outwards. */
+const SPIRAL = Array.from({ length: 60 }, (_, i) => ({ n: i % 12, th: (i * Math.PI) / 6 + 0.4, r: 0.75 + i * 0.036 }));
+const glyphSize = (r: number) => 0.4 + r * 0.22;
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((res, rej) => {
@@ -80,7 +83,7 @@ const frameTexture = (img: HTMLImageElement, shape: "rect" | "oval" | "round", w
   path(0);
   g.fillStyle = grad;
   g.fill();
-  const b = Math.min(w, h) * 0.075;
+  const b = Math.min(w, h) * 0.11;
   g.save();
   path(b);
   g.clip();
@@ -96,13 +99,13 @@ const plateTexture = (plate: HTMLImageElement) => {
   g.drawImage(plate, 0, 0);
   g.fillStyle = "#2A1C0C";
   g.beginPath();
-  g.roundRect(150, 150, 724, 340, 14);
+  g.roundRect(120, 120, 784, 400, 14);
   g.fill();
   g.fillStyle = "#E8A21A";
-  g.font = `400 300px "${F.lilita}"`;
+  g.font = `400 330px "${F.lilita}"`;
   g.textAlign = "center";
   g.textBaseline = "middle";
-  g.fillText("1888", 512, 325);
+  g.fillText("1888", 512, 330);
   return tex(c);
 };
 
@@ -123,12 +126,12 @@ const useAssets = (): Assets | null => {
     (async () => {
       await document.fonts.load(`700 150px "${F.cinzel}"`);
       await document.fonts.load(`400 300px "${F.lilita}"`);
-      const [a, b, c, d, p] = await Promise.all([starryUrl, rhoneUrl, wheatUrl, saintUrl, plateUrl].map(loadImage));
+      const [a, b, c, d, e, g, p] = await Promise.all([starryUrl, rhoneUrl, wheatUrl, saintUrl, cafeUrl, irisUrl, plateUrl].map(loadImage));
       if (!alive) return;
       setAssets({
         sharp: NUMERALS.map((n) => numeralTexture(n, 0)),
         soft: NUMERALS.map((n) => numeralTexture(n, 9)),
-        frames: [frameTexture(a, "rect", 512, 400), frameTexture(b, "round", 512, 512), frameTexture(c, "oval", 400, 640), frameTexture(d, "rect", 512, 400)],
+        frames: [frameTexture(a, "rect", 512, 400), frameTexture(b, "round", 512, 512), frameTexture(c, "oval", 400, 640), frameTexture(d, "rect", 512, 400), frameTexture(e, "rect", 400, 512), frameTexture(g, "rect", 512, 400)],
         plate: plateTexture(p),
       });
     })().catch((e) => cancelRender(e));
@@ -146,10 +149,12 @@ const useAssets = (): Assets | null => {
 
 // Painting frames: screen position at the start (fractions of the frame), width fraction, depth z.
 const FRAMES = [
-  { sx: 0.22, sy: 0.12, w: 0.18, aspect: 400 / 512, z: -1.0 }, // starry night, rect, top-left
-  { sx: 0.75, sy: 0.08, w: 0.14, aspect: 1, z: -2.0 }, // round medallion, top-right
-  { sx: 0.18, sy: 0.78, w: 0.18, aspect: 640 / 400, z: 1.2 }, // tall oval, bottom-left
-  { sx: 0.82, sy: 0.76, w: 0.18, aspect: 400 / 512, z: 0.3 }, // rect, bottom-right
+  { sx: 0.2, sy: 0.12, w: 0.3, aspect: 400 / 512, z: -1.0 }, // starry night, rect, top-left
+  { sx: 0.8, sy: 0.07, w: 0.24, aspect: 1, z: -2.0 }, // round medallion, top-right
+  { sx: 0.15, sy: 0.8, w: 0.3, aspect: 640 / 400, z: 1.2 }, // tall oval, bottom-left
+  { sx: 0.84, sy: 0.78, w: 0.28, aspect: 400 / 512, z: 0.3 }, // rect, bottom-right
+  { sx: 0.62, sy: 0.2, w: 0.15, aspect: 400 / 512 * 1.0, z: -3.0 }, // cafe terrace, small, far
+  { sx: 0.4, sy: 0.93, w: 0.18, aspect: 400 / 512, z: -1.5 }, // irises, bottom
 ];
 
 const Scene: React.FC<{ f: number }> = ({ f }) => {
@@ -164,29 +169,28 @@ const Scene: React.FC<{ f: number }> = ({ f }) => {
   return (
     <>
       <group position={[0, 0, 0]}>
-        {/* ring */}
+        {/* spiral of numerals */}
         <group position={[0, RING_Y, 0]} rotation={[TILT, 0, 0]}>
           <group rotation={[0, 0, ang]}>
-            {NUMERALS.map((n, i) => {
-              const th = (i / 12) * Math.PI * 2 + Math.PI / 2;
-              const lx = RING_R * Math.cos(th);
-              const ly = RING_R * Math.sin(th);
-              // rotated + tilted position, to find how close to the camera it is
+            {SPIRAL.map((it, i) => {
+              const lx = it.r * Math.cos(it.th);
+              const ly = it.r * Math.sin(it.th);
               const cx = lx * Math.cos(ang) - ly * Math.sin(ang);
               const cy = lx * Math.sin(ang) + ly * Math.cos(ang);
               const zw = cy * Math.sin(TILT);
               const yw = cy * Math.cos(TILT) + RING_Y;
               const dd = Math.hypot(cx, yw, dist - zw);
-              const soft = Math.min(1, Math.max(0, (dist - 0.2 - dd) / 1.6 + 0.0));
+              const soft = Math.min(1, Math.max(0, (dist - 0.2 - dd) / 2.2));
+              const gs = glyphSize(it.r);
               return (
-                <group key={n} position={[lx, ly, 0]} rotation={[0, 0, th - Math.PI / 2]}>
+                <group key={i} position={[lx, ly, 0]} rotation={[0, 0, it.th - Math.PI / 2]}>
                   <mesh>
-                    <planeGeometry args={[GLYPH, GLYPH]} />
-                    <meshBasicMaterial map={assets.sharp[i]} transparent opacity={1 - soft} alphaTest={0.02} side={DoubleSide} toneMapped={false} />
+                    <planeGeometry args={[gs, gs]} />
+                    <meshBasicMaterial map={assets.sharp[it.n]} transparent opacity={1 - soft} alphaTest={0.02} side={DoubleSide} toneMapped={false} />
                   </mesh>
                   <mesh position={[0, 0, 0.001]}>
-                    <planeGeometry args={[GLYPH, GLYPH]} />
-                    <meshBasicMaterial map={assets.soft[i]} transparent opacity={soft} alphaTest={0.02} side={DoubleSide} toneMapped={false} />
+                    <planeGeometry args={[gs, gs]} />
+                    <meshBasicMaterial map={assets.soft[it.n]} transparent opacity={soft} alphaTest={0.02} side={DoubleSide} toneMapped={false} />
                   </mesh>
                 </group>
               );
@@ -195,7 +199,7 @@ const Scene: React.FC<{ f: number }> = ({ f }) => {
         </group>
         {/* 1888 plate at the ring centre */}
         <mesh position={[0, RING_Y, 0]}>
-          <planeGeometry args={[(0.2 * visW * D0) * 1.0, (0.2 * visW * D0) * 0.625]} />
+          <planeGeometry args={[0.34 * visW * D0, 0.34 * visW * D0 * 0.625]} />
           <meshBasicMaterial map={assets.plate} transparent alphaTest={0.02} toneMapped={false} />
         </mesh>
         {/* paintings */}
