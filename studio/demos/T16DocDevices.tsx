@@ -47,9 +47,10 @@ const DocScene: React.FC = () => {
           rect={{ x: 0.12, y: 0.16, w: 0.3, h: 0.075 }}
           word={{ x: 0.172, y: 0.1815, w: 0.068, h: 0.0185 }}
           fill={0.7}
-          pushFrom={28}
+          pushFrom={10}
           pushTo={96}
-          sweep={{ at: 3.6 }}
+          drift={0.08}
+          sweep={{ at: 2.6 }}
           sweepFrames={16}
           color="rgba(255, 196, 40, 0.65)"
         />
@@ -67,10 +68,10 @@ const MosesScene: React.FC = () => (
     text="VERBUM"
     at={0.8}
     edge="left"
-    bleed={0.02}
-    size={400}
-    top={190}
-    rotate={-4}
+    bleed={-0.04}
+    size={380}
+    top={200}
+    rotate={-3}
     color="#8a2b1c"
     cutout={cutMoses}
     cutoutStyle={{ left: 745, top: 150, height: 800, width: 402 }}
@@ -82,7 +83,7 @@ const MosesScene: React.FC = () => (
 const CavalierScene: React.FC = () => (
   <HeroWord
     text="LUX"
-    at={0.7}
+    at={0.1}
     enter="slide"
     edge="right"
     bleed={0}
@@ -98,15 +99,15 @@ const CavalierScene: React.FC = () => (
 );
 
 const PAGES = [moses, riders, campo, virgin, sibyl, moses, riders, campo, virgin, sibyl, moses, riders];
-const turnAt = (frame: number) => interpolate(frame, [72, 150], [0, 0.5], { ...clamp, easing: ease });
+const turnAt = (frame: number) => interpolate(frame, [66, 146], [0, 0.5], { ...clamp, easing: ease });
 
 const BookScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const enter = interpolate(frame, [0, 36], [0, 1], { ...clamp, easing: out });
-  const open = interpolate(frame, [34, 78], [0, 1], { ...clamp, easing: ease });
+  const enter = interpolate(frame, [0, 30], [0, 1], { ...clamp, easing: out });
+  const open = interpolate(frame, [26, 70], [0, 1], { ...clamp, easing: ease });
   return (
     <AbsoluteFill style={{ background: "#e6dcc6" }}>
-      <ThreeCanvas width={1920} height={1080} shadows="soft" camera={{ fov: 32, position: [0, 0.25, 10.6], near: 0.1, far: 60 }}>
+      <ThreeCanvas width={1920} height={1080} shadows="soft" camera={{ fov: 32, position: [0, 0.25, 10.8], near: 0.1, far: 60 }}>
         <ambientLight intensity={0.85} />
         <hemisphereLight args={["#fff4dd", "#b9a98a", 0.5]} />
         <directionalLight position={[-3, 4.5, 10]} intensity={2.4} castShadow shadow-mapSize={[2048, 2048]} />
@@ -123,7 +124,8 @@ const BookScene: React.FC = () => {
           rotateX={0.28 - open * 0.1}
           rotateY={-0.45 + open * 0.4}
           enter={enter}
-          from={[0, 10, 0]}
+          size={[3.7, 4.8]}
+          from={[0, 12, 0]}
           position={[0, 0.25, 0]}
         />
       </ThreeCanvas>
