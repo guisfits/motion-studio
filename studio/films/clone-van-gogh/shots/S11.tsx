@@ -1,7 +1,8 @@
 import { AbsoluteFill, Img, useCurrentFrame } from "remotion";
 import { Easing } from "remotion";
 import { HEIGHT, WIDTH } from "../scene";
-import { F_LORA, lerp, planeStyle, prog, useS0811Fonts, type Cam } from "../lib/s08-11-common";
+import { F_LORA, lerp, prog, useS0811Fonts } from "../lib/s08-11-common";
+import { CAM_S11, camRow, camTransform } from "../lib/s09-11-cam";
 import plateUrl from "../assets/gen/s10-keyhole-plate.png";
 import frameUrl from "../assets/gen/s11-frame-cut.png";
 import brushUrl from "../assets/gen/s11-brush-cut.png";
@@ -17,8 +18,9 @@ const HOLE = { x: 433, y: 781 }; // keyhole centre inside the 864x1536 plate
 const HOLE_SCREEN = { x: WIDTH / 2, y: HEIGHT * 0.45 };
 
 // plate scale per local frame (1 = 864 px wide): the plate fills the frame from f0 (>= 1.25 covers
-// 1080 px), the mat already visible through the hole as in the reference, then past the frame
-const PLATE_S = [1.4, 1.6, 1.85, 2.2, 2.6, 3.2, 4.0, 5.2, 6.8, 8.8, 11.5, 15, 20];
+// 1080 px). In the reference the keyhole grows slowly while the camera pushes (hole arc 0.45-0.57 W
+// over f349-353), and the plate only breaks open from local 8 (f356): split and slide out by local 13.
+const PLATE_S = [1.3, 1.9, 2.0, 2.1, 2.22, 2.36, 2.55, 2.8, 3.2, 3.9, 5.0, 6.5, 8.5, 11, 15];
 const plateScale = (f: number) => {
   const i = Math.min(PLATE_S.length - 1, Math.floor(f));
   const a = PLATE_S[i];
@@ -26,10 +28,9 @@ const plateScale = (f: number) => {
   return a * (b / a) ** (f - i);
 };
 
-const cam = (f: number): Cam => {
-  const t = prog(f, 12, 26, Easing.inOut(Easing.quad));
-  return { x: lerp(540, 540 - 22, t), y: lerp(960, 960, t), zoom: lerp(1, 1.12, t), rotate: 0 };
-};
+// The mat world follows the reference's measured camera (lib/s09-11-cam.ts, local 1 = f349); local 0 is
+// the cut frame: the whole scene far away and defocused behind the blurred plate.
+const sceneCam = (f: number) => (f < 1 ? { s: 0.58, tx: 0, ty: 0 } : camRow(CAM_S11, f - 1));
 
 type Brush = { x: number; y: number; rot: number; flip?: boolean; w?: number };
 const BRUSHES: Brush[] = [
@@ -40,34 +41,45 @@ const BRUSHES: Brush[] = [
   { x: 940, y: 1780, rot: -68, w: 700 },
 ];
 
+const plane = (c: ReturnType<typeof sceneCam>, d: number): React.CSSProperties => ({
+  position: "absolute",
+  left: 0,
+  top: 0,
+  width: WIDTH,
+  height: HEIGHT,
+  transformOrigin: "0 0",
+  transform: camTransform(c, d),
+});
+
 const Mat: React.FC<{ f: number }> = ({ f }) => {
-  const c = cam(f);
+  const c = sceneCam(f);
   const frameTilt = lerp(1.5, -0.5, prog(f, 12, 26, Easing.linear));
-  const FW = 700;
-  const FH = 930;
+  // the reference frame is 0.63 W wide at camera scale 1.37 (f361) and portrait (0.71)
+  const FW = 680;
+  const FH = 950;
   // rotated 90 deg: the landscape frame image becomes portrait; inner opening ~ 68 % x 72 % of it
   return (
     <>
       <AbsoluteFill
         style={{
           background:
-            "radial-gradient(ellipse at 50% 45%, #46a85f 0%, #3a9a55 45%, #27793f 100%)",
+            "radial-gradient(ellipse at 50% 45%, #3a8f52 0%, #2f7d47 45%, #1d5f33 100%)",
         }}
       />
       <AbsoluteFill
         style={{
           backgroundImage:
-            "linear-gradient(rgba(150,215,160,0.22) 2px, transparent 2px), linear-gradient(90deg, rgba(150,215,160,0.22) 2px, transparent 2px), linear-gradient(rgba(150,215,160,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(150,215,160,0.1) 1px, transparent 1px)",
-          backgroundSize: "108px 108px, 108px 108px, 21.6px 21.6px, 21.6px 21.6px",
-          backgroundPosition: `${-c.x * 0.2}px ${-c.y * 0.2}px`,
+            "linear-gradient(rgba(150,215,160,0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(150,215,160,0.3) 2px, transparent 2px), linear-gradient(rgba(150,215,160,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(150,215,160,0.1) 1px, transparent 1px)",
+          backgroundSize: `${108 * c.s ** 0.9}px ${108 * c.s ** 0.9}px, ${108 * c.s ** 0.9}px ${108 * c.s ** 0.9}px, ${21.6 * c.s ** 0.9}px ${21.6 * c.s ** 0.9}px, ${21.6 * c.s ** 0.9}px ${21.6 * c.s ** 0.9}px`,
+          backgroundPosition: `${c.tx * 0.9}px ${c.ty * 0.9}px`,
         }}
       />
-      <div style={planeStyle(c, 1)}>
+      <div style={plane(c, 1)}>
         <div
           style={{
             position: "absolute",
             left: 540 - FW / 2,
-            top: 940 - FH / 2,
+            top: 960 - FH / 2,
             width: FW,
             height: FH,
             transform: `rotate(${frameTilt}deg)`,
@@ -92,7 +104,7 @@ const Mat: React.FC<{ f: number }> = ({ f }) => {
           />
         </div>
       </div>
-      <div style={planeStyle(c, 1.15)}>
+      <div style={plane(c, 1.15)}>
         {BRUSHES.map((b, i) => (
           <Img
             key={i}
@@ -103,32 +115,34 @@ const Mat: React.FC<{ f: number }> = ({ f }) => {
               top: b.y - ((b.w ?? 800) * 0.625) / 2,
               width: b.w ?? 800,
               transform: `rotate(${b.rot + Math.sin(f / 5 + i) * 1.5}deg) scaleX(${b.flip ? -1 : 1})`,
-              filter: "drop-shadow(8px 12px 10px rgba(0,0,0,0.4))",
+              filter: "brightness(0.72) saturate(0.8) drop-shadow(8px 12px 10px rgba(0,0,0,0.4))",
             }}
           />
         ))}
       </div>
-      <Tag f={f} c={c} />
+      <div style={plane(c, 1)}>
+        <Tag f={f} />
+      </div>
     </>
   );
 };
 
 // the chartreuse caption: its bar draws left to right (local 4-7), the text types on local 6-11
 const TEXT = "Saint-Rémy asylum";
-const Tag: React.FC<{ f: number; c: Cam }> = ({ f }) => {
+const Tag: React.FC<{ f: number }> = ({ f }) => {
   if (f < 4) return null;
   const bar = prog(f, 4, 7, Easing.linear);
   const typed = Math.round(prog(f, 6, 11, Easing.linear) * TEXT.length);
   const rot = lerp(-3, 1, prog(f, 4, 26, Easing.linear));
-  const drift = prog(f, 12, 26, Easing.linear) * -22;
+  const drift = 0;
   return (
     <div
       style={{
         position: "absolute",
-        left: 190 + drift,
-        top: 596,
-        width: 340,
-        height: 76,
+        left: 540 - 680 / 2 - 8 + drift,
+        top: 960 - 950 / 2 + 24,
+        width: 270,
+        height: 52,
         transform: `rotate(${rot}deg)`,
         transformOrigin: "0 50%",
       }}
@@ -138,11 +152,11 @@ const Tag: React.FC<{ f: number; c: Cam }> = ({ f }) => {
         style={{
           position: "absolute",
           inset: 0,
-          paddingLeft: 18,
-          lineHeight: "76px",
+          paddingLeft: 14,
+          lineHeight: "52px",
           fontFamily: `"${F_LORA}", serif`,
           fontWeight: 500,
-          fontSize: 36,
+          fontSize: 25,
           color: "#2E3A12",
           whiteSpace: "nowrap",
         }}
@@ -157,12 +171,10 @@ export const S11: React.FC = () => {
   useS0811Fonts();
   const f = useCurrentFrame();
 
-  const settle = prog(f, 0, 12, Easing.out(Easing.cubic));
-  const sceneScale = lerp(0.8, 1, settle);
-  const sceneBlur = lerp(12, 0, prog(f, 0, 10, Easing.linear));
+  const sceneBlur = lerp(12, 0, prog(f, 0, 9, Easing.linear));
   const s = plateScale(f);
-  const split = prog(f, 6, 10, Easing.in(Easing.quad));
-  const plateOn = f < 12;
+  const split = prog(f, 8, 13, Easing.in(Easing.quad));
+  const plateOn = f < 14;
 
   const plate = (clip: string, dx: number) => (
     <Img
@@ -177,14 +189,14 @@ export const S11: React.FC = () => {
         transform: `translateX(${dx}px) scale(${s})`,
         clipPath: clip,
         filter: f < 3 ? `blur(${lerp(10, 2, f / 3)}px)` : undefined,
-        opacity: 1 - prog(f, 9, 12, Easing.linear),
+        opacity: 1 - prog(f, 11, 14, Easing.linear),
       }}
     />
   );
 
   return (
     <AbsoluteFill style={{ background: "#2b8a48", overflow: "hidden" }}>
-      <AbsoluteFill style={{ transform: `scale(${sceneScale})`, filter: sceneBlur > 0.3 ? `blur(${sceneBlur}px)` : undefined }}>
+      <AbsoluteFill style={{ filter: sceneBlur > 0.3 ? `blur(${sceneBlur}px)` : undefined }}>
         <Mat f={f} />
       </AbsoluteFill>
       {plateOn && (
