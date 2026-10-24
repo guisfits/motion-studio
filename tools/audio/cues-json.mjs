@@ -16,7 +16,7 @@ export async function cuesJson(modulePath, exportName, outPath) {
   return mod[exportName];
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [modulePath, exportName, outPath] = process.argv.slice(2);
   if (!modulePath || !exportName || !outPath) {
     console.error("usage: node tools/audio/cues-json.mjs <module.ts> <exportName> <out.json>");

@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loudness } from "../../checks/media.mjs";
+import { mixRemotion, validateCues } from "../mix-remotion.mjs";
 
 const studio = fileURLToPath(new URL("../../..", import.meta.url));
 const vo = join(studio, "assets/audio/vo-01.wav");
@@ -49,4 +50,32 @@ test(
 test("refuses missing arguments", () => {
   const r = spawnSync("node", ["tools/audio/mix-remotion.mjs"], { cwd: studio, encoding: "utf8" });
   assert.equal(r.status, 2);
+});
+
+test("validateCues accepts a good list and an empty one", () => {
+  validateCues([{ at: 0, sfx: "tape" }, { at: 2.5, sfx: "paper-place", gain: 0.5 }], 6);
+  validateCues([], 6);
+});
+
+test("validateCues rejects what the mix would drop or misplace", () => {
+  assert.throws(() => validateCues({}), /array/);
+  assert.throws(() => validateCues([{ at: -1, sfx: "tape" }]), /"at"/);
+  assert.throws(() => validateCues([{ at: null, sfx: "tape" }]), /"at"/);
+  assert.throws(() => validateCues([{ at: "1", sfx: "tape" }]), /"at"/);
+  assert.throws(() => validateCues([{ at: 1 }]), /"sfx"/);
+  assert.throws(() => validateCues([{ at: 1, sfx: "tape", gain: "loud" }]), /"gain"/);
+  assert.throws(() => validateCues([{ at: 7, sfx: "tape" }], 6), /past the end/);
+});
+
+test("an unknown SFX name fails the mix instead of passing silently", { timeout: 60_000 }, () => {
+  const silent = join(dir, "silent-unknown.mp4");
+  ff("-f", "lavfi", "-i", "testsrc2=s=320x180:d=3:r=30", "-pix_fmt", "yuv420p", silent);
+  assert.throws(
+    () => mixRemotion({ video: silent, voice: undefined, music: undefined, cues: [{ at: 1, sfx: "no-such-sound" }], out: join(dir, "x.mp4") }),
+    /unknown sfx type "no-such-sound"/,
+  );
+  assert.throws(
+    () => mixRemotion({ video: silent, voice: undefined, music: undefined, cues: [{ at: 9, sfx: "tape" }], out: join(dir, "x.mp4") }),
+    /past the end/,
+  );
 });

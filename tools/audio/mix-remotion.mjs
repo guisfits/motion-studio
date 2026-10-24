@@ -29,8 +29,25 @@ function durationOf(mp4) {
 export const toSfxCues = (cues) =>
   cues.map(({ at, sfx, gain }) => (gain === undefined ? { t: at, type: sfx } : { t: at, type: sfx, gain }));
 
+// Throws on a cue list the mix would silently drop or misplace: not an array, a cue without a
+// finite non-negative `at` or a non-empty `sfx` name, a non-finite `gain`, or an `at` past `dur`
+// (when given). An empty list is valid (a bed and voice only).
+export function validateCues(cues, dur = Infinity) {
+  if (!Array.isArray(cues)) throw new Error("cues must be an array of { at, sfx, gain? }");
+  cues.forEach((c, i) => {
+    const where = `cue ${i}${c && typeof c.sfx === "string" ? ` ("${c.sfx}")` : ""}`;
+    if (!c || typeof c !== "object") throw new Error(`${where} is not an object`);
+    if (typeof c.at !== "number" || !Number.isFinite(c.at) || c.at < 0) throw new Error(`${where}: "at" must be a finite number of seconds >= 0, got ${JSON.stringify(c.at)}`);
+    if (typeof c.sfx !== "string" || !c.sfx) throw new Error(`${where}: "sfx" must be a sound name`);
+    if (c.gain !== undefined && !(typeof c.gain === "number" && Number.isFinite(c.gain))) throw new Error(`${where}: "gain" must be a finite number`);
+    if (c.at > dur) throw new Error(`${where} at ${c.at} s is past the end of the render (${dur.toFixed(2)} s)`);
+  });
+}
+
+// Lays SFX (from `cues`), voice and music under the silent `video` and writes the mix to `out`.
 export function mixRemotion({ video, voice, music, cues, out }) {
   const dur = durationOf(video);
+  validateCues(cues, dur);
   const tmp = mkdtempSync(join(tmpdir(), "mix-remotion-"));
   try {
     let sfx;
