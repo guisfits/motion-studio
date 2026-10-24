@@ -1,0 +1,47 @@
+{
+  "id": "DryRun",
+  "format": "9x16",
+  "fps": 30,
+  "durationInFrames": 300,
+  "length": { "minS": 7, "maxS": 12 },
+  "words": {
+    "words": [
+      { "w": "Tudo", "s": 5.4, "e": 5.9 },
+      { "w": "começou", "s": 6.0, "e": 6.8 },
+      { "w": "aqui.", "s": 7.1, "e": 7.9 }
+    ]
+  },
+  "manifest": {
+    "assets": [
+      { "id": "map-ortelius-1572", "kind": "hero", "status": "ready", "licence": "Public domain", "source": "https://commons.wikimedia.org/wiki/File:1572_Typus_Orbis_Terrarum_Ortelius.jpg", "file": "assets/img/ortelius-1572-world-map.jpg" },
+      { "id": "town-merian-1644", "kind": "hero", "status": "ready", "licence": "Public domain", "source": "https://commons.wikimedia.org/wiki/File:Topographia_Alsatiae_(Merian)_p_013.JPG", "file": "assets/img/merian-alsatiae.jpg" },
+      { "id": "page-gutenberg-1455", "kind": "support", "status": "ready", "licence": "Public domain", "source": "https://commons.wikimedia.org/wiki/File:Gutenberg_Bible_B42_Genesis.JPG", "file": "assets/img/gutenberg-genesis.jpg" },
+      { "id": "print-durer-1498", "kind": "support", "status": "ready", "licence": "Public domain", "source": "https://commons.wikimedia.org/wiki/File:Durer_Revelation_Four_Riders.jpg", "file": "assets/img/durer-four-riders.jpg" }
+    ]
+  },
+  "sheet": {
+    "beats": [
+      {
+        "id": "b01",
+        "t": [0, 5.4],
+        "says": "",
+        "hero": { "asset": "map-ortelius-1572" },
+        "key": [],
+        "zoom": { "kind": "push-in" }
+      },
+      {
+        "id": "b02",
+        "t": [5.4, 10],
+        "says": "Tudo começou aqui.",
+        "hero": { "asset": "town-merian-1644" },
+        "key": [{ "word": "Tudo", "t": 5.4 }],
+        "zoom": { "kind": "drift", "target": "town-merian-1644.view" }
+      }
+    ]
+  },
+  "captions": [
+    { "id": "cap-1", "words": [0, 0] },
+    { "id": "cap-2", "words": [1, 1] },
+    { "id": "cap-3", "words": [2, 2] }
+  ]
+}
