@@ -35,9 +35,9 @@ export const SHOTS: { id: ShotId; from: number; to: number; name: string; look?:
   { id: "S09", from: 289, to: 317, name: "ear in sunflowers; slides up", look: { grain: 0.32, edgeBlur: { px: 4, start: 0.5 } } },
   { id: "S10", from: 317, to: 348, name: "corridor walk away, LATER / VOLUNTARILY ENTERED THE", look: { grain: 0.90, soften: 0.7, edgeBlur: { px: 1.5, start: 0.6 } } },
   { id: "S11", from: 348, to: 375, name: "keyhole zoom-through; green mat, asylum painting", look: { grain: 0.69 } },
-  { id: "S12", from: 375, to: 400, name: "man on plinth, fragments past lens", look: { grain: 0.62 } },
+  { id: "S12", from: 375, to: 400, name: "man on plinth, fragments past lens", look: { grain: 0.9 } },
   { id: "S13", from: 400, to: 433, name: "painter at easel, HIS OWN STRUGGLES; pillar sweep starts", look: { grain: 0.20 } },
-  { id: "S14", from: 433, to: 457, name: "pillar sweep ends; Starry Night in gallery, rope", look: { grain: 1.04 } },
+  { id: "S14", from: 433, to: 457, name: "pillar sweep ends; Starry Night in gallery, rope", look: { grain: 0.87 } },
   { id: "S15", from: 457, to: 492, name: "puzzle pieces; punch, HAS A STRUCTURE", look: { grain: 0.15 } },
   { id: "S16", from: 492, to: 554, name: "desk, folder, URL end card", look: { grain: 0.62 } },
 ];
