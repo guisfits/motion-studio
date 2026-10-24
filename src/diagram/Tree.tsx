@@ -1,5 +1,6 @@
 import React from "react";
-import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { useCurrentFrame, useVideoConfig } from "remotion";
+import { ramp01 } from "../shared/math";
 import { SetDown } from "../paper/SetDown";
 import { FONT_MONO } from "../type/fonts";
 import { DrawPath } from "./DrawPath";
@@ -46,10 +47,7 @@ export const Tree: React.FC<TreeProps> = ({
         const from = { x: pos[n.parent].x, y: pos[n.parent].y + CARD[1] / 2 };
         const to = { x: pos[n.id].x, y: pos[n.id].y - CARD[1] / 2 };
         const start = delay + i * stagger;
-        const progress = interpolate(t, [start, start + stagger * 0.8], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        });
+        const progress = ramp01(t, start, stagger * 0.8);
         return (
           <DrawPath key={`e-${n.id}`} d={elbowPath(from, to)} progress={progress} size={[width, height]} stroke={ink} width={7} />
         );

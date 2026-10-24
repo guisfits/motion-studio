@@ -1,5 +1,6 @@
 import type React from "react";
-import { Img, interpolate, useCurrentFrame } from "remotion";
+import { Img, useCurrentFrame } from "remotion";
+import { ramp01 } from "../shared/math";
 import { turbulentDisplace } from "@remotion/effects/turbulent-displace";
 import { wave } from "@remotion/effects/wave";
 
@@ -35,7 +36,7 @@ const Plate: React.FC<{ src: string; image: WaterProps["image"]; effects?: React
  */
 export const Water: React.FC<WaterProps> = ({ src, width, height, image, clipPath, start = 0, rise = 40, strength = 1, seed = 3, style }) => {
   const frame = useCurrentFrame();
-  const k = interpolate(frame, [start, start + rise], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) * strength;
+  const k = ramp01(frame, start, rise) * strength;
   const effects = [
     wave({ direction: "vertical", amplitude: 9 * k, wavelength: 46, phase: frame * 0.2 }),
     turbulentDisplace({ displacement: "turbulent-smoother", amount: 34 * k, size: 70, complexity: 2, evolution: frame * 4, seed, pinning: "none" }),

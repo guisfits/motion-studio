@@ -1,5 +1,6 @@
 import type React from "react";
-import { Easing, Solid, interpolate, useCurrentFrame } from "remotion";
+import { Easing, Solid, useCurrentFrame } from "remotion";
+import { ramp01 } from "../shared/math";
 import { fractalNoise } from "@remotion/effects/fractal-noise";
 
 export type InkSpreadProps = {
@@ -25,11 +26,7 @@ export type InkSpreadProps = {
  */
 export const InkSpread: React.FC<InkSpreadProps> = ({ width, height, start, duration, seed = 4, scale = 220, style }) => {
   const frame = useCurrentFrame();
-  const p = interpolate(frame, [start, start + duration], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.quad),
-  });
+  const p = ramp01(frame, start, duration, Easing.out(Easing.quad));
   if (p <= 0) return null;
   const q = 0.3 + p * 0.62;
   const rx = width * 0.5 * q;

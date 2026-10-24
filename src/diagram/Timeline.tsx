@@ -1,5 +1,6 @@
 import React from "react";
-import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { useCurrentFrame, useVideoConfig } from "remotion";
+import { ramp01 } from "../shared/math";
 import { SetDown } from "../paper/SetDown";
 import { FONT_MONO } from "../type/fonts";
 import { DrawPath } from "./DrawPath";
@@ -44,10 +45,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   const order = [...items.keys()].sort((a, b) => items[a].year - items[b].year);
   const axisY = height / 2;
   const total = stagger * items.length;
-  const draw = interpolate(frame / fps, [delay, delay + total], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const draw = ramp01(frame / fps, delay, total);
   return (
     <div style={{ position: "relative", width, height }}>
       <DrawPath d={`M${axisPad} ${axisY} L${width - axisPad} ${axisY}`} progress={draw} size={[width, height]} stroke={ink} width={8} />
@@ -59,7 +57,7 @@ export const Timeline: React.FC<TimelineProps> = ({
         const tickFrom = above ? axisY - TICK : axisY + TICK;
         const x = pts[i].x;
         return (
-          <React.Fragment key={item.label}>
+          <React.Fragment key={i}>
             <div
               style={{
                 position: "absolute",
@@ -68,7 +66,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                 width: 5,
                 height: TICK,
                 background: ink,
-                transform: `scaleY(${interpolate(frame / fps, [at + 0.5, at + 0.7], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                transform: `scaleY(${ramp01(frame / fps, at + 0.5, 0.2)})`,
                 transformOrigin: above ? "50% 100%" : "50% 0%",
               }}
             />

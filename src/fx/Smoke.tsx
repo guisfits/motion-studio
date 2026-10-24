@@ -1,5 +1,6 @@
 import type React from "react";
-import { Solid, interpolate, useCurrentFrame } from "remotion";
+import { Solid, useCurrentFrame } from "remotion";
+import { ramp01 } from "../shared/math";
 import { fractalNoise } from "@remotion/effects/fractal-noise";
 
 export type SmokeProps = {
@@ -27,7 +28,7 @@ export type SmokeProps = {
  */
 export const Smoke: React.FC<SmokeProps> = ({ width, height, seed = 7, start = 0, rise = 45, density = 0.7, scale = 150, style }) => {
   const frame = useCurrentFrame();
-  const env = interpolate(frame, [start, start + rise], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const env = ramp01(frame, start, rise);
   if (env <= 0) return null;
   const mask = "radial-gradient(ellipse 60% 62% at 50% 55%, #000 55%, transparent 100%)";
   return (
