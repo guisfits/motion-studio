@@ -10,15 +10,17 @@ export type CameraProps = {
   blur?: boolean;
   /** Slow zoom breathing across the whole composition, as a fraction (baseline: 0.02-0.03). 0 = off. */
   drift?: number;
+  /** Move in held steps of this many poses per second (e.g. 12), like paper nudged by hand. Off when unset; no motion blur while on. */
+  stepFps?: number;
   children: ReactNode;
 };
 
 // The world reads the frame itself: CameraMotionBlur re-renders its children at sub-frame
 // offsets, so a transform computed outside it would be the same in every sample (no smear).
-const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = DEFAULT_DRIFT, children }) => {
+const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = DEFAULT_DRIFT, stepFps, children }) => {
   const frame = useCurrentFrame();
   const { width, height, durationInFrames } = useVideoConfig();
-  const cam = viewAt(keys, frame, { durationInFrames, drift });
+  const cam = viewAt(keys, frame, { durationInFrames, drift, stepFps });
   return (
     <AbsoluteFill
       style={{
@@ -35,14 +37,14 @@ const World: React.FC<Omit<CameraProps, "blur">> = ({ keys, drift = DEFAULT_DRIF
  * Children live in world coordinates (px on the table); the frame shows 1920x1080 of it at zoom 1,
  * centred on the camera's (x, y). Never stepped, never shaken.
  */
-export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = DEFAULT_DRIFT, children }) => {
+export const Camera: React.FC<CameraProps> = ({ keys, blur = false, drift = DEFAULT_DRIFT, stepFps, children }) => {
   const frame = useCurrentFrame();
   const world = (
-    <World keys={keys} drift={drift}>
+    <World keys={keys} drift={drift} stepFps={stepFps}>
       {children}
     </World>
   );
-  const shutterAngle = shutterAt(keys, frame);
+  const shutterAngle = shutterAt(keys, frame, BLUR_SAMPLES, stepFps);
   if (!blur || shutterAngle < BLUR_MIN_ANGLE) return <AbsoluteFill style={{ overflow: "hidden" }}>{world}</AbsoluteFill>;
   return (
     <AbsoluteFill style={{ overflow: "hidden" }}>

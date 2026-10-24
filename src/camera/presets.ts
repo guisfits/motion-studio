@@ -2,7 +2,7 @@
 // The engine ran GLIDE/MOVE/WHIP as springs; here each is a closed-form curve of leg progress,
 // so a frame never depends on the one before it (a 10-minute film stays exact at frame 18 000).
 
-export type CamEase = "glide" | "move" | "whip";
+export type CamEase = "glide" | "move" | "whip" | "linear";
 
 // Engine smootherstep (archive/engine-v1/core/lib/motion.js): the "bell" every baseline leg uses.
 export const smootherstep = (p: number): number => {
@@ -21,6 +21,8 @@ export const EASES: Record<CamEase, EasePreset> = {
   glide: { travelSeconds: Infinity },
   move: { travelSeconds: 0.7 },
   whip: { travelSeconds: 0.35 },
+  // constant speed over the whole leg: for dense keys that already carry their own easing (zoomThrough).
+  linear: { travelSeconds: Infinity },
 };
 
 export const DEFAULT_EASE: CamEase = "glide";
@@ -28,5 +30,6 @@ export const DEFAULT_EASE: CamEase = "glide";
 /** Leg progress 0..1 for `elapsed` frames into a leg of `length` frames. */
 export const easeProgress = (ease: CamEase, elapsed: number, length: number, fps: number): number => {
   const travel = Math.min(length, EASES[ease].travelSeconds * fps);
+  if (ease === "linear") return Math.min(1, Math.max(0, elapsed / length));
   return travel <= 0 ? 1 : smootherstep(elapsed / travel);
 };

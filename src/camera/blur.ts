@@ -21,7 +21,8 @@ export const shutterAngleFor = (velocity: number): number => Math.min(BLUR_MAX_A
  * 4.0.538), so when a cut falls inside that span some samples show the old shot and some the
  * new one. Such a frame is drawn sharp.
  */
-export function shutterAt(keys: CamKey[], frame: number, samples = BLUR_SAMPLES): number {
+export function shutterAt(keys: CamKey[], frame: number, samples = BLUR_SAMPLES, stepFps?: number): number {
+  if (stepFps) return 0; // held poses are not smeared
   const angle = shutterAngleFor(cameraAt(keys, frame).velocity);
   const w = angle / 360;
   const first = frame + 1 - w;

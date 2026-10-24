@@ -1,3 +1,4 @@
+import { stepFrame } from "../paper/step";
 import { DEFAULT_EASE, easeProgress, type CamEase } from "./presets";
 
 /**
@@ -78,6 +79,17 @@ export function cameraAt(keys: CamKey[], frame: number): CamState {
   return { ...pose, velocity };
 }
 
+/**
+ * The frame the camera is read at when it moves in held steps (`stepFps` poses per second, off
+ * when unset). A hard cut is never held across: from the cut frame on, the new shot shows at once.
+ */
+export function steppedCamFrame(keys: CamKey[], frame: number, stepFps?: number): number {
+  if (!stepFps) return frame;
+  const held = stepFrame(frame, FPS, stepFps);
+  const cut = cutFrames(keys).filter((c) => c <= frame);
+  return cut.length ? Math.max(held, ...cut) : held;
+}
+
 /** Slow zoom breathing across the whole composition, as a fraction of the zoom (baseline 0.02-0.03). */
 export const DEFAULT_DRIFT = 0.02;
 
@@ -89,8 +101,9 @@ export const DEFAULT_DRIFT = 0.02;
 export function viewAt(
   keys: CamKey[],
   frame: number,
-  { durationInFrames, drift = DEFAULT_DRIFT }: { durationInFrames: number; drift?: number },
+  { durationInFrames, drift = DEFAULT_DRIFT, stepFps }: { durationInFrames: number; drift?: number; stepFps?: number },
 ): CamPose {
-  const { x, y, zoom, rotate } = cameraAt(keys, frame);
-  return { x, y, zoom: zoom * (1 + drift * (frame / Math.max(1, durationInFrames))), rotate };
+  const f = steppedCamFrame(keys, frame, stepFps);
+  const { x, y, zoom, rotate } = cameraAt(keys, f);
+  return { x, y, zoom: zoom * (1 + drift * (f / Math.max(1, durationInFrames))), rotate };
 }
