@@ -6,16 +6,21 @@ import type {
 } from "@remotion/transitions";
 import { smootherstep } from "../camera";
 import { clamp01 } from "../shared/math";
-import { Torn, tornClip } from "../paper";
+import { Torn, stepFrame, tornClip } from "../paper";
 
 export type TornWipeDirection = "up" | "left";
 
 export type TornWipeOptions = {
   direction?: TornWipeDirection;
   seed?: string;
+  /**
+   * Poses per second for the jerked tear of the old engine (12): the sheet holds a pose and
+   * jumps, on the same cadence as `stepFrame`. Omit for the smooth baseline join.
+   */
+  stepFps?: number;
 };
 
-type TornWipeProps = { direction: TornWipeDirection; seed: string };
+type TornWipeProps = { direction: TornWipeDirection; seed: string; stepFps?: number };
 
 export type TornWipePose = {
   /** Translation of the exiting sheet in px. */
@@ -60,17 +65,33 @@ export const tornWipePose = (
   };
 };
 
+/**
+ * Transition progress held on a `stepFps` stop-motion clock (poses per second) across a
+ * transition of `durationInFrames`. 0 and 1 stay exact, so the sheet always starts whole and ends
+ * gone; `stepFps` undefined (or >= fps) returns `progress` unchanged.
+ */
+export const steppedProgress = (
+  progress: number,
+  durationInFrames: number,
+  fps: number,
+  stepFps?: number,
+): number => {
+  if (stepFps === undefined || stepFps >= fps || progress <= 0 || progress >= 1) return progress;
+  return stepFrame(Math.round(progress * durationInFrames), fps, stepFps) / durationInFrames;
+};
+
 const TornWipePresentation: React.FC<
   TransitionPresentationComponentProps<TornWipeProps>
-> = ({ children, presentationProgress, presentationDirection, passedProps }) => {
-  const { width, height } = useVideoConfig();
+> = ({ children, presentationProgress, presentationDirection, presentationDurationInFrames, passedProps }) => {
+  const { width, height, fps } = useVideoConfig();
 
   // The entering scene is the untouched desk underneath.
   if (presentationDirection === "entering") {
     return <AbsoluteFill style={{ zIndex: 0 }}>{children}</AbsoluteFill>;
   }
 
-  const pose = tornWipePose(presentationProgress, passedProps.direction, width, height);
+  const progress = steppedProgress(presentationProgress, presentationDurationInFrames, fps, passedProps.stepFps);
+  const pose = tornWipePose(progress, passedProps.direction, width, height);
   const clip = tornClip(passedProps.seed, pose.bite);
   return (
     <AbsoluteFill
@@ -101,5 +122,5 @@ export const tornWipe = (
   opts: TornWipeOptions = {},
 ): TransitionPresentation<TornWipeProps> => ({
   component: TornWipePresentation,
-  props: { direction: opts.direction ?? "left", seed: opts.seed ?? "tornwipe" },
+  props: { direction: opts.direction ?? "left", seed: opts.seed ?? "tornwipe", stepFps: opts.stepFps },
 });

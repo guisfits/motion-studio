@@ -1,1 +1,1 @@
-export { tornWipe, tornWipePose, type TornWipeOptions } from "./tornWipe";
+export { tornWipe, tornWipePose, steppedProgress, type TornWipeOptions } from "./tornWipe";

@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
+import { useCurrentFrame, useVideoConfig } from "remotion";
 import { clamp01 } from "../shared/math";
 import { coverUV } from "./cover-uv";
+import { turnAt, type TurnInput } from "./step-turn";
 import { requireSrc, textureAspect, useImageTextures } from "./textures";
 
 export type Book3DProps = {
@@ -12,7 +14,13 @@ export type Book3DProps = {
   /** 0 closed .. 1 open with the first leaves fanned out. */
   progress: number;
   /** Extra leaf turn, 0..1, applied on top of the opening (flips the next leaves in order). */
-  turn?: number;
+  turn?: TurnInput;
+  /**
+   * Poses per second for the printed-page turn of the old engine (8): the leaf holds and jumps.
+   * Needs `turn` as a function of the frame; the pose is its value at the frame the pose began.
+   * Omit for the smooth turn.
+   */
+  stepFps?: number;
   rotateY?: number;
   rotateX?: number;
   rotateZ?: number;
@@ -48,6 +56,7 @@ export const Book3D: React.FC<Book3DProps> = ({
   pages = [],
   progress,
   turn = 0,
+  stepFps,
   rotateY = 0,
   rotateX = 0,
   rotateZ = 0,
@@ -57,6 +66,9 @@ export const Book3D: React.FC<Book3DProps> = ({
   size = [3.2, 4.4],
 }) => {
   const [w, h] = size;
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const turnNow = turnAt(turn, frame, fps, stepFps);
   const T = 0.5;
   const board = 0.07;
   const gap = T / (LEAVES + 1);
@@ -108,7 +120,7 @@ export const Book3D: React.FC<Book3DProps> = ({
               <boxGeometry args={[board, h, T + board * 2]} />
             </mesh>
             {mats.leaves.map((m, i) => (
-              <group key={i} rotation={[0, -leafAngle(i, progress, turn), 0]}>
+              <group key={i} rotation={[0, -leafAngle(i, progress, turnNow), 0]}>
                 <mesh
                   position={[(w - 0.1) / 2, 0, -T / 2 + gap * (LEAVES - i)]}
                   material={m}
