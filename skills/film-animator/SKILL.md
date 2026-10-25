@@ -154,4 +154,4 @@ Before a scene is done, watch it once asking only "would paper and objects on a 
 - `research/craft.md` §2.1-2.3, §2.5-2.7, §2.10; `research/first-film-postmortem.md` (C/K ids).
 - **`references/motion-craft.md` first** for any motion, physics, camera, depth, look or transition decision (measured on a professional reel, S5; style-free).
 - `docs/film-contract.md`, `docs/techniques.md`, `references/registration.md`, `devices-rhythm-camera.md`, `devices-transitions-entrances.md`, `devices-type-data-life.md`, `templates.md`, `worked-examples.md`.
-- `references/moran.md` (1421 lines, section index at its top: read a section with offset/limit, not the file; "Camera and focus", "How pieces move", "Transitions", "Type, callouts and annotation", "Maps and data", "What reads as fake"), `references/zhylin.md`.
+- `../_shared/moran.md` (the shared Moran ledger: lessons tagged `ANI`, find them with `rg -n '\{[^}]*\bANI\b' <file>`; section index at its top: read a section with offset/limit, not the file; "Camera and focus", "How pieces move", "Transitions", "Type, callouts and annotation", "Maps and data", "What reads as fake"), `references/zhylin.md`.

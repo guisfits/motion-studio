@@ -179,4 +179,4 @@ Every threshold lives in `tools/checks/norms.mjs`; quote the key, never the numb
 - `references/pace-playbook.md` (your devices), `references/brief-template.md`, `references/briefing-specialists.md`, `references/worked-example.md`.
 - `research/editing-grammar.md` §0 registers, §1 rhythm, §3 transitions, §10 rhythm model, §11 odd tells, §12 Moran contradictions, §13 role map.
 - `research/first-film-postmortem.md` (C/K ids), `research/second-film-postmortem.md` (W/E/R ids: what a 10/10 film did), `research/crew-roles.md` §3–4 (typed hand-offs, capped loops, fresh reviewer), `research/craft.md` §2.8, §2.10.
-- `references/moran.md` ("Structure, pacing, retention", "Transitions", "What reads as fake"), `references/zhylin.md`.
+- `../_shared/moran.md` (the shared Moran ledger: lessons tagged `DIR`, find them with `rg -n '\{[^}]*\bDIR\b' <file>`; read by section, not whole: "Hook and first seconds", "Structure, pacing, retention", "Transitions", "What reads as fake"), `references/zhylin.md`.
