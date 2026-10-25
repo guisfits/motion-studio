@@ -54,7 +54,7 @@ The client judges results, not status. A step that produces something visible or
 
 | # | Checkpoint | What the client receives | Passes when |
 |---|---|---|---|
-| C1 | Brief | the beats, the pace plan in one table | client OK |
+| C1 | Brief | when the format skill asks for angles, 3–5 angles first and the client picks one; then the beats and the pace plan in one table | client OK |
 | C2 | Script | `script.md` as text, fact-checked; no voice yet | client OK |
 | C3 | Visual direction | 3 rough static drafts (one beat each, the project's palette, real pieces, a real line), each built from one target piece in `<engine>/inspirations/`, shown side by side. Never a question in text: art is judged by seeing it (client, 2026-10-15) | client reacts / picks |
 | C4 | Style frame | one still of one beat, side by side with the target (`out/target-vs-frame.png`) and the art director's score | client scores ≥ 8; else redo, nothing else starts |
