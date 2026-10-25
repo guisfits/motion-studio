@@ -1,0 +1,13 @@
+assets/gen/
+assets/pd/*.jpg
+audio/.cache/
+audio/music/
+audio/mix.mp4
+audio/silent.mp4
+assets/s01-03/*.png
+voice/takes/
+audio/*.wav
+audio/*.mp4
+out/
+assets/gen.log
+audio/*.cues.json
