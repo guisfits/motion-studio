@@ -49,7 +49,8 @@ export type CheckFilmInput = {
   stage: Stage;
   sheet: Sheet;
   manifest: Manifest;
-  words: WordsInput;
+  /** The narration's word times. `null` = the voice is not recorded yet, which only `sheet` tolerates (C6, before C7). */
+  words: WordsInput | null;
   /** The sampled trace; required for every stage except `script` and `sheet`. */
   trace?: Trace;
   /** crew/scenes.json: when present, S10 (one picture of a person per scene) is checked. */
@@ -68,7 +69,7 @@ export type CheckFilmInput = {
 };
 
 /** The gate shape `{w, start, end}` of word timings given as `{w, s, e}` or `{w, start, end}`. */
-export function gateWords(input: WordsInput): { words: { w: string; start: number; end: number }[] } {
+export function gateWords(input: WordsInput | null): { words: { w: string; start: number; end: number }[] } {
   return {
     words: (input?.words ?? []).map((x) => ({ w: x.w, start: (x.start ?? x.s) as number, end: (x.end ?? x.e) as number })),
   };
@@ -77,7 +78,10 @@ export function gateWords(input: WordsInput): { words: { w: string; start: numbe
 /**
  * The findings of one stage.
  *   script   fact-check only (X1–X3), signed before any voice, sheet or picture exists
- *   sheet    the paper: sync sheet (S*), one-person-per-scene (S10), length (F1)
+ *   sheet    the paper: sync sheet (S*), one-person-per-scene (S10), length (F1). With `words: null`
+ *            (the voice lands at C7, after the boards) the word-timing rules (S3, S5, S9, S11, F1)
+ *            are skipped with one yellow F0 note; every other rule runs
+
  *   animatic sheet + trace (T*, H1, P1, R1–R3)
  *   draft    sheet + trace (R1, R2, R4) + caption type (T10) and, with `sampler`, contrast (T11)
  *   final    draft + the fact-check against the signed sheet + the sound: SFX cues against the
@@ -90,8 +94,13 @@ export function checkFilm(input: CheckFilmInput): Finding[] {
   const facts = (s: Sheet | null) => checkFacts({ script: input.script ?? "", factCheck: input.factCheck, sheet: s });
   if (stage === "script") return facts(null);
 
+  if (input.words === null && stage !== "sheet")
+    return [finding("red", "F0", null, `missing voice/words.json: the ${stage} gate reads it (the voice is recorded before the animatic)`)];
+  const voiceless = input.words === null;
   const words = gateWords(input.words);
-  out.push(...checkSyncSheet(sheet, words, manifest), ...checkOnePersonPicture(sheet, manifest, scenes));
+  out.push(...checkSyncSheet(sheet, voiceless ? null : words, manifest), ...checkOnePersonPicture(sheet, manifest, scenes));
+  if (voiceless)
+    out.push(finding("yellow", "F0", null, "no voice/words.json yet: the word-timing checks (S3, S5, S9, S11, F1) were not run; record the voice, re-time the sheet to its words, then gate again"));
   if (stage === "final") out.push(...facts(sheet));
 
   // The sheet's register (default A) picks the norms the length, rhythm and camera gates read.
@@ -106,7 +115,7 @@ export function checkFilm(input: CheckFilmInput): Finding[] {
         ["app segment", end - appT0, norms.appSegment],
       ]
     : [["narration", end, length ?? norms.film]];
-  for (const [name, len, norm] of spans)
+  for (const [name, len, norm] of voiceless ? [] : spans)
     if (len < norm.minS || len > norm.maxS)
       out.push(finding("red", "F1", null, `${name} is ${len.toFixed(1)} s (${norm.minS}–${norm.maxS})`));
   if (length) {

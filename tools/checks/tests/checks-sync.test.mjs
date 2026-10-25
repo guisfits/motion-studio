@@ -372,3 +372,23 @@ test("a key word spoken only outside its row's span is red S3", () => {
   const f = checkSyncSheet({ beats: [moved] }, spoken, manifest);
   assert.ok(codes(f).includes("S3"), JSON.stringify(f));
 });
+
+test("without a voice (words null) the word-timing rules are skipped and the rest still run", () => {
+  // Key off its word, lettering off its word, a stale line: all word-timing, none can be judged yet.
+  const timed = beat({
+    key: [{ word: "Saxônia", t: 14 }],
+    says: "Lutero disse algo que a voz ainda não gravou",
+    lettering: [{ text: "Lutero", lands: 13.9, mark: "underline" }],
+  });
+  assert.deepEqual(codes(checkSyncSheet({ beats: [timed] }, null, manifest)), []);
+  // Rules that never read the voice still fire.
+  const bad = beat({
+    hero: null,
+    lettering: [
+      { text: "agostiniano", lands: 13, mark: "oval" },
+      { text: "Lutero", lands: 13.5, mark: "underline" },
+    ],
+  });
+  assert.deepEqual(codes(checkSyncSheet({ beats: [bad] }, null, manifest)), ["S1", "S4", "S6"]);
+  assert.deepEqual(codes(checkSyncSheet({ beats: [] }, null, manifest)), ["S9"]);
+});

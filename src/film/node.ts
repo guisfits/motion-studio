@@ -53,16 +53,21 @@ export type FilmSource = {
   missing: string[];
   /** Parts held twice: inline in film.json and again as a crew file. */
   twice: string[];
+  /** The voice is not recorded yet (no voice/words.json) at a stage that tolerates it (`sheet`): `film.words` is empty. */
+  voiceless: boolean;
 };
 
 const EMPTY = { sheet: { beats: [] }, words: { words: [] }, manifest: { assets: [] } } as const;
 const PARTS = ["sheet", "manifest", "words"] as const;
+/** The stages that come before the voice: C6 (the boards) gates `sheet` while the voice is recorded at C7, before the animatic. */
+const VOICELESS_OK: readonly Stage[] = ["sheet"];
 const CLOCK = ["format", "fps", "durationInFrames"] as const;
 
 /**
  * Reads a film folder for `stage`. `film.json` is read when present; else the film is assembled
  * from `crew/sync-sheet.json`, `crew/manifest.json` and `voice/words.json`, which is all the
- * `script` and `sheet` stages need (no clock, no trace). One source of truth: film.json refers
+ * `script` and `sheet` stages need (no clock, no trace). `sheet` also runs before the voice exists
+ * (picture first: the voice is recorded at C7): a missing `voice/words.json` is then `voiceless`, not `missing`. One source of truth: film.json refers
  * to the crew files by path, and a part held inline (or under another path) while its crew file
  * also exists is reported in `twice`; a clock field (`format`, `fps`, `durationInFrames`) that a
  * trace stage needs and film.json leaves out is `missing`. `script` needs none of the three (the fact-check reads crew/script.md).
@@ -75,6 +80,7 @@ export function readFilm(dir: string, stage: Stage): FilmSource {
   const missing: string[] = [];
   const twice: string[] = [];
   const parts: Record<string, unknown> = {};
+  let voiceless = false;
   for (const k of PARTS) {
     const v = json[k] ?? FILM_FILES[k];
     const crewFile = resolve(dir, FILM_FILES[k]);
@@ -87,7 +93,8 @@ export function readFilm(dir: string, stage: Stage): FilmSource {
       if (resolve(dir, v) !== crewFile && existsSync(crewFile)) twice.push(k);
     } else {
       parts[k] = EMPTY[k];
-      if (needsPaper) missing.push(v);
+      if (k === "words" && VOICELESS_OK.includes(stage)) voiceless = true;
+      else if (needsPaper) missing.push(v);
     }
   }
   // From `animatic` on the clock (fps, length, format) is film.json's; `sheet` and `script` have no use for it.
@@ -104,7 +111,7 @@ export function readFilm(dir: string, stage: Stage): FilmSource {
     ...json,
     ...parts,
   } as LoadedFilm;
-  return { film, missing, twice };
+  return { film, missing, twice, voiceless };
 }
 
 /** `readFilm` that throws when the stage's paper is missing. */
@@ -176,7 +183,7 @@ export function runFilmGate({
   video,
   mixed,
 }: RunFilmGateOptions): GateResult {
-  const { film, missing, twice } = readFilm(dir, stage);
+  const { film, missing, twice, voiceless } = readFilm(dir, stage);
   const findings: Finding[] = [];
   const paper = [
     ...missing.map((m) => finding("red", "F0", null, `missing ${m}: the ${stage} gate reads it`)),
@@ -202,7 +209,7 @@ export function runFilmGate({
       stage,
       sheet: film.sheet,
       manifest: film.manifest,
-      words: film.words,
+      words: voiceless ? null : film.words,
       trace: stage === "script" || stage === "sheet" || !traceAt ? undefined : sampleTrace(traceAt, film),
       scenes: scenes ? (JSON.parse(scenes) as Scene[]) : undefined,
       script: maybe(join(dir, "crew", "script.md")) ?? "",

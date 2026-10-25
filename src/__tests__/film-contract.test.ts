@@ -109,6 +109,13 @@ describe("checkFilm", () => {
     expect(codes(run(exampleTraceAt, { stage: "draft", trace: undefined }), "red")).toEqual(["T0"]);
   });
 
+  it("takes `words: null` at `sheet` (no voice yet): one yellow note, no narration-length F1, and red F0 from `animatic` on", () => {
+    const sheetOnly = (stage: "sheet" | "animatic") => run(exampleTraceAt, { stage, words: null, length: undefined });
+    const fs = sheetOnly("sheet");
+    expect([codes(fs, "red"), codes(fs, "orange"), codes(fs, "yellow")]).toEqual([[], [], ["F0"]]);
+    expect(codes(sheetOnly("animatic"), "red")).toEqual(["F0"]);
+  });
+
   it("reads the fact-check at `script` alone and at `final`", () => {
     expect(codes(checkFilm({ stage: "script", sheet, manifest: film.manifest, words: film.words }), "red")).toEqual(["X1"]);
     expect(codes(run(exampleTraceAt, { stage: "final" }), "red")).toContain("X1");
@@ -437,6 +444,27 @@ describe("the stage gate on any folder", () => {
     expect(r.findings).toEqual([expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("crew/manifest.json") })]);
     expect(reds(await runStageGate({ dir, stage: "script" }))).toEqual(["X1"]);
     expect(reds(await runStageGate({ dir, stage: "animatic" }))).toEqual(["F0", "F0"]);
+  }));
+
+  it("gates `sheet` before the voice exists: no F0, one yellow note, the checks that need no words still run", crewOnly(async (dir) => {
+    rmSync(join(dir, "voice", "words.json"));
+    const r = await runStageGate({ dir, stage: "sheet" });
+    expect(reds(r)).toEqual([]);
+    const notes = r.findings.filter((f) => f.severity === "yellow");
+    expect(notes).toEqual([expect.objectContaining({ code: "F0", msg: expect.stringContaining("voice/words.json") })]);
+    expect(r.summary.pass).toBe(true);
+    // The word-free rules are not skipped with it: a hero missing from the manifest is still S2.
+    writeFileSync(join(dir, "crew", "manifest.json"), JSON.stringify({ assets: [] }));
+    expect(reds(await runStageGate({ dir, stage: "sheet" }))).toContain("S2");
+  }));
+
+  it("still names the voice as missing from `animatic` on: red F0 (the voice lands before the animatic)", crewOnly(async (dir) => {
+    rmSync(join(dir, "voice", "words.json"));
+    writeFileSync(join(dir, "film.json"), JSON.stringify({ id: "X", format: "9x16", fps: 30, durationInFrames: 180, length: film.length }));
+    for (const stage of ["animatic", "draft", "final"] as const) {
+      const r = await runStageGate({ dir, stage, traceAt: exampleTraceAt });
+      expect([stage, r.findings]).toEqual([stage, [expect.objectContaining({ severity: "red", code: "F0", msg: expect.stringContaining("voice/words.json") })]]);
+    }
   }));
 
   it("refuses a sheet held twice: inline in film.json and again in crew/sync-sheet.json", crewOnly(async (dir) => {

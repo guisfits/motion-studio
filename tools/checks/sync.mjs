@@ -38,9 +38,11 @@ function lineDrift(b, W) {
     .join("; ");
 }
 
+// `words` null = the voice is not recorded yet (the sheet is timed from the script): the rules that
+// read word times (S3, S5 and S9 against the voice, S11) are skipped; S1, S2, S4, S6, S7, S8 still run.
 export function checkSyncSheet(sheet, words, manifest) {
   const out = [];
-  const W = words.words;
+  const W = words ? words.words : null;
   const assets = new Map(manifest.assets.map((a) => [a.id, a]));
   const tol = NORMS.sync.letteringToleranceFrames / NORMS.fps;
   // Provenance is part of "ready": a picture nobody can trace back is not licensed in practice.
@@ -58,7 +60,7 @@ export function checkSyncSheet(sheet, words, manifest) {
   const slack = NORMS.sync.coverSlackS;
   if (!beats.length)
     out.push(finding("red", "S9", null, "the sheet has no beats"));
-  else if (W.length) {
+  else if (W?.length) {
     const [first, last] = [beats[0], beats.at(-1)];
     if (first.t[0] > W[0].start + slack)
       out.push(
@@ -86,7 +88,7 @@ export function checkSyncSheet(sheet, words, manifest) {
           `${b.id}: hero ${b.hero.asset} not in manifest`,
         ),
       );
-    for (const k of b.key ?? []) {
+    for (const k of W ? (b.key ?? []) : []) {
       const w = findWord(W, k.word, [t0, t1], k.t);
       if (!w)
         out.push(
@@ -124,6 +126,7 @@ export function checkSyncSheet(sheet, words, manifest) {
         );
         continue;
       }
+      if (!W) continue;
       const unspoken = parts.find((p) => !findWord(W, p, [t0, t1]));
       if (unspoken) {
         out.push(
@@ -147,7 +150,7 @@ export function checkSyncSheet(sheet, words, manifest) {
           ),
         );
     }
-    const drift = lineDrift(b, W);
+    const drift = W && lineDrift(b, W);
     if (drift)
       out.push(finding("red", "S11", t0, `${b.id}: the line no longer matches the voice (${drift})`));
     const next = sheet.beats[i + 1];
