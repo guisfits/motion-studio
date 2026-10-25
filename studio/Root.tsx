@@ -18,7 +18,6 @@ import { T17_DURATION, T17PhoneBodies } from "./demos/T17PhoneBodies";
 import { SHOWREEL_DURATION, Showreel } from "./demos/Showreel";
 import { Film as ExampleFilm } from "./films/example/Film";
 import example from "./films/example/film.json";
-import { Film as DryRunFilm } from "./films/dry-run/Film";
 import { Film as CloneVanGoghFilm } from "./films/clone-van-gogh/Film";
 import * as cloneVanGogh from "./films/clone-van-gogh/scene";
 import { Film as CloneBethlemFilm } from "./films/clone-bethlem/Film";
@@ -27,7 +26,6 @@ import { Film as CloneBirdsFilm } from "./films/clone-birds/Film";
 import * as cloneBirds from "./films/clone-birds/scene";
 import { Film as CloneLionFilm } from "./films/clone-lion/Film";
 import * as cloneLion from "./films/clone-lion/scene";
-import dryRun from "./films/dry-run/film.json";
 import { layoutOf, type FilmFormat } from "../src/film";
 
 // One second of plain ground: the render smoke target. `remotion compositions` also crashes on
@@ -37,7 +35,6 @@ const Smoke: React.FC = () => <AbsoluteFill style={{ backgroundColor: "#ece4d4" 
 // Films: one <Composition id="F-<Id>"> per studio/films/<slug>/, sized from its film.json
 // (docs/film-contract.md). Render with tools/render.sh F-<Id> studio/films/<slug>/out/silent-<format>.mp4.
 const example_size = layoutOf(example.format as FilmFormat);
-const dry_run_size = layoutOf(dryRun.format as FilmFormat);
 
 // The technique card: one <Composition id="T##-Name"> per demo, all inside this folder.
 const Techniques: React.FC = () => (
@@ -72,14 +69,6 @@ const Films: React.FC = () => (
       fps={example.fps}
       width={example_size.W}
       height={example_size.H}
-    />
-    <Composition
-      id={`F-${dryRun.id}`}
-      component={DryRunFilm}
-      durationInFrames={dryRun.durationInFrames}
-      fps={dryRun.fps}
-      width={dry_run_size.W}
-      height={dry_run_size.H}
     />
     <Composition
       id="F-CloneVanGogh"

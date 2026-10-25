@@ -32,6 +32,8 @@ macOS (Vision).
 
 ## Quick start
 
+> The `examples/hello-collage` example and the `core/templates/film` template were deleted on the owner's order (2026-10-25); they live in git history. The commands below name them as they were.
+
 ```bash
 node core/render.mjs examples/hello-collage --stills 1,4.5,8   # stills + contact sheet in out/
 node core/server.mjs examples/hello-collage                    # live preview (space, ←/→, ?t=4.2)
@@ -170,7 +172,7 @@ core/        engine: lib/, audio/, critique/, reference/, fonts/, templates/, re
 styles/      style layers: vox/, motion-graphics/ (each lib/)
 skills/      agent skills: motion-engine, and the film crew (start at skills/film-director)
 archive/     retired skills, reference only (archive/README.md)
-examples/    hello-collage
+examples/    (hello-collage deleted, in git history)
 research/    the evidence the crew cites: editing-grammar, sound-grammar, craft, crew-roles, postmortem (research/README.md)
 tutorials/   teachers' lessons (Chris Moran 52 reels → lessons.jsonl; Denys Zhylin); caches local
 inspirations/ finished pieces by register: vox-collage/ (incl. collage-study, 323 measured), motion-graphics/; caches local
