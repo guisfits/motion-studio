@@ -25,7 +25,7 @@ const frames = join(root, "frames", id);
 mkdirSync(media, { recursive: true });
 const clip = join(media, `${id}.mp4`);
 if (!existsSync(clip)) {
-  execFileSync("yt-dlp", ["-q", "--no-playlist", "-f", "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b", "--merge-output-format", "mp4", "-o", clip, url], { stdio: "inherit" });
+  execFileSync("yt-dlp", ["-q", "--no-playlist", "-f", "bv*[ext=mp4]+ba[ext=m4a]/bv*+ba/b[ext=mp4]/b", "--merge-output-format", "mp4", "-o", clip, url], { stdio: "inherit" });
 }
 rmSync(frames, { recursive: true, force: true });
 mkdirSync(frames, { recursive: true });
