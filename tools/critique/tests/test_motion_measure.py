@@ -37,7 +37,7 @@ sys.modules["motion_measure"] = mm
 spec.loader.exec_module(mm)
 
 W, H = 360, 640
-SCENE_TS = HERE.parents[2] / "studio" / "films" / "clone-van-gogh" / "scene.ts"
+SCENE_TS = HERE / "fixtures" / "van-gogh-scene.ts"  # frozen copy of the Van Gogh clone's shot table
 
 
 def texture(w, h, seed, blur=1.5):

@@ -18,14 +18,6 @@ import { T17_DURATION, T17PhoneBodies } from "./demos/T17PhoneBodies";
 import { SHOWREEL_DURATION, Showreel } from "./demos/Showreel";
 import { Film as ExampleFilm } from "./films/example/Film";
 import example from "./films/example/film.json";
-import { Film as CloneVanGoghFilm } from "./films/clone-van-gogh/Film";
-import * as cloneVanGogh from "./films/clone-van-gogh/scene";
-import { Film as CloneBethlemFilm } from "./films/clone-bethlem/Film";
-import * as cloneBethlem from "./films/clone-bethlem/scene";
-import { Film as CloneBirdsFilm } from "./films/clone-birds/Film";
-import * as cloneBirds from "./films/clone-birds/scene";
-import { Film as CloneLionFilm } from "./films/clone-lion/Film";
-import * as cloneLion from "./films/clone-lion/scene";
 import { layoutOf, type FilmFormat } from "../src/film";
 
 // One second of plain ground: the render smoke target. `remotion compositions` also crashes on
@@ -69,38 +61,6 @@ const Films: React.FC = () => (
       fps={example.fps}
       width={example_size.W}
       height={example_size.H}
-    />
-    <Composition
-      id="F-CloneVanGogh"
-      component={CloneVanGoghFilm}
-      durationInFrames={cloneVanGogh.DURATION}
-      fps={cloneVanGogh.FPS}
-      width={cloneVanGogh.WIDTH}
-      height={cloneVanGogh.HEIGHT}
-    />
-    <Composition
-      id="F-CloneBethlem"
-      component={CloneBethlemFilm}
-      durationInFrames={cloneBethlem.DURATION}
-      fps={cloneBethlem.FPS}
-      width={cloneBethlem.WIDTH}
-      height={cloneBethlem.HEIGHT}
-    />
-    <Composition
-      id="F-CloneBirds"
-      component={CloneBirdsFilm}
-      durationInFrames={cloneBirds.DURATION}
-      fps={cloneBirds.FPS}
-      width={cloneBirds.WIDTH}
-      height={cloneBirds.HEIGHT}
-    />
-    <Composition
-      id="F-CloneLion"
-      component={CloneLionFilm}
-      durationInFrames={cloneLion.DURATION}
-      fps={cloneLion.FPS}
-      width={cloneLion.WIDTH}
-      height={cloneLion.HEIGHT}
     />
   </Folder>
 );

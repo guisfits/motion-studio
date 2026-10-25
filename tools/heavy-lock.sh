@@ -4,7 +4,7 @@
 # The lock is a directory (mkdir is atomic); `<lock>/pid` holds the holder's PID and `<lock>/cmd` its
 # label, so a waiter can say who it waits for and recover when the holder was killed. A lock with no
 # `pid` file yet is waited on, never broken (its holder is between mkdir and the pid write).
-# `tools/render.sh`, `studio/films/clone-van-gogh/audio/gen-music.sh` and `assets/make-assets.py` share it.
+# `tools/render.sh`, `media/video/house/clones/van-gogh/audio/gen-music.sh` and `assets/make-assets.py` share it.
 
 MOTION_STUDIO_LOCK="${MOTION_STUDIO_LOCK:-/tmp/motion-studio-render.lock}"
 

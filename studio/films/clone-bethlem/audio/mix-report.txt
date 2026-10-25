@@ -1,7 +1,0 @@
-voice speech level -21.6 dBFS
-music re voice: -26.1 dB mean under speech (p90 -21.4), -18.7 dB in the gaps
-sfx re voice: -26.0 dB mean under speech (p90 -16.5), -7.0 dB in the gaps
-mix → studio/films/clone-bethlem/audio/mix.mp4
-    I:         -14.1 LUFS
-    LRA:         3.0 LU
-    Peak:       -1.4 dBFS

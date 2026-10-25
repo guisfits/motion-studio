@@ -1,7 +1,0 @@
-{"steps":9,"items":[
-{"id":"s08-studio","w":864,"h":1536,"seed":201,"cut":false,"prompt":"Empty 19th-century painter's studio interior, burgundy red walls, tall arched window with sheer curtains and pale light on the left, two plaster busts on wooden shelves, an easel with a landscape painting, a wooden table with a paint-covered palette in the lower left foreground, dark wooden floor, no people, cinematic, warm filmic, shallow depth of field"},
-{"id":"s08-gauguin","w":768,"h":1344,"seed":202,"cut":true,"prompt":"Full-body photo of Paul Gauguin, dark hair and moustache, brown tweed jacket, red cravat, grey trousers, standing angrily, right arm stretched forward pointing with index finger, left hand open at his waist, seen in profile facing right, isolated on plain light grey background"},
-{"id":"s08-vg","w":768,"h":1344,"seed":203,"cut":true,"prompt":"Full-body photo of Vincent van Gogh, red beard and red hair, blue-grey wool jacket, dark waistcoat, grey trousers, standing facing left, one hand open raised palm up in an arguing gesture, other hand at his chest, isolated on plain light grey background"},
-{"id":"s09-sky","w":864,"h":1536,"seed":204,"cut":false,"prompt":"Swirling blue, teal and cream clouds, Van Gogh Starry Night style thick impasto oil painting, full frame, no ground, no figures"},
-{"id":"s09-hand-top","w":768,"h":1024,"seed":205,"cut":true,"prompt":"A human hand and bare forearm reaching down from the top holding a small grey metal human ear between finger and thumb, photorealistic, isolated on plain white background"}
-]}
