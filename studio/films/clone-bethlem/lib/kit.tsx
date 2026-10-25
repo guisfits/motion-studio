@@ -53,14 +53,16 @@ export const ramp = (t: number, f0: number, f1: number, a: number, b: number, ea
 export const Filters: React.FC = () => (
   <svg width={0} height={0} style={{ position: "absolute" }}>
     <defs>
-      {/* Mono print: luminance, blacks lifted to ~#222, whites held at ~#E5E5E5, near-neutral cool grey. */}
+      {/* Mono print (measured on the reference): luminance, mid-tones lifted (gamma 0.7), contrast
+          compressed to blacks ~#3a and whites ~#EA — a pale wet-plate print, never a hard black. */}
       <filter id="mono" colorInterpolationFilters="sRGB">
         <feColorMatrix type="matrix" values="0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0 0 0 1 0" />
         <feComponentTransfer>
-          <feFuncR type="linear" slope={0.8} intercept={0.13} />
-          <feFuncG type="linear" slope={0.8} intercept={0.135} />
-          <feFuncB type="linear" slope={0.8} intercept={0.14} />
+          <feFuncR type="gamma" amplitude={0.69} exponent={0.7} offset={0.23} />
+          <feFuncG type="gamma" amplitude={0.69} exponent={0.7} offset={0.235} />
+          <feFuncB type="gamma" amplitude={0.69} exponent={0.7} offset={0.24} />
         </feComponentTransfer>
+        <feGaussianBlur stdDeviation={0.6} />
       </filter>
       {/* Accent: luminance → black, olive, accent; hatching survives as dark olive lines. */}
       <filter id="accent" colorInterpolationFilters="sRGB">
