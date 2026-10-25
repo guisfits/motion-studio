@@ -197,10 +197,10 @@ const FUNCTION_WORDS = new Set(["to", "and", "the", "a", "an", "for", "of", "in"
 // Bars the reference keeps whole, by reference word index range, with the text it shows.
 const WHOLE: { from: number; to: number; text: string }[] = [{ from: 25, to: 29, text: "A penny to get in." }];
 
-export const PHRASES: { text: string; s: number; first: number }[] = (() => {
-  const out: { text: string; s: number; first: number }[] = [];
+export const PHRASES: { text: string; s: number; e: number; first: number }[] = (() => {
+  const out: { text: string; s: number; e: number; first: number }[] = [];
   const flush = (ids: number[]) => {
-    if (ids.length) out.push({ text: ids.map((i) => RW[i].w).join(" "), s: RW[ids[0]].s, first: ids[0] });
+    if (ids.length) out.push({ text: ids.map((i) => RW[i].w).join(" "), s: RW[ids[0]].s, e: RW[ids[ids.length - 1]].e, first: ids[0] });
   };
   let cur: number[] = [];
   RW.forEach((x, i) => {
@@ -244,9 +244,11 @@ export const CaptionBar: React.FC<{ endFrame: number }> = ({ endFrame }) => {
   for (let i = 0; i < PHRASES.length; i++) if (frame >= ourF(PHRASES[i].s) + BAR_LEAD) idx = i;
   // A phrase spoken while another type owned the screen never reaches the bar: after such a window
   // the bar waits empty, as wide as the next phrase (the reference's empty bar before "A penny").
+  // "Spoken inside" is judged at the phrase's midpoint: "Inside," starts 3 frames before the card
+  // ends but is mostly said after the cut, and the reference shows it as a bar from f595.
   let ph = idx >= 0 ? PHRASES[idx] : null;
   let full = ph ? ph.text : FIRST_BAR;
-  if (ph && inNoBar(ph.s * FPS)) {
+  if (ph && inNoBar(((ph.s + ph.e) / 2) * FPS)) {
     full = PHRASES[idx + 1]?.text ?? full;
     ph = null;
   }
