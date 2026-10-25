@@ -2,7 +2,7 @@
 // parts and red reticle, and the blurred foreground trees. Everything reads the step clock; robot
 // parts, reticle, banner and the pigeon's eye are original vector drawings made here.
 import { AbsoluteFill, Img } from "remotion";
-import pigeonUrl from "../assets/gen/P02-pigeon-wporg-cc0-cut.png";
+import pigeonUrl from "../assets/gen/G13-pigeon-a-cut.png";
 import planeUrl from "../assets/gen/G05-biplane-cut.png";
 import treeAUrl from "../assets/gen/G06-tree-a-cut.png";
 import treeBUrl from "../assets/gen/G06-tree-b-cut.png";
@@ -10,19 +10,19 @@ import treeCUrl from "../assets/gen/G06-tree-c-cut.png";
 import { BANNER_FONT, CREAM, easeOut, K, keys, NAVY, Piece, RED, useLoopFrame } from "../lib/kit";
 
 // Pigeon image geometry (px of the cut-out): eye centre, size, and the head scale in ref px per image px.
-const PW = 1524;
-const PH = 1305;
-const EYE_X = 408;
-const EYE_Y = 333;
+const PW = 1010;
+const PH = 1831;
+const EYE_X = 399;
+const EYE_Y = 146;
 
 // Eye path and diameter (breakdown 4; reticle centres from f113 on, all ref px).
 const EYE_X_KEYS: [number, number][] = [[69, 900], [70, 667], [73, 280], [75, 236], [78, 176], [85, 250], [88, 376], [95, 420], [108, 484], [113, 370], [118, 324], [123, 370], [130, 400], [135, 380], [138, 370], [140, 260], [143, 53], [145, -260]];
 const EYE_Y_KEYS: [number, number][] = [[69, 600], [70, 600], [73, 673], [75, 680], [78, 680], [85, 660], [88, 656], [95, 650], [108, 650], [113, 570], [118, 490], [123, 480], [130, 510], [135, 530], [138, 560], [140, 700], [143, 1350], [145, 1800]];
 const EYE_D_KEYS: [number, number][] = [[69, 68], [75, 66], [85, 56], [88, 52], [95, 48], [135, 48], [138, 56], [140, 90], [143, 150], [145, 170]];
-// Head scale is larger than the eye sizes alone imply: at 0.52+ the photo's cropped bottom edge sits
-// near the frame bottom, and the short rest is filled by stretching the photo's last feather rows
-// (no patch or seam). Whip-out f140-145 drops the bird down-left out of frame (breakdown 2, F).
-const HEAD_KEYS: [number, number][] = [[69, 0.58], [75, 0.55], [85, 0.53], [88, 0.52], [95, 0.52], [135, 0.52], [138, 0.56], [140, 0.7], [143, 0.75], [145, 0.8]];
+// Head scale on the full-body pigeon (G13-a, generated: the CC0 photo was cropped at the chest and
+// its patched body read as a column). At these scales the body runs past the frame bottom.
+// Whip-out f140-145 drops the bird down-left out of frame (breakdown 2, F).
+const HEAD_KEYS: [number, number][] = [[69, 0.69], [75, 0.66], [85, 0.63], [88, 0.62], [95, 0.62], [135, 0.62], [138, 0.67], [140, 0.83], [143, 0.89], [145, 0.95]];
 const RET_D_KEYS: [number, number][] = [[108, 60], [113, 112], [118, 160], [123, 180], [130, 170], [135, 200], [138, 200], [140, 260], [143, 400], [145, 460]];
 
 const Biplane: React.FC<{ f: number }> = ({ f }) => {
@@ -75,7 +75,7 @@ const Pigeon: React.FC<{ f: number; ex: number; ey: number; ed: number }> = ({ f
   const glare = f >= 100 && f <= 105;
   return (
     <>
-      <AbsoluteFill style={{ filter: "brightness(1.9) contrast(0.85) url(#tri)" }}>
+      <AbsoluteFill style={{ filter: "brightness(1.3) contrast(0.95) url(#tri)" }}>
         <Img src={pigeonUrl} style={{ position: "absolute", left: left * K, top: top * K, width: PW * s * K }} />
         {ext > 0 ? (
           <div style={{ position: "absolute", left: left * K, top: (bottom - 2) * K, width: PW * s * K, height: (ext + 2) * K, overflow: "hidden", clipPath: "polygon(4% 0, 96% 0, 78% 100%, 22% 100%)" }}>
