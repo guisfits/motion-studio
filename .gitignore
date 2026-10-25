@@ -35,3 +35,4 @@ skills/remotion/*/
 
 # whisper.cpp build + ggml model downloaded by tools/captions/transcribe.mjs.
 tools/captions/.whisper/
+inspirations/clone-candidates/
