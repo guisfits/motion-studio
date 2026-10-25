@@ -96,10 +96,10 @@ export const Phone3D: React.FC<Phone3DProps> = ({
 }) => {
   const isDraw = typeof screen === "function";
   const finish = resolveFinish(finishProp);
-  const [imgTex, envTex] = useImageTextures([
-    isDraw ? undefined : requireSrc("Phone3D", "screen", screen),
-    finish.env?.src,
-  ]);
+  // Two holds, not one: a clip passes a new screen URL every frame, and one shared key would
+  // reload the env picture and rebuild its prefiltered environment with every frame.
+  const [imgTex] = useImageTextures([isDraw ? undefined : requireSrc("Phone3D", "screen", screen)]);
+  const [envTex] = useImageTextures([finish.env?.src]);
   const gl = useThree((s) => s.gl);
 
   // Stable keys: a caller builds `body` and `finish` literals every frame.
@@ -143,8 +143,10 @@ export const Phone3D: React.FC<Phone3DProps> = ({
     () => (envTex && finish.env ? pictureEnvironment(gl, envTex, finish.env) : null),
     [envTex, envKey, gl],
   );
+  useEffect(() => () => envMap?.dispose(), [envMap]);
   const finishKey = JSON.stringify({ ...finish, env: null });
   const mat = useMemo(() => phoneMaterials(finish, envMap), [finishKey, envMap]);
+  useEffect(() => () => Object.values(mat).forEach((m) => m.dispose()), [mat]);
 
   const canvasTex = useMemo(() => {
     if (!isDraw) return null;
@@ -175,6 +177,8 @@ export const Phone3D: React.FC<Phone3DProps> = ({
     t.offset.set(uv.offsetX, uv.offsetY);
     return t;
   }, [imgTex, sw, sh, screenZoom, screenPan[0], screenPan[1]]);
+  // Each clone is its own GPU texture: free the last frame's when the screen moves on.
+  useEffect(() => () => imageMap?.dispose(), [imageMap]);
 
   const map = isDraw ? canvasTex : imageMap;
   if (!map) return null;
