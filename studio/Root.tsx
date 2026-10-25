@@ -20,6 +20,8 @@ import example from "./films/example/film.json";
 import { Film as DryRunFilm } from "./films/dry-run/Film";
 import { Film as CloneVanGoghFilm } from "./films/clone-van-gogh/Film";
 import * as cloneVanGogh from "./films/clone-van-gogh/scene";
+import { Film as CloneBethlemFilm } from "./films/clone-bethlem/Film";
+import * as cloneBethlem from "./films/clone-bethlem/scene";
 import dryRun from "./films/dry-run/film.json";
 import { layoutOf, type FilmFormat } from "../src/film";
 
@@ -80,6 +82,14 @@ const Films: React.FC = () => (
       fps={cloneVanGogh.FPS}
       width={cloneVanGogh.WIDTH}
       height={cloneVanGogh.HEIGHT}
+    />
+    <Composition
+      id="F-CloneBethlem"
+      component={CloneBethlemFilm}
+      durationInFrames={cloneBethlem.DURATION}
+      fps={cloneBethlem.FPS}
+      width={cloneBethlem.WIDTH}
+      height={cloneBethlem.HEIGHT}
     />
   </Folder>
 );

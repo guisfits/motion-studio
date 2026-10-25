@@ -1,0 +1,79 @@
+{
+  "model": "z-image-turbo",
+  "steps": 9,
+  "style": "",
+  "items": [
+    {
+      "id": "P06-snowy-westminster",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. Victorian winter street in front of a gothic parliament building with a tall clock tower, heavy snowfall, a dense crowd of men in top hats and long coats seen from behind, a cast-iron street lamp with a holly wreath at the left, vertical composition, tower at the top, crowd filling the lower half",
+      "w": 1088,
+      "h": 1920,
+      "seed": 42,
+      "cut": false
+    },
+    {
+      "id": "P08b-dandy",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. Full-length Regency dandy walking, tall top hat, tight tailcoat, high collar, cravat, striped trousers, cane, side view, isolated on a pure white background",
+      "w": 1024,
+      "h": 1024,
+      "seed": 42,
+      "cut": true
+    },
+    {
+      "id": "P11-ruff-man",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. Seated bald elderly man wearing a white millstone ruff collar and dark doublet, hands clasped in his lap, sad face, full figure, isolated on a pure white background",
+      "w": 1024,
+      "h": 1024,
+      "seed": 42,
+      "cut": true
+    },
+    {
+      "id": "P13b-violin",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. A single antique violin with bow, three-quarter view, isolated on a pure white background",
+      "w": 1024,
+      "h": 1024,
+      "seed": 42,
+      "cut": true
+    },
+    {
+      "id": "P15-cell-door",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. A heavy oak cell door with iron straps, rivets and a small barred window, set in a rough stone wall, dim light, front view, door filling the frame, vertical composition",
+      "w": 1088,
+      "h": 1920,
+      "seed": 42,
+      "cut": false
+    },
+    {
+      "id": "P18b-bowl",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. A shallow wooden bowl on the ground, seen from slightly above, isolated on a pure white background",
+      "w": 1024,
+      "h": 1024,
+      "seed": 42,
+      "cut": true
+    },
+    {
+      "id": "P22-newspaper-crowd",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. Night street scene, a tight crowd of Victorian men in top hats and overcoats seen from the front and side, leaning together, each holding open a large blank folded sheet, under a gas street lamp casting a cone of light, vertical composition",
+      "w": 1088,
+      "h": 1920,
+      "seed": 42,
+      "cut": false
+    },
+    {
+      "id": "P19-constables",
+      "prompt": "19th-century steel engraving, dense parallel hatching and cross-hatching, monochrome black ink on white paper. Two Victorian London police constables in tall stovepipe hats and long dark tailcoats with buttons, one holding up a lit oil lantern, the other reading a small notebook, standing in a dim stone corridor, three-quarter view, full figures, vertical composition",
+      "w": 1088,
+      "h": 1920,
+      "seed": 42,
+      "cut": false
+    },
+    {
+      "id": "P02b-tophat-row",
+      "prompt": "19th-century steel engraving, fine parallel hatching, monochrome black ink. A row of five Victorian gentlemen standing side by side facing the viewer, all in tall black top hats and long frock coats, full figures from hat to shoes, shoulder to shoulder, neutral calm faces, isolated on a pure white background, wide horizontal composition",
+      "w": 1664,
+      "h": 1024,
+      "seed": 42,
+      "cut": true
+    }
+  ]
+}

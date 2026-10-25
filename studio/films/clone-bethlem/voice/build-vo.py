@@ -46,7 +46,7 @@ def dur(f):
     )
 
 
-inputs, filt, free, words = [], [], 0.0, []
+inputs, filt, free, words, placed = [], [], 0.0, [], []
 for k, (a, b) in enumerate(chunks):
     text = " ".join(SPOKEN.get(x["w"], x["w"]) for x in w[a : b + 1])
     # Never on top of the previous phrase: a long one pushes the next start a little later.
@@ -98,6 +98,7 @@ for k, (a, b) in enumerate(chunks):
     tempo = min(d / slot, cap) if d > slot else 1.0
     over = d / tempo - slot
     free = start + d / tempo + 0.03
+    placed.append({"a": a, "b": b, "start": round(start, 3), "end": round(start + d / tempo, 3)})
     print(
         f"p{k:02d} {start:5.2f} slot {slot:4.2f} ours {d:4.2f} tempo {tempo:.3f}{f'  OVER {over:+.2f}s' if over > 0.02 else ''} | {text}"
     )
@@ -136,5 +137,6 @@ subprocess.run(
     ],
     check=True,
 )
+json.dump(placed, open(f"{HERE}/phrases.json", "w"), indent=0)
 json.dump({"words": words}, open(f"{HERE}/words.json", "w"), indent=0)
 print("→", OUT, len(words), "words")
