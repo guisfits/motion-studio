@@ -1,0 +1,70 @@
+{
+  "model": "z-image-turbo",
+  "steps": 9,
+  "items": [
+    {
+      "id": "G03-crowd",
+      "seed": 43,
+      "w": 1088,
+      "h": 1088,
+      "cut": true,
+      "prompt": "Photograph of a very large protest crowd seen from behind and slightly above, five or six rows of people's heads, hair, hoods and shoulders in dark jackets, forty people packed tightly side by side, wide shot, filling the lower two thirds of the frame, no faces visible, nobody looks at the camera, flat even overcast light, empty flat plain mid-grey background above the heads, no signs, no text"
+    },
+    {
+      "id": "G04-van",
+      "seed": 42,
+      "w": 1088,
+      "h": 1088,
+      "cut": true,
+      "prompt": "Photograph of a plain white delivery box truck, strict side view, facing left, cab on the left, long rectangular cargo box, small rear wheels, flat side-on orthographic camera at wheel height, completely blank unmarked white body, no logos, no lettering, no windows text, isolated on a pure white background, full vehicle in frame"
+    },
+    {
+      "id": "G05-biplane",
+      "seed": 42,
+      "w": 1088,
+      "h": 1088,
+      "cut": true,
+      "prompt": "Photograph of a small vintage single-engine biplane in flight, strict side view, nose and propeller pointing left, two stacked wings with struts and wires, open cockpit, tail fin on the right, 1920s barnstormer aircraft, full aircraft in frame, isolated on a plain pale grey-white sky background, no markings, no lettering"
+    },
+    {
+      "id": "G06-tree-a",
+      "seed": 42,
+      "w": 1088,
+      "h": 1920,
+      "cut": true,
+      "prompt": "Photograph of a big dense dark green tree crown, thick leafy foliage mass, seen from low angle, the trunk at the bottom left, foliage filling the frame, deep shadows, isolated on a pure white background, no sky holes, no text"
+    },
+    {
+      "id": "G06-tree-b",
+      "seed": 43,
+      "w": 1088,
+      "h": 1920,
+      "cut": true,
+      "prompt": "Photograph of a thick leafy bush and tree branch cluster, dense dark green leaves, rounded irregular silhouette, filling the frame, seen from the side at eye level, heavy shadows, isolated on a pure white background, no text"
+    },
+    {
+      "id": "G06-tree-c",
+      "seed": 44,
+      "w": 1088,
+      "h": 1088,
+      "cut": true,
+      "prompt": "Photograph of a rounded park tree with a dense dark green leafy crown and a short trunk, full tree in frame, frontal view, deep shadow inside the foliage, isolated on a pure white background, no text"
+    },
+    {
+      "id": "G07-placards",
+      "seed": 43,
+      "w": 1088,
+      "h": 1088,
+      "cut": true,
+      "prompt": "Photograph from behind of three raised arms in dark sleeves holding up three blank white cardboard protest signs on wooden sticks, the signs tilted at different angles, plain unmarked white sign boards, no writing, no letters, no symbols, isolated on a flat plain mid-grey background"
+    },
+    {
+      "id": "G07-sign-board",
+      "seed": 42,
+      "w": 1088,
+      "h": 1088,
+      "cut": true,
+      "prompt": "Photograph of a single blank white cardboard protest sign on a wooden stick, rectangular board, front view slightly angled, plain unmarked matte surface with slightly worn corners, no writing, no letters, no symbols, isolated on a pure white background"
+    }
+  ]
+}
