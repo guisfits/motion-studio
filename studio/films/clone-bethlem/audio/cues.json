@@ -12,13 +12,13 @@
   "note": "f97 first crop-hop"
  },
  {
-  "t": 5.381,
+  "t": 5.42,
   "type": "bell-deep",
   "gain": 0.5,
   "note": "f131 title hit"
  },
  {
-  "t": 8.815,
+  "t": 9.192,
   "type": "impact",
   "gain": 0.35,
   "note": "f225 into the coin card"
@@ -36,7 +36,7 @@
   "note": "f257 snowy crowd"
  },
  {
-  "t": 13.755,
+  "t": 13.782,
   "type": "paper-slide",
   "gain": 0.5,
   "note": "f325 couple"
@@ -66,7 +66,7 @@
   "note": "f649 beaten"
  },
  {
-  "t": 27.651,
+  "t": 27.678,
   "type": "knock",
   "gain": 0.6,
   "note": "f665 bowl lands"

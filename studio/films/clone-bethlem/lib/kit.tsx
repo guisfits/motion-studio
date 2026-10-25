@@ -194,6 +194,9 @@ const FUNCTION_WORDS = new Set(["to", "and", "the", "a", "an", "for", "of", "in"
  * ending on a function word (measured on the reference: "In 1800s" / "London," / "on weekends" /
  * "Prostitutes" / "and Easter,").
  */
+// Bars the reference keeps whole, by reference word index range, with the text it shows.
+const WHOLE: { from: number; to: number; text: string }[] = [{ from: 25, to: 29, text: "A penny to get in." }];
+
 export const PHRASES: { text: string; s: number; first: number }[] = (() => {
   const out: { text: string; s: number; first: number }[] = [];
   const flush = (ids: number[]) => {
@@ -211,7 +214,11 @@ export const PHRASES: { text: string; s: number; first: number }[] = (() => {
     if (/[,.]$/.test(x.w)) { flush(cur); cur = []; }
   });
   flush(cur);
-  return out;
+  return out.flatMap((p) => {
+    const w = WHOLE.find((x) => p.first >= x.from && p.first <= x.to);
+    if (!w) return [p];
+    return p.first === w.from ? [{ ...p, text: w.text }] : [];
+  });
 })();
 
 /** Reference frame windows where the film draws its own type instead of the bar (0-based, end exclusive). */
@@ -221,22 +228,35 @@ const CHARS_PER_FRAME = 1.5; // phrase complete ~1/3 into its voice (breakdown 2
 const FIRST_BAR = "In 1800s"; // the empty opening bar is as wide as the first phrase
 
 /** The persistent yellow bar: fixed width per phrase, types its phrase, swaps on the next phrase. */
+// Where the reference sets the bar smaller or lower (reference frames, end exclusive): the penny card.
+const BAR_LOOKS: { from: number; to: number; y: number; height: number; size: number; pad: number }[] = [
+  { from: 224, to: 256, y: 58.5, height: 77, size: 44, pad: 26 },
+];
+const inNoBar = (f: number) => NO_BAR.some(([a, b]) => f >= a && f < b);
+
 export const CaptionBar: React.FC<{ endFrame: number }> = ({ endFrame }) => {
   const frame = useCurrentFrame();
   const fRef = useFilmRefFrame();
-  if (NO_BAR.some(([a, b]) => fRef >= a && fRef < b)) return null;
+  if (inNoBar(fRef)) return null;
   if (fRef >= endFrame - 4) return null; // clears ~0.15 s before the end (f1205)
   const ourF = (t: number) => refToOur(t) * FPS;
   let idx = -1;
   for (let i = 0; i < PHRASES.length; i++) if (frame >= ourF(PHRASES[i].s) + BAR_LEAD) idx = i;
-  const ph = idx >= 0 ? PHRASES[idx] : null;
-  const full = ph ? ph.text : FIRST_BAR;
+  // A phrase spoken while another type owned the screen never reaches the bar: after such a window
+  // the bar waits empty, as wide as the next phrase (the reference's empty bar before "A penny").
+  let ph = idx >= 0 ? PHRASES[idx] : null;
+  let full = ph ? ph.text : FIRST_BAR;
+  if (ph && inNoBar(ph.s * FPS)) {
+    full = PHRASES[idx + 1]?.text ?? full;
+    ph = null;
+  }
   const typed = ph ? full.slice(0, Math.floor((frame - (ourF(ph.s) + BAR_LEAD)) * CHARS_PER_FRAME) + 1) : "";
-  const font: CSSProperties = { fontFamily: FONT, fontSize: 72, fontWeight: 500, lineHeight: "118px", whiteSpace: "pre" };
+  const look = BAR_LOOKS.find((l) => fRef >= l.from && fRef < l.to) ?? { y: 49.8, height: 118, size: 72, pad: 40 };
+  const font: CSSProperties = { fontFamily: FONT, fontSize: look.size, fontWeight: 500, lineHeight: `${look.height}px`, whiteSpace: "pre" };
   return (
-    <div style={{ position: "absolute", left: "50%", top: "49.8%", transform: "translate(-50%, -50%)", height: 118, padding: "0 40px", backgroundColor: ACCENT, ...font }}>
+    <div style={{ position: "absolute", left: "50%", top: `${look.y}%`, transform: "translate(-50%, -50%)", height: look.height, padding: `0 ${look.pad}px`, backgroundColor: ACCENT, ...font }}>
       <span style={{ visibility: "hidden" }}>{full}</span>
-      <span style={{ position: "absolute", left: 40, top: 0, color: INK }}>{typed}</span>
+      <span style={{ position: "absolute", left: look.pad, top: 0, color: INK }}>{typed}</span>
     </div>
   );
 };
