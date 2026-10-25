@@ -65,7 +65,7 @@ The look is not one film-wide filter: the pro reel's grain runs 1.2–7.9 and sh
 
 ## 5. Transitions and effects come from the GPU library
 
-Before writing an effect, read `.agents/skills/remotion-markup/effects.md` and `html-in-canvas.md` (ad-fontes path) — ~80 effects ship with Remotion 4: `zoomBlur` (radial zoom-through), `lensBlur` (depth/defocus pull), `glow`, `lightLeak`, `chromaticAberration`, `radialProgressiveBlur`, `roughenEdges`, `tear`, `turbulentDisplace`, `dropShadow`, `bevelAlpha`… An effect's `HtmlInCanvas` inside a shot's `Grade` renders fine. `HtmlInCanvasMotionBlur` gives per-object motion blur.
+Before writing an effect, read the `remotion-markup` skill (`effects.md`, `html-in-canvas.md`) — ~80 effects ship with Remotion 4: `zoomBlur` (radial zoom-through), `lensBlur` (depth/defocus pull), `glow`, `lightLeak`, `chromaticAberration`, `radialProgressiveBlur`, `roughenEdges`, `tear`, `turbulentDisplace`, `dropShadow`, `bevelAlpha`… An effect's `HtmlInCanvas` inside a shot's `Grade` renders fine. `HtmlInCanvasMotionBlur` gives per-object motion blur.
 
 Transitions measured on the pro reel: burn/tear holes growing over ~8 frames (0.5 s); zoom-through a keyhole (plate fills the frame at its first frame, the next scene already visible through the hole, scale ×1 → ×6, halves split out); whip slide up with the bottom going dark (2 frames); a dark pillar sweeping across with the cut under it.
 

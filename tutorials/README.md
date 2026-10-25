@@ -4,7 +4,7 @@ Knowledge sources, not inspiration. Each entry is a teacher explaining *how* to 
 editorial-collage (Vox-style) look: editing, camera, texture, type, sound, direction. Most of each
 video is the teacher talking, so the frames say little about the look; the value is the technique.
 The crew skills (`skills/film-*`) turn these lessons into numbered rules
-(`skills/film-<role>/references/moran.md` and siblings), each tagged with its source here.
+(`skills/_shared/moran.md` for director, art director and animator; `skills/film-<role>/references/moran.md` for the other roles), each tagged with its source here.
 
 Finished pieces to look at for grammar live in `inspirations/` instead (`vox-collage/` for the target look, `motion-graphics/` for the other register).
 

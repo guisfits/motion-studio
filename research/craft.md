@@ -1,7 +1,7 @@
 # Craft research: Vox-style paper cut-out collage (9:16 Reel, 60-90 s)
 
 Scope: numbers-first rules for camera, timing, piece motion, captions, sync, pacing, sound, endings.
-Complements `skills/film-animator/references/moran.md` (recipes from Chris Moran's AE presets: gate weave, flicker, jitter, callouts, textures). This file does not repeat those; it covers craft and measurable thresholds.
+Complements `skills/_shared/moran.md` (tag ANI; recipes from Chris Moran's AE presets: gate weave, flicker, jitter, callouts, textures). This file does not repeat those; it covers craft and measurable thresholds.
 
 Tags in rules: `[n]` = source id. `[own]` = my synthesis/judgment, not stated by a source (treat as a starting value to tune against references, not a fact). `[web-blog]` = creator blog, no primary data.
 
@@ -68,7 +68,7 @@ Secondary (search-result snippets only, not opened): NN/g animation durations vi
 - Move along arcs, not straight lines [10].
 - Accent with step-wise reveals: wipe/mask a block in jagged increments, skipping frames here and there, text offset a few frames later than its plate [7].
 - Pieces entering from off-frame: slide with ease-out and a small rotation (2-6 degrees) toward rest; pure translation looks like a UI panel [own].
-- Idle life: held pieces get subtle 2-4 px jitter on threes (8 Hz) instead of dead stillness (see `skills/film-animator/references/moran.md`, jitter) [9][own].
+- Idle life: held pieces get subtle 2-4 px jitter on threes (8 Hz) instead of dead stillness (see `skills/_shared/moran.md`, jitter) [9][own].
 - Depth by size: smaller cutouts back, larger front [10]; 3-4 layers [11].
 - Never let two big pieces move in the same direction at the same speed at the same time; offset speed 20-40% or timing 3+ frames [own].
 
