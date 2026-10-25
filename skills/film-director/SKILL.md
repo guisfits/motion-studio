@@ -33,6 +33,7 @@ Director and producer: owns the register, the pace, the order of work, every gat
 
 - The client's ask: topic, length, platform, references.
 - The project film overlay: the skill named on the `Film style: <skill>` line of the project's `AGENTS.md`. Load it first. No line: ask the client which project rules apply before the brief.
+- The format skill the project hands you (the project's `AGENTS.md` or the overlay names it per format: short, long, carousel). Load it right after the overlay: it owns the process order, the lengths and the format's own rules, and where it differs from the order below, it wins.
 - Later: every artifact the crew hands back, every `<film>/crew/checks-<stage>.md`, and `<film>/crew/review.md`.
 
 ## Paths
@@ -45,7 +46,7 @@ Every crew command names its roots; none assumes a working directory. `<engine>`
 - One briefing per specialist step (`references/briefing-specialists.md`), one fresh subagent per role.
 - The fix-round routing (`references/briefing-specialists.md`, "Fix rounds").
 - The client checkpoints (below): every step that makes something the client can see or hear ends with that thing in the client's hands and a stop.
-- The film board, the client's one page (the project's report page; the old `core/board` builder has no Remotion equivalent, so you assemble it with stills from `node <engine>/tools/critique/sheets.mjs <mp4>`): a stacked feed; it shows the title, AGORA (what the client must do now), CENAS (the scenes in film order) and the updates, newest first. Nothing else.
+- The film board, the client's one page (the project's report page; assemble it with stills from `node <engine>/tools/critique/sheets.mjs <mp4>`): a stacked feed; it shows the title, AGORA (what the client must do now), CENAS (the scenes in film order) and the updates, newest first. Nothing else.
 
 ## Client checkpoints
 
@@ -54,13 +55,15 @@ The client judges results, not status. A step that produces something visible or
 | # | Checkpoint | What the client receives | Passes when |
 |---|---|---|---|
 | C1 | Brief | the beats, the pace plan in one table | client OK |
-| C2 | Script + voice | `script.md` and `voice/voice.wav` | client OK |
+| C2 | Script | `script.md` as text, fact-checked; no voice yet | client OK |
 | C3 | Visual direction | 3 rough static drafts (one beat each, the project's palette, real pieces, a real line), each built from one target piece in `<engine>/inspirations/`, shown side by side. Never a question in text: art is judged by seeing it (client, 2026-10-15) | client reacts / picks |
 | C4 | Style frame | one still of one beat, side by side with the target (`out/target-vs-frame.png`) and the art director's score | client scores ≥ 8; else redo, nothing else starts |
 | C5 | Motion test | 3–5 s of that beat moving, with its SFX | client OK |
 | C6 | Boards, **one at a time** | one board = one **scene**, shown as its event in 3 keyframes plus the end frame ("The core" above) (a distinct composition: sheet rows that continue the same plate, or a burst that builds one plate, are ONE board), shown in its **final state** — every element of the scene in place, as the scene ends; never a transition or an in-between of the previous board (client, 2026-10-15). With it: all the words spoken over the scene and the pictures used (ids + thumbnails). The inspirations are the crew's idea bank: every board draws its ideas (the act, the composition, the device, the type treatment) from those pieces, on the crew's own initiative — the client never has to suggest them (client, 2026-10-15: "se eu tiver que ficar te dando ideias, qual é o ponto?"). The board does not need to show the piece it borrowed from. The board is an overview of how the film looks, not an approval of animation; animation adds motion and elements later. Then stop for the client's note | client OK per board |
-| C7 | Animatic, low fidelity | only after every board is approved: the whole film animated with voice, SFX and music at low fidelity. The animatic plays at 12 fps, so the client approves a stepped cadence: before asking for the OK, show 3–5 s at the final cadence (`<engine>/tools/render.sh <CompositionId> <film>/out/cadence.mp4 --frames=<a>-<b>` at full scale and the composition's final fps) beside the same seconds of the animatic, and the client picks; the pick is the final's cadence (second film, 2026-10-19: v20 was approved at 12 fps while the render contract is 60 fps with blur, found only before the final) | client OK |
+| C7 | Voice + animatic, low fidelity | only after the look (C3–C5) and every board (C6) are approved: the voice is recorded now (`voice/voice.wav`) and fitted to the approved picture, never the picture to the voice; the whole film animated with voice, SFX and music at low fidelity. The animatic plays at 12 fps, so the client approves a stepped cadence: before asking for the OK, show 3–5 s at the final cadence (`<engine>/tools/render.sh <CompositionId> <film>/out/cadence.mp4 --frames=<a>-<b>` at full scale and the composition's final fps) beside the same seconds of the animatic, and the client picks; the pick is the final's cadence (second film, 2026-10-19: v20 was approved at 12 fps while the render contract is 60 fps with blur, found only before the final) | client OK |
 | C8 | Final | the full-fidelity render with the fine adjustments | client OK |
+
+Picture comes first, voice and sound after the look is approved: C2 is the script as text, the voice is recorded at C7, and a format skill the project hands you overrides this order wherever it states its own (typically: angles, script, style frames + motion test, each part as a fast draft, final).
 
 C3 and C4 come before any other picture work: taste is set on one frame against one target, then repeated. A frame the client scores ≥ 8 goes on the project's approved-frames shelf, and a film the client scores 10 on its reference-films list (the overlay names both); every later film reads them first.
 
@@ -81,7 +84,7 @@ A step starts only when the gate of the step before reads PASS in its report fil
    - **Burst, then hold on the point** (grammar §1): name the 2–4 points (`~` from §10: 6% of shots ≥ 3 s) — key number, conclusion, the document that is the evidence — that earn the long holds; every other beat stays short.
    - **Paper breath card** slots (grammar §1, §10.4): after the hook, before the answer, an emotional low, a bare date or negation.
    - **Palette flip marks a structural turn** (grammar §3): the one or two turns where ground or grade flips; the art director picks the colours.
-   - **Hard cut on the sentence** (grammar §3) is the default join inside a scene; between scenes the join is an animated paper transition (`film-animator` step 9 owns it; overrides grammar §3 for AdScriptura films); each **dissolve reserved for time or mood** is listed with its reason (time jump, chapter turn, sombre close, payoff). No reason, no dissolve.
+   - **Joins**: the default join comes from the project overlay (the `Film style:` skill); with none, the generic default is a carried, motivated transition that keeps the eye moving (a match, a wipe, a push, the outgoing piece carrying in the next); a hard cut only when it is itself continuous (the shape, direction or motion carries over the cut). `film-animator` step 9 owns the execution; each **dissolve reserved for time or mood** is listed with its reason (time jump, chapter turn, sombre close, payoff). No reason, no dissolve.
    - **Decelerating ending** (grammar §1): last 5 s at most `NORMS.rhythm.endSlowdown` of the body rate, last card held; the close bookends the open or lands on a quiet card inside the film's world (grammar §11 #4).
    - **One word per card** (grammar §7) only for a line delivered with deliberate pace, or the tagline.
    A promised count ("three reasons") is a fact every gate re-checks (`references/zhylin.md`).
@@ -143,7 +146,7 @@ Every threshold lives in `tools/checks/norms.mjs`; quote the key, never the numb
 
 1. **Even pace, no breath** (grammar §10.3–10.4): every beat the same length, no hold, no card. Fix: the pace plan names holds and breath slots; send back a sheet that ignores them.
 2. **Ending at body speed, or a template outro** (R4; grammar §1 "Decelerating ending"; postmortem C6, K9). Fix: slow the last 5 s, close on a composed frame in the film's own world.
-3. **Soft joins everywhere** (grammar §3: 75/165 A pieces have none). Fix: hard cut inside a scene, the paper join between scenes (`film-animator` step 9); each dissolve carries a written reason.
+3. **Decorative joins** (a dissolve or flash with no reason; grammar §3). Fix: the overlay's default join, else a carried transition (`film-animator` step 9); each dissolve carries a written reason.
 4. **Hook by faster cutting** (§10.5, ratio 1.03; postmortem K10). Fix: the hook is the line and its picture.
 5. **Style or register break** (grammar §11 #4). Fix: one register per film; a palette flip only at a turn the brief names.
 6. **Cut on motion as a rule** (Moran's "cut on action", contradicted for narrated collage, grammar §12.1). Fix: the voice covers the cut; cut on the phrase.

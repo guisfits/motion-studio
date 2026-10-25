@@ -2,7 +2,7 @@
 
 Device -> when -> how in this engine -> measured range -> tell and fix. `grammar §n` = `research/editing-grammar.md`; ids are pieces measured there; `moran/<reel>` = a lesson in `moran.md`; `[tested]` = computed with the engine's own `carryAt`/`smootherstep`; `[eng]` = engine code read; `~` = inference. Gate thresholds are `NORMS` keys.
 
-Who decides: the sheet (`join`) and the director decide where a transition other than the hard cut goes (grammar §13: hard cut as default and dissolves are the director's; match cuts, into-the-frame and container opens are the storyboard's; ground swaps and palette flips are the art director's and director's). You make it. A transition no row names is a hard cut inside a scene; between two scenes it is an animated paper join (client, 2026-10-19; `SKILL.md` step 9).
+Who decides: the sheet (`join`) and the director decide where a transition other than the hard cut goes (grammar §13: the default join comes from the project overlay and dissolves are the director's; match cuts, into-the-frame and container opens are the storyboard's; ground swaps and palette flips are the art director's and director's). You make it. A transition no row names takes the overlay's default join; absent one, a carried, motivated transition, and a hard cut only when it is itself continuous (`SKILL.md` step 9).
 
 ## 0. Sheet fields you act on
 
@@ -25,9 +25,9 @@ Who decides: the sheet (`join`) and the director decide where a transition other
 
 ## 1. Transitions
 
-**Hard cut on the sentence (the default inside a scene; between scenes see `SKILL.md` step 9).** Measured A: soft transitions 0.28 per 10 s; 75/165 pieces have none; 99 shots all hard cuts (`hex/DX6M6NCCWyE`) (grammar §3).
+**Hard cut on the sentence (a technique: use it where the cut is continuous or the overlay makes it the default; see `SKILL.md` step 9).** Measured A: soft transitions 0.28 per 10 s; 75/165 pieces have none; 99 shots all hard cuts (`hex/DX6M6NCCWyE`) (grammar §3).
 - How: two camera keys on the phrase-onset frame (old pose, new pose; the frame in `CUT_FRAMES`, so the trace reports a new `shot`), or a hero swap in the same frame; the new station is already composed (hero and enough supports seated before the cut frame; a hero flying in on the cut frame is a T5). Identical paper grain across the cut so it reads as an element swap (`pin/349959`); 1-frame black between scenes is seen once (`ee/DaU3XslOTOa`). Cut semantics: `devices-rhythm-camera.md`, engine facts.
-- Tell: a cross-fade between beats that no row asks for. Fix: cut.
+- Tell: a cross-fade between beats that no row asks for. Fix: the overlay's default join, else a carried transition or a continuous cut.
 
 **Ground swap per beat.** The new ground is the scene change (grammar §3; the art director's list of grounds).
 - Measured: a ground every ~3 s (`hex/DZw15OaCDZv`); 5 in 24 s (`hex/Db-UqYwiqT5`); none longer than ~6 s (`hex/DcF_qVxqsaA`); 12 material sets in 46 s (`ee/DZXDJ8AuAiU`).

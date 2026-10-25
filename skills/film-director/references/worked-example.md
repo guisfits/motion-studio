@@ -32,7 +32,7 @@ event", "New picture every").
 | One word per card | none | — |
 | Ending | pull-out from one box to the stacked port, last card held ~2 s | decelerating ending; bookend on the box of beat 3 |
 
-Everything else is a hard cut on the sentence.
+Everything else takes the overlay's default join (absent one, a carried transition).
 
 ## 2. Reading the sheet against the plan (step 6)
 

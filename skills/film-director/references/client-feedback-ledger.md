@@ -46,10 +46,10 @@ turn; this file only indexes). Newest first.
 | 2026-10-15 | Never delete a picture the client did not name; show candidates first | archivist 4a; memory |
 | 2026-10-15 | AI pictures allowed; client-sent pictures used as sent, first | overlay SKILL.md + elements.md; memory |
 | 2026-10-15 | Board = one scene in its final state, one at a time; animatic only after all boards | director C6–C8 |
-| 2026-10-15 | Board page is a stack/feed: AGORA, CENAS, newest first; no old template | board feed (old engine `core/board`, archived); director "Board" |
+| 2026-10-15 | Board page is a stack/feed: AGORA, CENAS, newest first; no old template | director "Board" |
 | 2026-10-15 | Dispatch the board intern on every landed step, unasked | director "Board" |
 | 2026-10-15 | Same tape on everything; repetitive elements. Vary fixings and lettering per plate | art director "No repeated component" |
-| 2026-10-15 | Every row acts (hammer the theses, a letter travels and spreads); cut rigs | storyboard 6b; animator; archivist 5; engine `src/rig` (rig; old `core/reference/rig.mjs` archived) |
+| 2026-10-15 | Every row acts (hammer the theses, a letter travels and spreads); cut rigs | storyboard 6b; animator; archivist 5; engine `src/rig` |
 | 2026-10-15 | Texture is a real scanned material, not a digital fill; depth: objects on a surface | art director "Look first" rules; animator; archivist 5 |
 | 2026-10-15 | Texturelabs and free-for-commercial texture libraries allowed, no licence questions | archivist 5; overlay; videos/AGENTS.md |
 | 2026-10-15 | Show every step's artifact and stop for the OK; never hours without feedback | director "Client checkpoints" C1–C8 |

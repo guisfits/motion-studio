@@ -41,17 +41,17 @@ its fix. Numbers are register A (grammar §0, §10) unless marked; ids are cited
 
 ## Hard cut on the sentence (grammar §3)
 
-- When: the default join inside a scene. Between scenes of an AdScriptura film the join is an animated paper transition, never a bare cut (client, 2026-10-19: "corte brusco"; `film-animator` step 9).
+- When: only when the cut is itself continuous (the shape, direction or motion carries over it), or the project overlay names it as its default join. Otherwise the default is a carried, motivated transition (`film-animator` step 9); the project overlay on the `Film style:` line owns house joins.
 - How: a sheet row with no `join` (or `join: "cut"`) is a hard cut on its first word. Flash, blur or paper-wipe frames over a cut are the animator's craft and stay short (grammar §3); they are not dissolves.
 - Measured: soft transitions 0.28 / 10 s (hex median 0); 75/165 pieces have none; 99 shots all hard cuts (`hex/DX6M6NCCWyE`).
-- Tell: soft joins as decoration. Fix: hard cut unless the brief lists a reason (a paper join between scenes is not a soft join).
+- Tell: a cut that jumps (no shared shape, direction or motion), or soft joins as decoration. Fix: carry the eye across, or list the reason in the brief.
 
 ## Dissolve reserved for time or mood (grammar §3)
 
 - When: a time jump (`hex/DYy1TUWufoF` "dissolves signal time passing, cuts signal a new fact"; `hex/DcF_qVxqsaA` for "Today"), one chapter turn (`hex/DN-WcdHiZCs`, its only dissolve), a quiet argument (`hex/DaaSLUAidHC`), a sombre close (`hex/Daug-7bC4ZY`), the payoff (`hex/DbnDiSLCtax`, 2.7 s, "reserved for the payoff"). Footage cuts hard; graphics may dissolve (`hex/Dc-vZs9CkUT`).
 - How: the brief's join list (beat → reason); the storyboard writes `join: "dissolve"` on the incoming row; the animator times it.
 - Measured: of soft events 28% last ≥ 0.6 s; 61/165 pieces have at least one; 0–2 per film is the common case (`~`).
-- Tell: a dissolve with no time, mood or payoff to carry. Fix: hard cut.
+- Tell: a dissolve with no time, mood or payoff to carry. Fix: a carried transition or a continuous cut.
 
 ## Palette flip marks a structural turn (grammar §3, §8 "Grade carries the mood")
 
