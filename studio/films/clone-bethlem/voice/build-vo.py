@@ -51,7 +51,8 @@ for k, (a, b) in enumerate(chunks):
     text = " ".join(SPOKEN.get(x["w"], x["w"]) for x in w[a : b + 1])
     # Never on top of the previous phrase: a long one pushes the next start a little later.
     start = max(w[a]["s"], free)
-    slot = (w[b + 1]["s"] if b + 1 < len(w) else END) - start - 0.04
+    # A pushed start can pass the next word; keep the slot positive so the tempo stays valid.
+    slot = max((w[b + 1]["s"] if b + 1 < len(w) else END) - start - 0.04, 0.2)
     # Cache key = the text, so re-chunking never reuses a stale take.
     key = "p" + hashlib.sha1(text.encode()).hexdigest()[:10]
     raw = f"{TAKES}/{key}_000.wav"

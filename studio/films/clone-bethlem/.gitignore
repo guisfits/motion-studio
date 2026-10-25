@@ -9,3 +9,5 @@ voice/takes/
 audio/*.wav
 audio/*.mp4
 out/
+assets/gen.log
+audio/*.cues.json
