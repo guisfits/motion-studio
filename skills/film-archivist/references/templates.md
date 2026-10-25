@@ -70,13 +70,13 @@ resolution before the clipping is fitted to 1600 px on its long side.
 
 ## §4 Image request (`crew/image-requests.md`)
 
-One block per `request` row: a picture the local generator could not make (SKILL step 13 generates
-the rest itself). The Director forwards the whole file to the client in one message; the
+One block per `request` row: a picture the project's image-generation skill could not make (SKILL step 13 defers the
+rest to it). The Director forwards the whole file to the client in one message; the
 client generates with the tool named and drops each file as `assets/sources/<id>.png`.
 
 ```
 ## luther-at-desk (b05): status request
-Tool: <the overlay's generator, e.g. Gemini (Nano Banana Pro) or ChatGPT>
+Tool: <the generator the project's image-generation skill or overlay names>
 Why generated: searched Commons, Met, AIC, Openverse for "luther writing desk": only 19th-century
   scenes in colour, none in the film's woodcut treatment (trail in assets-notes.md).
 Attach: assets/sources/luther-cranach-1528.jpg (likeness reference)
