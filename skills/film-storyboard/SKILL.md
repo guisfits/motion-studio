@@ -37,7 +37,7 @@ Storyboard artist and script supervisor: decides what the viewer sees on every p
 
 ## You deliver
 
-- `<film>/crew/sync-sheet.json`, exactly the shape in `references/sync-sheet-fields.md` (read it first). When the brief names `Register: A-i` (teaching films, AdScriptura default) the sheet sets `"register": "instructive"`; the gates then read `NORMS.registers.instructive`.
+- `<film>/crew/sync-sheet.json`, exactly the shape in `references/sync-sheet-fields.md` (read it first). When the brief names `Register: A-i` (teaching films; the overlay names the default register) the sheet sets `"register": "instructive"`; the gates then read `NORMS.registers.instructive`.
 - In the hand-off message, not a file: the **picture list** (every `hero`/`support` id, the subject it must show, the `zoom.target` parts that must stay uncropped, the beats that reuse it) and the through-line id.
 
 ## Process
