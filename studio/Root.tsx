@@ -24,6 +24,8 @@ import { Film as CloneBethlemFilm } from "./films/clone-bethlem/Film";
 import * as cloneBethlem from "./films/clone-bethlem/scene";
 import { Film as CloneBirdsFilm } from "./films/clone-birds/Film";
 import * as cloneBirds from "./films/clone-birds/scene";
+import { Film as CloneLionFilm } from "./films/clone-lion/Film";
+import * as cloneLion from "./films/clone-lion/scene";
 import dryRun from "./films/dry-run/film.json";
 import { layoutOf, type FilmFormat } from "../src/film";
 
@@ -100,6 +102,14 @@ const Films: React.FC = () => (
       fps={cloneBirds.FPS}
       width={cloneBirds.WIDTH}
       height={cloneBirds.HEIGHT}
+    />
+    <Composition
+      id="F-CloneLion"
+      component={CloneLionFilm}
+      durationInFrames={cloneLion.DURATION}
+      fps={cloneLion.FPS}
+      width={cloneLion.WIDTH}
+      height={cloneLion.HEIGHT}
     />
   </Folder>
 );
