@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "id": "G13-pigeon-a",
+      "seed": 51,
+      "w": 1088,
+      "h": 1920,
+      "cut": true,
+      "prompt": "Photograph of a rock pigeon, close-up portrait from the head down to the full chest and belly, three-quarter view, head turned to the left, big orange eye, grey feathers with green and purple iridescent neck, the whole bird body fills the tall frame down to the bottom edge, sharp detailed feathers, plain flat dark charcoal background, studio light, no text"
+    },
+    {
+      "id": "G13-pigeon-b",
+      "seed": 52,
+      "w": 1088,
+      "h": 1920,
+      "cut": true,
+      "prompt": "Photograph of a rock pigeon, close-up portrait from the head down to the full chest and belly, three-quarter view, head turned to the left, big orange eye, grey feathers with green and purple iridescent neck, the whole bird body fills the tall frame down to the bottom edge, sharp detailed feathers, plain flat dark charcoal background, studio light, no text"
+    }
+  ]
+}
