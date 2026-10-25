@@ -11,8 +11,8 @@ are read by the art director, archivist, animator and reviewer; add no field not
 | Field | Rule | Read by |
 |---|---|---|
 | `id` | `b01`, `b02`, … in time order; never renumbered after the client has seen the animatic | gate (messages), reviewer |
-| `t` `[t0, t1]` | seconds, 2 decimals, copied from the table. `t0` = `start` of the row's first word; `t1` = `t0` of the next row; the last row ends at the last word's `end` + tail ≤ `NORMS.sync.coverSlackS`. No gap, no overlap | **gate** S8, S9 |
-| `says` | the exact words of words.json inside `[t0, t1]`, single-spaced, punctuation as in the table; generated, never retyped | **gate** S4, S5 |
+| `t` `[t0, t1]` | seconds, 2 decimals, copied from the table (before the voice, C6: from the script's estimated clock, re-timed to `words.json` at C7). `t0` = `start` of the row's first word; `t1` = `t0` of the next row; the last row ends at the last word's `end` + tail ≤ `NORMS.sync.coverSlackS`. No gap, no overlap | **gate** S8, S9 |
+| `says` | the exact words of words.json inside `[t0, t1]` (before the voice: of the script), single-spaced, punctuation as in the table; generated, never retyped | **gate** S4, S5 |
 | `key` | 1–3 `{word, t}`. `key[0]` = the word the row's new picture lands on (the hero's name on a new plate; the new prop on a same-plate row), whatever its place in the row: a role word or a support spoken before the name never goes first. `key[1]`, `key[2]` time the supports, in time order. `t` = the word's `start` | **gate** S3; H1 and the animatic still use `key[0]` |
 | `hero` `{asset, why}` | one per row. `asset` = manifest id, kebab-case, subject + source or date (`harbour-crane-1956`). Repeat the previous row's id when the plate holds and one element changes (one prop per phrase, swap, crowd step, board link). `why` = what the picture proves about the line | **gate** S1, S2 (`asset`), H1; art director, archivist (`why`) |
 | `support` | `[]` to 2 manifest ids, each proving a second noun of the line | art director (manifest), animator |
@@ -104,17 +104,17 @@ key beyond the beat itself.
 
 ## Running the gate
 
-The manifest does not exist yet, so run on a scratch copy outside the film folder (only `crew/sync-sheet.json`, `voice/words.json` and a seed manifest; no `film.json`, so F1 reads the register's norm and is the writer's; delete it after) with a seed
+The manifest does not exist yet, so run on a scratch copy outside the film folder (only `crew/sync-sheet.json`, a seed manifest and, once the C7 take exists, `voice/words.json`; no `film.json`, so F1 reads the register's norm and is the writer's; delete it after) with a seed
 manifest of every id you used (never write `crew/manifest.json` in the film):
 
 ```sh
 cd <film> && S=$(mktemp -d) && mkdir -p "$S/crew" "$S/voice" \
- && cp crew/sync-sheet.json "$S/crew/" && cp voice/words.json "$S/voice/" \
+ && cp crew/sync-sheet.json "$S/crew/" && { [ ! -f voice/words.json ] || cp voice/words.json "$S/voice/"; } \
  && node -e 'const {beats}=JSON.parse(require("fs").readFileSync("crew/sync-sheet.json"));
 const ids=[...new Set(beats.flatMap(b=>[b.hero?.asset,...(b.support??[])]).filter(Boolean))];
 console.log(JSON.stringify({assets:ids.map(id=>({id,file:"",source:"",licence:"",status:"missing"}))}))' > "$S/crew/manifest.json" \
  && (cd <engine> && FILM_DIR="$S" FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts); cat "$S/crew/checks-sheet.md"
 ```
 
-PASS for you: no S1–S6, S8, S9 lines. Paste the file (without S7 lines) into the hand-off and say
+PASS for you: no S1–S6, S8, S9 lines. Before the voice (C6) there is no `voice/words.json`: the gate then skips S3, S5, S9, S11 and F1 and prints one yellow F0 note saying so; at C7, re-time the sheet to the take and run it again with the words. Paste the file (without S7 lines) into the hand-off and say
 it came from a scratch copy.

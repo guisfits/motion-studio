@@ -31,6 +31,8 @@ Default register A (narrated 9:16 collage explainer, grammar section 0). The bri
 
 ## Process
 
+Two visits (owner ruling M42, 2026-10-25: picture first, the voice at C7). **First visit, C2**: steps 1-10, the researched, fact-checked script as text; no voice exists yet and nothing downstream waits for one. **Second visit, C7**: steps 11-13, the take, only after the look (C3-C5) and every board (C6) are approved, right before the animator's animatic.
+
 Devices W1-W10 are in `references/playbook.md`; grammar ids point to `research/editing-grammar.md`.
 
 1. Read the brief. List every factual claim it or the client implies (numbers, dates, names, places, quotes, "because") before researching; mark client-supplied ones `client`.
@@ -45,13 +47,13 @@ Devices W1-W10 are in `references/playbook.md`; grammar ids point to `research/e
 8c. **Every connective is earned; the line matches the screen** (client, 2026-10-19, draft v13: "'mas Mateus não escreveu' está picotado, a linha narrativa não explica o 'mas'"; "precisa refinar… narração/script com o que é exibido na tela"): after a cut, re-read each "Mas", "Então", "Por isso": the line before must set up the contrast, or the sentence is rewritten to name the thing directly ("O que Mateus escreveu, em grego, foi metanoeîte, que quer dizer…" over "Mas Mateus não escreveu em latim. Escreveu em grego…"). Keep the contrast words the client asks for ("Mas Lutero via mais do que um simples ato…"). Each line names what its scene shows.
 9. Add the sources list to `script.md`: every fact in the spoken text has its two sources; a fact with no entry cannot be in the text.
 10. **Stop for the fact-check.** Hand `script.md` + `research.md` to the Director, who runs `film-fact-checker` in a fresh context; you never check your own facts. Apply every `fix` it returns (the changed lines are re-checked). No take before `crew/fact-check.json` says `PASS` (`FILM_DIR=<film> FILM_STAGE=script npx vitest run src/film/__tests__/stage-gate.test.ts` exits 0): a voiced error costs a retake, a taught error costs the audience. Teaching claims count as facts: what a word means, what a confession says, what someone believed.
-11. Take with the overlay's tool and policy, **fitted to the picture** when the film is already animated (client, 2026-10-19: the voice adapts to the video, never the reverse): each line's `pause` is set so it starts on its scene's event onset in the sheet; when a line overruns its scene, shorten or rephrase it before asking for more picture; trim silence; write `voice/words.json` (`references/take.md`). Run `node <engine>/skills/film-writer/scripts/take-metrics.mjs <film>`.
+11. **(C7)** Take with the overlay's tool and policy, **fitted to the approved boards** (client, 2026-10-19: the voice adapts to the video, never the reverse; the sheet's times are estimates from the script until this take): each line's `pause` is set so it starts on its scene's event onset in the sheet; when a line overruns its scene, shorten or rephrase it before asking for more picture; trim silence; write `voice/words.json` (`references/take.md`). Run `node <engine>/skills/film-writer/scripts/take-metrics.mjs <film>`.
 12. ASR check against the spoken form, CER against `NORMS.voice.maxCer`; fix text or take, never the transcript. Listen once for stress, names, foreign words and cited references. Every word not in the film's language is transliterated for the overlay's TTS from a researched pronunciation recorded with its source; when unsure, research before voicing — never let the TTS guess (client, 2026-10-17). A foreign word the ASR hears as something else is a retake.
 13. Hand off (below) with command output, not memory.
 
 ## Gate
 
-The `sheet` gate (`FILM_DIR=<film> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts`) needs the sync sheet and manifest, so it cannot run yet. The writer's gate:
+The `sheet` gate (`FILM_DIR=<film> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts`) belongs to the storyboard (it runs without `voice/words.json` before the take, with one yellow note, and runs the word-timing rules S3, S5, S9, S11, F1 once the take exists). The writer's gate:
 
 - `voice/words.json` parses and `words.at(-1).end` is inside `NORMS.film.minS`..`NORMS.film.maxS` (gate F1); `take-metrics.mjs` prints it and exits 1 when F1 is red.
 - `crew/cer.md` attached with CER <= `NORMS.voice.maxCer`, its method and the metrics output.
@@ -76,7 +78,7 @@ Ranked by what hurts the film most.
 
 ## Hand-off
 
-To the Director, with `script.md`, `research.md`, `voice/voice.wav`, `voice/words.json`, `cer.md` and the gate output (`references/templates.md`, hand-off note). The Director reads the take aloud-check and passes it to `film-storyboard`, which fills the sync sheet from `words.json`.
+First visit (C2): `script.md`, `research.md` and `fact-check.json` to the Director; no voice. Second visit (C7): `script.md`, `research.md`, `voice/voice.wav`, `voice/words.json`, `cer.md` and the gate output (`references/templates.md`, hand-off note). The Director reads the take aloud-check and passes it to `film-storyboard`, which re-times the existing sheet to `words.json` (its "Re-time at C7" step), then to `film-animator` for the animatic.
 
 Send back to the Director, never fix alone: a brief that depends on a claim you could not source (propose the sourced replacement or a no-number hook); a brief that cannot fit `NORMS.film` at honest copy length; a sensitivity or legal question the overlay does not answer; a voice tool or policy the overlay did not name; CER still over the bar after two retakes. You edit no other role's artifact.
 

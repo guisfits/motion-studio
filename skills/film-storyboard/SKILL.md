@@ -1,6 +1,6 @@
 ---
 name: film-storyboard
-description: Use when a film has an approved brief, a locked script and word times (`voice/words.json`) and needs its sync sheet; when a sheet row must be added, re-timed or fixed after a gate (S1–S10, R1–R3), a reviewer note or a voice re-take; before the art director starts, because the sheet decides which pictures the film needs.
+description: Use when a film has an approved brief and a locked, fact-checked script (the voice does not exist yet: picture first) and needs its sync sheet; when a sheet row must be added, re-timed or fixed after a gate (S1–S10, R1–R3), a reviewer note, or the C7 voice take (re-time the sheet to `voice/words.json`); before the art director starts, because the sheet decides which pictures the film needs.
 ---
 
 # film-storyboard
@@ -32,7 +32,7 @@ Storyboard artist and script supervisor: decides what the viewer sees on every p
 ## You receive
 
 - `<film>/crew/brief.md` (director): beats, through-line object, reveal shot, promised counts, and the **pace plan** (holds, burst, breath slots, palette-flip turn, joins, ending).
-- `<film>/crew/script.md` and `<film>/voice/words.json` (writer): `words[] = {w, start, end}`; `line` and `key` when the voice tool adds them.
+- `<film>/crew/script.md` (writer), fact-checked. **No `voice/words.json` at C6** (owner, M42, 2026-10-25: the voice is recorded at C7, after the look and the boards): you time the rows from the script. At C7 the writer adds `voice/words.json` (`words[] = {w, start, end}`; `line` and `key` when the voice tool adds them) and you re-time (below).
 - The project's picture collection index, if the director hands one (read-only).
 
 ## You deliver
@@ -42,7 +42,7 @@ Storyboard artist and script supervisor: decides what the viewer sees on every p
 
 ## Process
 
-1. **Read** the brief with its pace plan, the script, then print the word table (never type a time): `node -e 'const {words}=JSON.parse(require("fs").readFileSync("<film>/voice/words.json"));for(const x of words)console.log(x.start.toFixed(2),x.end.toFixed(2),x.w,x.key?"*":"")'`.
+1. **Read** the brief with its pace plan and the script. **Before the voice**, lay the script's spoken words on an estimated clock (3.0 words/s, `NORMS.voice` 2.3–3.4, plus the pauses the writer marked) and print that table; estimated times are the one case where you derive a time instead of copying it, and they are re-timed at C7. **Once `voice/words.json` exists**, print the word table (never type a time): `node -e 'const {words}=JSON.parse(require("fs").readFileSync("<film>/voice/words.json"));for(const x of words)console.log(x.start.toFixed(2),x.end.toFixed(2),x.w,x.key?"*":"")'`.
 2. **Split the narration into picture rows** with the **picture vs caption-only rule** (grammar §10.2): a new row when the line introduces a new noun, place, person or number; no new row when the clause continues about the same subject, the plate needs reading time, or the line flips its own words: the caption changes, the picture holds (the animator's "caption as the motion"). One row = one picture event (**phrase-locked cut**, grammar §1). Rows start on a word, end where the next begins, never mid-clause. `references/device-playbook.md` "Rows".
 3. **Place the director's pace rows**: the burst as word-speed rows, the point as `device: "hold"`; **paper breath cards** in the brief's slots (`device: "breath-card"`, one shared card asset, grammar §1); `join: "dissolve"` only where the brief lists one; one word per card only on the brief's line. You place them; you do not add holds, cards or dissolves the plan lacks; you ask.
 3b. **Start from the scene ideas of `film-creative`** (idea, event, why per scene); a row without one goes back for it.
@@ -57,7 +57,7 @@ Storyboard artist and script supervisor: decides what the viewer sees on every p
 
 ## Gate
 
-`FILM_DIR=<scratch> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts` (from `<engine>`) on a scratch copy of the film folder (the generic runner needs only `crew/sync-sheet.json`, `crew/manifest.json` and `voice/words.json`; the manifest does not exist yet; the art director writes it from your sheet). Recipe in `references/sync-sheet-fields.md` ("Running the gate"). PASS for you = no **S1, S2, S3, S4, S5, S6, S8, S9, S10** in `<scratch>/crew/checks-sheet.md`. S7 (assets missing) is the archivist's list; F1 is the writer's. Read the file, not the exit code.
+`FILM_DIR=<scratch> FILM_STAGE=sheet npx vitest run src/film/__tests__/stage-gate.test.ts` (from `<engine>`) on a scratch copy of the film folder (the generic runner needs only `crew/sync-sheet.json` and `crew/manifest.json`; `voice/words.json` is optional at `sheet`: without it the word-timing rules S3, S5, S9, S11 and F1 are skipped with one yellow F0 note, and PASS for you is judged on the rest; the manifest does not exist yet; the art director writes it from your sheet). Recipe in `references/sync-sheet-fields.md` ("Running the gate"). PASS for you = no **S1, S2, S3, S4, S5, S6, S8, S9, S10** in `<scratch>/crew/checks-sheet.md`. S7 (assets missing) is the archivist's list; F1 is the writer's. Read the file, not the exit code.
 
 Later gates read your sheet: **H1** (hero on screen at `key[0].t`, `NORMS.sync.heroWindowFrames`), **R1–R3** on the animatic (`NORMS.rhythm`), **R4** on the draft, **T7** (punch cap, `NORMS.camera.punchMax`), **T9** (zoom target box inside the safe box from `key[0]` to the row end). A defect there in rows, keys, targets or devices comes back to you through the director.
 
@@ -76,7 +76,7 @@ Later gates read your sheet: **H1** (hero on screen at `key[0].t`, `NORMS.sync.h
 ## Never
 
 - Shorten, drop or re-derive an approved scene's rows from new words: its event onsets and durations stay, and the voice is fitted to them (picture first, `film-director` "Never").
-- Type or round a time; edit `voice/words.json`, the script or the manifest; mark an asset ready.
+- Type or round a time (once the voice exists; before it, estimated times are the rule above); edit `voice/words.json`, the script or the manifest; mark an asset ready.
 - Add a hold, breath card, dissolve or palette turn the brief's pace plan does not name.
 - Renumber row ids after the client has seen the animatic (the reviewer cites them).
 
@@ -84,7 +84,7 @@ Later gates read your sheet: **H1** (hero on screen at `key[0].t`, `NORMS.sync.h
 
 - To the director: the sheet, the picture list, the through-line id, the pasted `checks-sheet.md` (without S7 lines), the row report's summary line, and any row you flagged as thin.
 - Back to the director, blocked, one line each with the row id: no honest picture and no card fits (writer rewrite or approve a drawn card); a word needed as lettering missing or spelled differently in words.json (writer fixes; digits use `says`, see fields); the pace plan cannot be honoured by the words (a hold on a 3-word clause); times look wrong against the voice (writer re-aligns, you re-time).
-- After a voice re-take, keep the approved rows' spans (`t`); re-copy `says` and the `key` times from the new `words.json`. A key word that falls outside its row's span goes to the writer as a `pause` or a rephrase, never as a shorter row; then re-run the gate.
+- **Re-time at C7** (the voice has just been recorded, fitted to the approved boards) and after any voice re-take: keep the approved rows' spans (`t`) wherever the words fit them; re-copy `says`, the `key` times and the `lettering.lands` from the new `words.json`; the last row ends at the last word's `end` + tail. No tool does this (there is no re-time script); you edit the sheet from the printed word table. A key word that falls outside its row's span goes to the writer as a `pause` or a rephrase, never as a shorter row; then re-run the gate with the voice present, where S3, S5, S9, S11 and F1 now run.
 
 ## Knowledge
 

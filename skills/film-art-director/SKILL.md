@@ -31,7 +31,7 @@ Art director: you decide how every frame looks (grounds, stages, the caption sys
 
 ## You receive / You deliver
 
-Receive (from the Director): `crew/brief.md` (register, default A), the approved `crew/sync-sheet.json`, `voice/words.json`, and only the overlay's palette, type and texture part: named tokens (colours, type families, paper) and the mapping that applies them to the film's token constants (top of `<film>/Film.tsx`, fed from the `film.json` props: `ground`, `ink`, `accent`, `accentWash`, `night`; families `serif`, `display`, `script`). Owner notes arrive quoted verbatim by the Director.
+Receive (from the Director): `crew/brief.md` (register, default A), the approved `crew/sync-sheet.json` (timed from the script: the voice is recorded later, at C7), and only the overlay's palette, type and texture part: named tokens (colours, type families, paper) and the mapping that applies them to the film's token constants (top of `<film>/Film.tsx`, fed from the `film.json` props: `ground`, `ink`, `accent`, `accentWash`, `night`; families `serif`, `display`, `script`). Owner notes arrive quoted verbatim by the Director.
 
 Deliver:
 

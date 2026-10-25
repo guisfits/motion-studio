@@ -76,7 +76,7 @@ red F0.
 | Stage | Gates |
 |---|---|
 | `script` | fact-check only: X1–X3 |
-| `sheet` | S1–S11 sync sheet, S10 one picture of a person per scene (with `crew/scenes.json`), F1 length |
+| `sheet` | S1–S11 sync sheet, S10 one picture of a person per scene (with `crew/scenes.json`), F1 length. Picture first (owner, M42, 2026-10-25): the voice is recorded at C7, after the boards, so a `sheet` run without `voice/words.json` skips the word-timing rules (S3, S5, S9, S11, F1) with one yellow F0 note and runs every other rule; `animatic` and later without it are red F0 |
 | `animatic` | sheet + trace: T0–T9, T12, H1, P1, R1–R3 |
 | `draft` | sheet + trace with R1, R2, R4; T10 caption cap height; T11 contrast and the mp4 checks (V0–V3) on the draft render `out/draft-<format>.mp4`; missing render: red F2 under `FILM_STAGE=draft`, yellow otherwise |
 | `final` | draft on the silent master `out/silent-<format>.mp4` + X1–X4 against the signed sheet + the sound gates below; a missing render or mixed cut is red F2 |
@@ -118,7 +118,7 @@ Without `FILM_STAGE`, `npx vitest run` runs the `draft` gate and writes nothing 
 **The generic runner** (`src/film/__tests__/stage-gate.test.ts`, `runStageGate` in `src/film/node.ts`) is skipped
 unless `FILM_DIR` is set. It works for a folder anywhere on disk, e.g. a host project's `media/video-short/films/<slug>/`,
 at the first stage: `script` needs `crew/script.md` + `crew/fact-check.json`; `sheet` needs `crew/sync-sheet.json`,
-`crew/manifest.json`, `voice/words.json` (a film without `film.json` is gated on the register's length); `animatic`
+`crew/manifest.json`; `voice/words.json` is optional at `sheet` (a film without `film.json` is gated on the register's length); `animatic`
 and later need `film.json` (id, format, fps, durationInFrames) and `<FILM_DIR>/trace.ts` exporting `traceAt`, which the
 runner imports; without it the stage is red T0. It writes `crew/checks-<stage>.md` and `.json`. A per-film
 `film.test.ts` stays valid: it calls `runFilmGate({ dir, traceAt })`, the function the runner calls.
