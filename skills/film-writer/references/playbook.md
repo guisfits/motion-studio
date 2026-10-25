@@ -69,6 +69,13 @@ How the words become picture, in one line: the edit lands on the phrase (grammar
 
 The voice states the fact; it never narrates the research ("according to studies"). A line is a statement a picture can prove: a document, portrait, map or object that is the thing named. A line with no honest picture is flagged `no picture: lettered word only` in `script.md` (or becomes a breath-card line, W5) rather than given a decorative one.
 
+## W11 The documentary reveal (measured on a 50 s reel the client rated the model to copy; S8)
+
+- Hook = date + place + an ordinary act, and the shocking object last: "In 1800s London, people queued up on weekends to watch mental patients like zoo animals." The first 3 s promise; the payoff word lands at the end of the first sentence (5.4 s), not at 1 s.
+- Beat order: hook → name and price (setup) → escalation (the crowds, the commerce, the irony word "celebrities") → a five-word moral turn ("Nobody thought twice about it.") on an empty card → a three-word list, one picture per word ("chained to walls, beaten, starved") → the reveal with a name, an object and a number → the consequence that calls back the setup ("the same public that had been paying a penny") → a dry bureaucratic close.
+- The shortest sentences carry the moral turns; the long ones carry facts. No pause ≥ 0.3 s in 50 s: rhythm comes from the cuts and from stretched sentence-final words (~2x a word's length), not from silence. Slow down on the list (2.2 words/s), speed up into the irony (3.8), stress the numbers hardest.
+- Callbacks: the viewers of the hook (top-hat men), the penny and the victim's face each return once in the second half; plan the picture for the callback when you write the setup line.
+
 ## What the old rules became
 
 | Old rule | Now |
