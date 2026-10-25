@@ -1,6 +1,6 @@
 # Devices: transitions, entrances, contact shadows
 
-Device -> when -> how in this engine -> measured range -> tell and fix. `grammar §n` = `research/editing-grammar.md`; ids are pieces measured there; `moran/<reel>` = a lesson in `moran.md`; `[tested]` = computed with the engine's own `carryAt`/`smootherstep`; `[eng]` = engine code read; `~` = inference. Gate thresholds are `NORMS` keys.
+Device -> when -> how in this engine -> measured range -> tell and fix. `grammar §n` = `research/editing-grammar.md`; ids are pieces measured there; `moran/<reel>` = a lesson in `skills/_shared/moran.md`; `[tested]` = computed with the engine's own `carryAt`/`smootherstep`; `[eng]` = engine code read; `~` = inference. Gate thresholds are `NORMS` keys.
 
 Who decides: the sheet (`join`) and the director decide where a transition other than the hard cut goes (grammar §13: the default join comes from the project overlay and dissolves are the director's; match cuts, into-the-frame and container opens are the storyboard's; ground swaps and palette flips are the art director's and director's). You make it. A transition no row names takes the overlay's default join; absent one, a carried, motivated transition, and a hard cut only when it is itself continuous (`SKILL.md` step 9).
 

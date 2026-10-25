@@ -1,6 +1,6 @@
 # Devices: captions, lettering, type, life, data
 
-Device -> when -> how in this engine -> measured range -> tell and fix. `grammar §n` = `research/editing-grammar.md`; `craft §n` = `research/craft.md`; ids are pieces measured there; `moran/<reel>` = a lesson in `moran.md`; `[eng]` = engine code read; `~` = inference. Gate thresholds are `NORMS` keys. Size, face, plate and colour of every kind of type are the art director's (style bible); you own timing, motion and the trace (`trace.ts`).
+Device -> when -> how in this engine -> measured range -> tell and fix. `grammar §n` = `research/editing-grammar.md`; `craft §n` = `research/craft.md`; ids are pieces measured there; `moran/<reel>` = a lesson in `skills/_shared/moran.md`; `[eng]` = engine code read; `~` = inference. Gate thresholds are `NORMS` keys. Size, face, plate and colour of every kind of type are the art director's (style bible); you own timing, motion and the trace (`trace.ts`).
 
 ## 1. Captions (caption as the motion, in detail)
 
