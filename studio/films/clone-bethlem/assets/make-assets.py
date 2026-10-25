@@ -87,5 +87,7 @@ for it in spec["items"]:
     if it["cut"] and (only or not os.path.exists(cut)):
         subprocess.run(["rembg", "i", "-m", "birefnet-general", raw, cut], check=True, capture_output=True)
         # Trim the cut-out to its pixels, so a piece is placed by its own bounds, not the canvas.
-        subprocess.run(["magick", cut, "-alpha", "on", "-channel", "A", "-threshold", "9%", "+channel", "-trim", "+repage", cut], check=False)
+        from PIL import Image  # rembg's environment carries Pillow
+        im = Image.open(cut)
+        im.crop(im.getchannel("A").point(lambda v: 255 if v > 24 else 0).getbbox()).save(cut)
         print(f"{it['id']}: cut", flush=True)
