@@ -1,5 +1,5 @@
 # Voices the clone phrase by phrase on the reference's word times (film-writer take.md 5b).
-#   python3 voice/build-vo.py            → voice/vo.wav (mono 48 kHz, reference length)
+#   python3 voice/build-vo.py            → voice/vo.wav (mono 48 kHz, reference length, longer when the last phrase runs past it)
 # One designed take (takes/de_000.wav, OmniVoice --instruct with attribute keywords only: a
 # descriptive instruct is read aloud) is the speaker reference for every other phrase.
 import hashlib, json, os, subprocess
@@ -132,7 +132,7 @@ subprocess.run(
         "-ac",
         "1",
         "-t",
-        str(END),
+        str(total),
         OUT,
     ],
     check=True,
