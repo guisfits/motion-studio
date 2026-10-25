@@ -3,10 +3,17 @@ import { Grain } from "../../../src/texture";
 import musicUrl from "./audio/music.wav";
 import { Filters, q, Screen, useFonts, Vignette } from "./lib/kit";
 import { LOOP, REPEATS } from "./scene";
-import { A } from "./shots/A";
+import { Air } from "./shots/Air";
+import { Street } from "./shots/Street";
 
-// Beats as Sequences on the loop timeline (breakdown 2); filled shot by shot (S9 T43/T44).
-const BEATS: { from: number; to: number; Shot: React.FC }[] = [{ from: 0, to: 30, Shot: A }];
+// Two layer groups over the whole loop, so loop frame = reference frame inside both (a Sequence
+// with from > 0 would shift useCurrentFrame): the street (sky, Capitol camera, signs, van, crowd)
+// and the air above it (plane + banner, pigeon, reticle, foreground trees). Each returns nothing
+// outside its own frames.
+const BEATS: { from: number; to: number; Shot: React.FC }[] = [
+  { from: 0, to: LOOP, Shot: Street },
+  { from: 0, to: LOOP, Shot: Air },
+];
 
 const Loop: React.FC = () => {
   useFonts();
