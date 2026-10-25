@@ -55,7 +55,8 @@ export const Back: React.FC = () => {
   const flockSigma = lin(f, [[0, 4], [60, 3.5], [85, 1.2]]);
   const stripBlur = lin(f, [[48, 5], [60, 5], [64, 0]]);
   const stripA = lin(f, [[44, 0], [48, 1]]);
-  const wash = lin(f, [[44, 0], [48, 1], [120, 1], [135, 0]]);
+  // The reference wash is faint at f45-80 and gone by ~f100 (sheet m1, f120 has none).
+  const wash = lin(f, [[44, 0], [48, 1], [80, 0.6], [100, 0]]);
   const bars = f < 52;
   const k = lin(f, [[18, 0], [44, 1]]);
   const barA = lin(f, [[0, 1], [40, 1], [50, 0]]);
@@ -66,7 +67,7 @@ export const Back: React.FC = () => {
       <Tree />
       <AbsoluteFill style={{ opacity: wash }}>
         {[[170, 120, 60, 300], [270, 80, 90, 320], [380, 120, 50, 280], [470, 70, 80, 320]].map(([x, y, w, h], i) => (
-          <div key={i} style={{ position: "absolute", left: x * K, top: y * K, width: w * K, height: h * K, background: "#FBEFA0", opacity: 0.38, transform: "skewX(-14deg)", filter: `blur(${9 * K}px)` }} />
+          <div key={i} style={{ position: "absolute", left: x * K, top: y * K, width: w * K, height: h * K, background: "#FBEFA0", opacity: 0.25, transform: "skewX(-14deg)", filter: `blur(${9 * K}px)` }} />
         ))}
       </AbsoluteFill>
       <Blur sigma={stripBlur} opacity={stripA}>

@@ -1,4 +1,5 @@
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, Audio } from "remotion";
+import musicUrl from "./audio/music.wav";
 import { Filters, useFonts } from "./lib/kit";
 import { Back, Type } from "./shots/Back";
 import { Front, Wipe } from "./shots/Front";
@@ -17,6 +18,7 @@ export const Film: React.FC = () => {
       <Wipe />
       <Type />
       <Head />
+      <Audio src={musicUrl} />
     </AbsoluteFill>
   );
 };
