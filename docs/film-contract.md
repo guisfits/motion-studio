@@ -23,7 +23,7 @@ studio/films/<slug>/
 ```
 
 Register the composition in `studio/Root.tsx` as `F-<Id>` (size from the film's `format`).
-`studio/films/example/` is the reference film: copy it.
+`studio/films/example/` is the engine's test fixture (the minimal film folder shape; not a finished piece, a model or a bar): copy it for the folder shape only.
 
 **One set of numbers.** `trace.ts` and `Film.tsx` read the same constants (`scene.ts`, `film.json`)
 and the same pure functions the components draw from (`viewAt`, `setDownPose`, `revealWord`,
