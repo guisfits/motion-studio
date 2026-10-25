@@ -14,6 +14,7 @@ import { T13_DURATION, T13Fx } from "./demos/T13Fx";
 import { T14_DURATION, T14CameraDevices } from "./demos/T14CameraDevices";
 import { T15_DURATION, T15TypeDevices } from "./demos/T15TypeDevices";
 import { T16_DURATION, T16DocDevices } from "./demos/T16DocDevices";
+import { T17_DURATION, T17PhoneBodies } from "./demos/T17PhoneBodies";
 import { SHOWREEL_DURATION, Showreel } from "./demos/Showreel";
 import { Film as ExampleFilm } from "./films/example/Film";
 import example from "./films/example/film.json";
@@ -57,6 +58,7 @@ const Techniques: React.FC = () => (
     <Composition id="T14-CameraDevices" component={T14CameraDevices} durationInFrames={T14_DURATION} fps={30} width={1920} height={1080} />
     <Composition id="T15-TypeDevices" component={T15TypeDevices} durationInFrames={T15_DURATION} fps={30} width={1920} height={1080} />
     <Composition id="T16-DocDevices" component={T16DocDevices} durationInFrames={T16_DURATION} fps={30} width={1920} height={1080} />
+    <Composition id="T17-PhoneBodies" component={T17PhoneBodies} durationInFrames={T17_DURATION} fps={30} width={1920} height={1080} />
     <Composition id="Showreel" component={Showreel} durationInFrames={SHOWREEL_DURATION} fps={30} width={1920} height={1080} />
   </Folder>
 );
