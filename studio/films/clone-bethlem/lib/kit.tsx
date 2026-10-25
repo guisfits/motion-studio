@@ -224,7 +224,7 @@ export const PHRASES: { text: string; s: number; first: number }[] = (() => {
 /** Reference frame windows where the film draws its own type instead of the bar (0-based, end exclusive). */
 const NO_BAR: [number, number][] = [[88, 224], [552, 594], [1088, 1140]];
 const BAR_LEAD = 1; // text starts ~1-3 frames after the phrase's first word
-const CHARS_PER_FRAME = 1.5; // phrase complete ~1/3 into its voice (breakdown 2.1)
+const CHARS_PER_FRAME = 2.5; // the reference types fast: most bars read whole within ~0.3 s (pairs sheets f941-f1191)
 const FIRST_BAR = "In 1800s"; // the empty opening bar is as wide as the first phrase
 
 /** The persistent yellow bar: fixed width per phrase, types its phrase, swaps on the next phrase. */
