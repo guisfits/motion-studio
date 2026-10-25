@@ -6,7 +6,7 @@ Who decides: the sheet (`join`) and the director decide where a transition other
 
 ## 0. Sheet fields you act on
 
-`film.json` `sheet.beats` rows (`skills/film-storyboard/references/sync-sheet-fields.md`): one row is one picture event, ~4.5 words. `join` is the join *into* the row: absent or `cut` = hard cut; `match` = match cut, both rows name the matching part in `zoom.target`; `dissolve` = cross-fade, only where the director's pace plan lists it. `device` tells you what the row is:
+`film.json` `sheet.beats` rows (`skills/film-storyboard/references/sync-sheet-fields.md`): one row is one picture event, ~4.5 words. `join` is the join *into* the row: absent = the default join (the overlay's, else a carried transition: `SKILL.md` step 9); `cut` = hard cut, only where it is continuous; `match` = match cut, both rows name the matching part in `zoom.target`; `dissolve` = cross-fade, only where the director's pace plan lists it. `device` tells you what the row is:
 
 | `device` | What you build | Events and gates |
 |---|---|---|

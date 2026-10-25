@@ -19,7 +19,7 @@ are read by the art director, archivist, animator and reviewer; add no field not
 | `lettering` | `[]` to 2 `{text, lands, mark?, says?}`. `text` 1–2 words, each said in this row; or display text (a numeral) with `says` naming the spoken words it lands on. `lands` = `start` of its first spoken word. `mark`: `circle` `underline` `highlight` `strike` | **gate** S4, S5, S6 (marks across the whole film) |
 | `zoom` `{target, kind}` | `target` = `<hero id>.<part>`, a visible named part (`eyes`, `date`, `seal`, `title`, `figure`). `kind`: `push-in` `punch-in` `pull-out` `pan` `tilt` `drift` `static` `into-frame`. A `push-in` or `pull-out` is built at >= `NORMS.camera.emphasisMinScaleDelta` (T7); a gentler move is `drift` | animator (T7, T9 measure the result) |
 | `device` | optional, one of: `hold` `breath-card` `word-card` `one-prop` `container` `crowd` `position-swap` `evidence-board` `grid` `scale-contrast` (see `device-playbook.md`) | art director (what to build), animator |
-| `join` | optional: `cut` (default when absent), `match`, `dissolve`. The join *into* this row. `dissolve` only where the brief's pace plan lists one | animator, reviewer |
+| `join` | optional: `cut` (a hard cut, only where it is continuous), `match`, `dissolve`; absent = the default join (the overlay's, else a carried transition: `film-animator` step 9). The join *into* this row. `dissolve` only where the brief's pace plan lists one | animator, reviewer |
 
 Matching details that bite (`tools/checks/words.mjs`): case and edge punctuation are ignored, accents
 and digits are not (`você` ≠ `voce`, `95` ≠ `noventa e cinco`: use the lettering's `says`). When a

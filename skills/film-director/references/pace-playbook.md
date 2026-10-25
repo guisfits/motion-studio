@@ -42,7 +42,7 @@ its fix. Numbers are register A (grammar §0, §10) unless marked; ids are cited
 ## Hard cut on the sentence (grammar §3)
 
 - When: only when the cut is itself continuous (the shape, direction or motion carries over it), or the project overlay names it as its default join. Otherwise the default is a carried, motivated transition (`film-animator` step 9); the project overlay on the `Film style:` line owns house joins.
-- How: a sheet row with no `join` (or `join: "cut"`) is a hard cut on its first word. Flash, blur or paper-wipe frames over a cut are the animator's craft and stay short (grammar §3); they are not dissolves.
+- How: a sheet row with `join: "cut"` is a hard cut on its first word (a row with no `join` takes the default join, see When). Flash, blur or paper-wipe frames over a cut are the animator's craft and stay short (grammar §3); they are not dissolves.
 - Measured: soft transitions 0.28 / 10 s (hex median 0); 75/165 pieces have none; 99 shots all hard cuts (`hex/DX6M6NCCWyE`).
 - Tell: a cut that jumps (no shared shape, direction or motion), or soft joins as decoration. Fix: carry the eye across, or list the reason in the brief.
 

@@ -161,8 +161,8 @@ What B, C and D teach that A lacks:
 | Iris or shape-mask reveal | animator | 9 (ee 7, hex 2) | — |
 | Glitch cut | animator | 9 (hex 3, ee 3, pin 3) | — |
 
-**Hard cut on the sentence.** The default join.
-- Crew note (client, 2026-10-19): for AdScriptura films the default holds only inside a scene; between scenes the join is an animated paper transition (`research/second-film-postmortem.md` R3).
+**Hard cut on the sentence.** The default join of the measured pieces; our crew does not take it as its default (`film-animator` step 9: the overlay's default join, else a carried transition).
+- Crew note (client, 2026-10-19): the measured default holds only inside a scene or where the cut is continuous; between scenes the join is an animated paper transition (`research/second-film-postmortem.md` R3).
 - Measured A: soft transitions per 10 s, median 0.28 (hex median 0, ee 1.8); 75/165 pieces have none.
 - Findings: 99 shots, all hard cuts (`hex/DX6M6NCCWyE`); cuts on the beat of the sentence (`hex/Dbc-vIXCCqe`); 1-frame black between scenes (`ee/DaU3XslOTOa`); identical paper grain across the cut so it reads as an element swap (`pin/349959` (C)).
 
