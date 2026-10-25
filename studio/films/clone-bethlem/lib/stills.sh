@@ -7,7 +7,8 @@ for r in "$@"; do
   o=$(python3 -c "
 import json;a=json.load(open('$F/lib/anchors.json'));t=$r/24
 for p,q in zip(a,a[1:]):
-  if t<=q[0]: print(round((p[1]+(t-p[0])/(q[0]-p[0])*(q[1]-p[1]) if q[0]>p[0] else q[1])*24)); break")
+  if t<=q[0]: print(round((p[1]+(t-p[0])/(q[0]-p[0])*(q[1]-p[1]) if q[0]>p[0] else q[1])*24)); break
+else: print(round((a[-1][1]+t-a[-1][0])*24))")
   npx remotion still studio/index.ts F-CloneBethlem $F/out/stills/$pre-$r.png --frame=$o --scale=0.5 --log=error
 done
 python3 -I $F/lib/pairs.py $pre "$@"
