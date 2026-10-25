@@ -1,6 +1,6 @@
 import { AbsoluteFill, Audio, Freeze, Sequence, useCurrentFrame } from "remotion";
 import { Grain } from "../../../src/texture";
-import voUrl from "./voice/vo.wav";
+import mixUrl from "./audio/mix.wav";
 import { CaptionBar, Filters, ShotCtx, useFont, Vignette } from "./lib/kit";
 import { refFrame, SHOTS, type ShotId } from "./scene";
 import { B01 } from "./shots/B01";
@@ -54,7 +54,7 @@ export const Film: React.FC = () => {
       <Freeze frame={Math.floor(frame / 2) * 2}>
         <Picture />
       </Freeze>
-      <Audio src={voUrl} />
+      <Audio src={mixUrl} />
     </AbsoluteFill>
   );
 };
